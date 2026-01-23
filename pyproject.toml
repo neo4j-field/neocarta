@@ -9,6 +9,7 @@ dependencies = [
     "neo4j>=6.1.0",
     "pandas>=3.0.0",
     "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
 ]
 
 [dependency-groups]
