@@ -545,6 +545,18 @@ wheels = [
 ]
 
 [[package]]
+name = "neo4j"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytz" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1b/01/d6ce65e4647f6cb2b9cca3b813978f7329b54b4e36660aaec1ddf0ccce7a/neo4j-6.1.0.tar.gz", hash = "sha256:b5dde8c0d8481e7b6ae3733569d990dd3e5befdc5d452f531ad1884ed3500b84", size = 239629 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/70/5c/ee71e2dd955045425ef44283f40ba1da67673cf06404916ca2950ac0cd39/neo4j-6.1.0-py3-none-any.whl", hash = "sha256:3bd93941f3a3559af197031157220af9fd71f4f93a311db687bd69ffa417b67d", size = 325326 },
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1017,6 +1029,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pytz"
+version = "2025.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/bf/abbd3cdfb8fbc7fb3d4d38d320f2441b1e7cbe29be4f23797b4a2b5d8aac/pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3", size = 320884 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/c4/34e93fe5f5429d7570ec1fa436f1986fb1f00c3e0f43a589fe2bbcd22c3f/pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00", size = 509225 },
+]
+
+[[package]]
 name = "pyzmq"
 version = "27.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1138,17 +1159,27 @@ source = { virtual = "." }
 dependencies = [
     { name = "google-cloud-bigquery", extra = ["pandas"] },
     { name = "ipykernel" },
+    { name = "neo4j" },
     { name = "pandas" },
     { name = "pydantic" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ipykernel" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
     { name = "ipykernel", specifier = ">=7.1.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
     { name = "pandas", specifier = ">=3.0.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ipykernel", specifier = ">=7.1.0" }]
 
 [[package]]
 name = "tornado"
