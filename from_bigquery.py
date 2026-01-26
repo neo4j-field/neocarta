@@ -1,6 +1,7 @@
 
 from google.cloud import bigquery
 from data_model.core import Database, Table, Column, ContainsTable, HasColumn, References
+from data_model.constraints import write_neo4j_constraints
 import pandas as pd
 from neo4j import GraphDatabase, Driver, RoutingControl
 from dotenv import load_dotenv
@@ -239,6 +240,9 @@ if __name__ == "__main__":
         uri=os.getenv("NEO4J_URI"),
         auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD"))
     )
+
+    # write constraints to the database
+    print(write_neo4j_constraints(neo4j_driver))
 
     # connect to bigquery 
     project_id = os.getenv("BIGQUERY_PROJECT_ID")
