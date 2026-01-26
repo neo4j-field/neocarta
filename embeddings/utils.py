@@ -5,7 +5,9 @@ import asyncio
 from math import ceil
 
 
-def get_nodes_to_embed(neo4j_driver: Driver, node_label: str, min_length: int = 20) -> pd.DataFrame:
+def get_nodes_to_embed(
+    neo4j_driver: Driver, node_label: str, min_length: int = 20
+) -> pd.DataFrame:
     """
     Get the nodes to embed.
 
@@ -27,7 +29,9 @@ def get_nodes_to_embed(neo4j_driver: Driver, node_label: str, min_length: int = 
         - description: The description of the node.
     """
 
-    assert node_label in ["Database", "Table", "Column"], "Node label must be one of: Database, Table, Column"
+    assert node_label in ["Database", "Table", "Column"], (
+        "Node label must be one of: Database, Table, Column"
+    )
     assert min_length > 0, "Minimum length must be greater than 0"
 
     query = f"""
@@ -39,77 +43,99 @@ RETURN n.id as id,
     labels(n)[0] as node_label, 
     n.description as description
 """
-    results = neo4j_driver.execute_query(query_=query, 
-        parameters_={'min_length': min_length}, 
-        routing_=RoutingControl.READ, 
-        result_transformer_=lambda x: x.data())
+    results = neo4j_driver.execute_query(
+        query_=query,
+        parameters_={"min_length": min_length},
+        routing_=RoutingControl.READ,
+        result_transformer_=lambda x: x.data(),
+    )
 
     return pd.DataFrame(results)
 
-async def _create_embeddings_for_batch(embedding_fn: Callable[[str], list[float]], batch: pd.DataFrame) -> list[tuple[str, list[dict[str, Any]]]]:
-        """
-        Create embeddings for a batch of node descriptions to embed.
 
-        Parameters
-        ----------
-        embedding_fn: Callable
-            The embedding function to use. Must take in a node description and return a list of floats.
-        batch : pd.DataFrame
-            A Pandas DataFrame where each row represents a node to embed.
-            Has columns `id`, `node_label`, and `description`.
-        failed_cache : list[tuple[str, str]]
-            A list of tuples, where the first element is the node id, the second element is the node label, and the third element is the node description.
-            This is used to log failed embeddings across batches.
+async def _create_embeddings_for_batch(
+    embedding_fn: Callable[[str], list[float]], batch: pd.DataFrame
+) -> list[tuple[str, list[dict[str, Any]]]]:
+    """
+    Create embeddings for a batch of node descriptions to embed.
 
-        Returns
-        -------
-        list[tuple[str, list[dict[str, Any]]]]
-            A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
-        """
-        
-        # Create tasks for all nodes in the batch
-        # order is maintained
-        tasks = [embedding_fn(description=row['description']) for _, row in batch.iterrows()]
-        # Execute all tasks concurrently
-        embedding_results = await asyncio.gather(*tasks)
-        return [(id, embedding) for id, embedding in zip(batch["id"], embedding_results) if embedding is not None]
+    Parameters
+    ----------
+    embedding_fn: Callable
+        The embedding function to use. Must take in a node description and return a list of floats.
+    batch : pd.DataFrame
+        A Pandas DataFrame where each row represents a node to embed.
+        Has columns `id`, `node_label`, and `description`.
+    failed_cache : list[tuple[str, str]]
+        A list of tuples, where the first element is the node id, the second element is the node label, and the third element is the node description.
+        This is used to log failed embeddings across batches.
 
-async def create_embeddings_in_batches(embedding_fn: Callable[[str], list[float]], nodes_dataframe: pd.DataFrame, batch_size: int) -> list[tuple[str, list[Any]]]:
-        """
-        Create embeddings for a Pandas DataFrame of text chunks in batches.
+    Returns
+    -------
+    list[tuple[str, list[dict[str, Any]]]]
+        A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
+    """
 
-        Parameters
-        ----------
-        embedding_fn: Callable[[str], list[float]]
-            The embedding function to use. Must take in a node description and return a list of floats.
-        nodes_dataframe : pd.DataFrame
-            A Pandas DataFrame where each row represents a node.
-            Has columns `id`, `node_label`, and `description`.
-        batch_size : int
-            The number of nodes to process in each batch.
+    # Create tasks for all nodes in the batch
+    # order is maintained
+    tasks = [
+        embedding_fn(description=row["description"]) for _, row in batch.iterrows()
+    ]
+    # Execute all tasks concurrently
+    embedding_results = await asyncio.gather(*tasks)
+    return [
+        (id, embedding)
+        for id, embedding in zip(batch["id"], embedding_results)
+        if embedding is not None
+    ]
 
-        Returns
-        -------
-        list[tuple[str, list[Any]]]
-            A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
-        """
 
-        results = list()
+async def create_embeddings_in_batches(
+    embedding_fn: Callable[[str], list[float]],
+    nodes_dataframe: pd.DataFrame,
+    batch_size: int,
+) -> list[tuple[str, list[Any]]]:
+    """
+    Create embeddings for a Pandas DataFrame of text chunks in batches.
 
-        for batch_idx, i in enumerate(range(0, len(nodes_dataframe), batch_size)):
-            print(f"Processing batch {batch_idx+1} of {ceil(len(nodes_dataframe)/(batch_size))}  \n", end="\r") 
-            if i + batch_size >= len(nodes_dataframe):
-                batch = nodes_dataframe.iloc[i:]
-            else:
-                batch = nodes_dataframe.iloc[i:i+batch_size]
-            batch_results = await _create_embeddings_for_batch(embedding_fn, batch)
+    Parameters
+    ----------
+    embedding_fn: Callable[[str], list[float]]
+        The embedding function to use. Must take in a node description and return a list of floats.
+    nodes_dataframe : pd.DataFrame
+        A Pandas DataFrame where each row represents a node.
+        Has columns `id`, `node_label`, and `description`.
+    batch_size : int
+        The number of nodes to process in each batch.
 
-            # Add extracted records to the results list
-            results.extend(batch_results)
+    Returns
+    -------
+    list[tuple[str, list[Any]]]
+        A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
+    """
 
-        return results
+    results = list()
 
-def write_embeddings_to_graph(embeddings_df: pd.DataFrame, node_label: str, neo4j_driver: Driver) -> None:
+    for batch_idx, i in enumerate(range(0, len(nodes_dataframe), batch_size)):
+        print(
+            f"Processing batch {batch_idx + 1} of {ceil(len(nodes_dataframe) / (batch_size))}  \n",
+            end="\r",
+        )
+        if i + batch_size >= len(nodes_dataframe):
+            batch = nodes_dataframe.iloc[i:]
+        else:
+            batch = nodes_dataframe.iloc[i : i + batch_size]
+        batch_results = await _create_embeddings_for_batch(embedding_fn, batch)
+
+        # Add extracted records to the results list
+        results.extend(batch_results)
+
+    return results
+
+
+def write_embeddings_to_graph(
+    embeddings_df: pd.DataFrame, node_label: str, neo4j_driver: Driver
+) -> None:
     """
     Write embeddings to Neo4j graph for a given node label.
 
@@ -124,7 +150,9 @@ def write_embeddings_to_graph(embeddings_df: pd.DataFrame, node_label: str, neo4
         The Neo4j driver to use.
     """
 
-    assert node_label in ["Database", "Table", "Column"], "Node label must be one of: Database, Table, Column"
+    assert node_label in ["Database", "Table", "Column"], (
+        "Node label must be one of: Database, Table, Column"
+    )
 
     query = f"""
     UNWIND $rows as row
@@ -133,10 +161,9 @@ def write_embeddings_to_graph(embeddings_df: pd.DataFrame, node_label: str, neo4
     """
 
     _, summary, _ = neo4j_driver.execute_query(
-        query_=query, 
-        parameters_={
-            "rows": embeddings_df.to_dict(orient="records")
-        },
-        routing_=RoutingControl.WRITE)
+        query_=query,
+        parameters_={"rows": embeddings_df.to_dict(orient="records")},
+        routing_=RoutingControl.WRITE,
+    )
 
     return summary.counters.__dict__

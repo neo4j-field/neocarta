@@ -4,17 +4,26 @@ Functions for creating OpenAI embeddings.
 
 from openai import AsyncOpenAI
 import pandas as pd
-from embeddings.utils import create_embeddings_in_batches, get_nodes_to_embed, write_embeddings_to_graph
+from embeddings.utils import (
+    create_embeddings_in_batches,
+    get_nodes_to_embed,
+    write_embeddings_to_graph,
+)
 from neo4j import Driver
 from data_model.indexes import create_vector_index
 from functools import partial
 
 
-async def _create_openai_embedding(embedding_client: AsyncOpenAI, embedding_model: str, dimensions: int, description: str) -> list[float]:
+async def _create_openai_embedding(
+    embedding_client: AsyncOpenAI,
+    embedding_model: str,
+    dimensions: int,
+    description: str,
+) -> list[float]:
     """
     Create embedding for a single node's description.
 
-    Parameters  
+    Parameters
     ----------
     embedding_client: AsyncOpenAI
         The embedding client to use.
@@ -43,7 +52,14 @@ async def _create_openai_embedding(embedding_client: AsyncOpenAI, embedding_mode
         print(e)
         return None
 
-async def create_embeddings(embedding_client: AsyncOpenAI, embedding_model: str, dimensions: int, node_to_embed_dataframe: pd.DataFrame, batch_size: int = 100) -> pd.DataFrame:
+
+async def create_embeddings(
+    embedding_client: AsyncOpenAI,
+    embedding_model: str,
+    dimensions: int,
+    node_to_embed_dataframe: pd.DataFrame,
+    batch_size: int = 100,
+) -> pd.DataFrame:
     """
     Create embeddings for a Pandas DataFrame of nodes to embed.
 
@@ -67,20 +83,29 @@ async def create_embeddings(embedding_client: AsyncOpenAI, embedding_model: str,
         A Pandas DataFrame where each row represents a node.
         Has columns `id`, and `embedding`.
     """
-    
-    embedding_fn = partial(_create_openai_embedding, embedding_client=embedding_client, embedding_model=embedding_model, dimensions=dimensions)
-    results = await create_embeddings_in_batches(embedding_fn, node_to_embed_dataframe, batch_size)
+
+    embedding_fn = partial(
+        _create_openai_embedding,
+        embedding_client=embedding_client,
+        embedding_model=embedding_model,
+        dimensions=dimensions,
+    )
+    results = await create_embeddings_in_batches(
+        embedding_fn, node_to_embed_dataframe, batch_size
+    )
     print(f"Successful Embeddings : {len(results)}")
     return pd.DataFrame(results, columns=["id", "embedding"])
 
 
-async def openai_embeddings_workflow(neo4j_driver: Driver, 
-    embedding_client: AsyncOpenAI, 
+async def openai_embeddings_workflow(
+    neo4j_driver: Driver,
+    embedding_client: AsyncOpenAI,
     embedding_model: str = "text-embedding-3-small",
     dimensions: int = 768,
-    node_labels: list[str] = ["Database", "Table", "Column"]) -> None:
+    node_labels: list[str] = ["Database", "Table", "Column"],
+) -> None:
     """
-    This workflow 
+    This workflow
     * Gathers nodes from the Neo4j database that are missing embeddings
     * Creates embeddings of the description fields on found nodes
     * Ingests embeddings into the Neo4j database
@@ -98,7 +123,9 @@ async def openai_embeddings_workflow(neo4j_driver: Driver,
     node_labels: list[str]
         The labels of the nodes to embed. Labels must be one of: Database, Table, Column.
     """
-    assert all(label in ["Database", "Table", "Column"] for label in node_labels), "Node labels must be one of: Database, Table, Column"
+    assert all(label in ["Database", "Table", "Column"] for label in node_labels), (
+        "Node labels must be one of: Database, Table, Column"
+    )
 
     for label in node_labels:
         print(f"Processing {label} nodes...")
@@ -108,11 +135,13 @@ async def openai_embeddings_workflow(neo4j_driver: Driver,
         # get nodes to embed
         nodes_to_embed = get_nodes_to_embed(neo4j_driver, label, 20)
         # create embeddings
-        embeddings = await create_embeddings(embedding_client, embedding_model, dimensions, nodes_to_embed, 100)
+        embeddings = await create_embeddings(
+            embedding_client, embedding_model, dimensions, nodes_to_embed, 100
+        )
         if len(embeddings) > 0:
             # ingest embeddings into the Neo4j database
             print(write_embeddings_to_graph(embeddings, label, neo4j_driver))
         else:
             print(f"No embeddings found for {label} nodes")
-    
+
     neo4j_driver.close()
