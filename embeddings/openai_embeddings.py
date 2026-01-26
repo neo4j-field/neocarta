@@ -134,7 +134,7 @@ async def openai_embeddings_workflow(
         print(f"Processing {label} nodes...")
         print("--------------------------------")
         # create vector index, if it doesn't exist
-        create_vector_index(neo4j_driver, label, dimensions)
+        create_vector_index(neo4j_driver, label, dimensions, database_name)
         # get nodes to embed
         nodes_to_embed = get_nodes_to_embed(neo4j_driver, label, 20, database_name)
         # create embeddings
