@@ -1,4 +1,4 @@
-from neo4j import Driver, GraphDatabase, RoutingControl
+from neo4j import Driver, RoutingControl
 
 
 def create_vector_index(neo4j_driver: Driver, node_label: str, dimensions: int = 768) -> None:

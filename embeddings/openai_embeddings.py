@@ -4,12 +4,8 @@ Functions for creating OpenAI embeddings.
 
 from openai import AsyncOpenAI
 import pandas as pd
-from typing import Any
 from embeddings.utils import create_embeddings_in_batches, get_nodes_to_embed, write_embeddings_to_graph
-from neo4j import Driver, GraphDatabase
-import asyncio
-import os
-from dotenv import load_dotenv
+from neo4j import Driver
 from data_model.indexes import create_vector_index
 from functools import partial
 

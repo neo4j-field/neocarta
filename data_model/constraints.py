@@ -1,4 +1,4 @@
-from neo4j import Driver, GraphDatabase, RoutingControl
+from neo4j import Driver, RoutingControl
 
 database_id_unique_constraint = """
 CREATE CONSTRAINT database_id_constraint
