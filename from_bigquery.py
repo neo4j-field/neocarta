@@ -6,8 +6,6 @@ from neo4j import GraphDatabase, Driver, RoutingControl
 from dotenv import load_dotenv
 import os
 
-
-
 # read information schema tables 
 
 def get_database_info(client: bigquery.Client, project_id: str, dataset_id: str) -> pd.DataFrame:
@@ -226,6 +224,7 @@ def load_references_relationships(references_relationships: list[References], ne
 if __name__ == "__main__":
     load_dotenv()
 
+    # create neo4j driver
     neo4j_driver = GraphDatabase.driver(
         uri=os.getenv("NEO4J_URI"),
         auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD"))
@@ -238,11 +237,13 @@ if __name__ == "__main__":
     # this works since google app default credentials are set
     bq_client = bigquery.Client(project=project_id)
 
+    # read metadata from bigquery
     database_info = get_database_info(bq_client, project_id, dataset_id)
     table_info = get_table_info(bq_client, project_id, dataset_id)
     column_info = get_column_info(bq_client, project_id, dataset_id)
     column_references_info = get_column_references_info(bq_client, project_id, dataset_id)
 
+    # format metadata into core data model
     database_nodes = get_database_nodes(database_info)
     table_nodes = get_table_nodes(table_info)
     column_nodes = get_column_nodes(column_info)
@@ -251,6 +252,7 @@ if __name__ == "__main__":
     has_column_relationships = get_has_column_relationships(column_info)
     references_relationships = get_references_relationships(column_references_info)
 
+    # load metadata into neo4j
     print(load_database_nodes(database_nodes, neo4j_driver))
     print(load_table_nodes(table_nodes, neo4j_driver))
     print(load_column_nodes(column_nodes, neo4j_driver))
