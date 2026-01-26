@@ -2,7 +2,7 @@
 The core components of the RDBMS metadata graph data model.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from typing import Optional
 
 class Database(BaseModel):
@@ -27,7 +27,17 @@ class Column(BaseModel):
     is_primary_key: bool = Field(..., description="Whether the column is a primary key")
     is_foreign_key: bool = Field(..., description="Whether the column is a foreign key")
 
-    # need to validate both pk and fk are both not True
+    # TODO: need to validate both pk and fk are both not True
+    @field_validator('is_foreign_key', mode='after')
+    def validate_not_both_pk_and_fk(cls, v: bool, info: ValidationInfo) -> bool:
+        """
+        Validate that a column cannot be both a primary key and a foreign key.
+        We only need to validate `is_foreign_key` since it is defined after `is_primary_key`.
+        """
+        if v and info.data['is_primary_key']:
+            raise ValueError("Column cannot be both a primary key and a foreign key")
+        return v
+
 
 class ContainsTable(BaseModel):
     database_id: str = Field(..., description="The unique identifier for the database")
