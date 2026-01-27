@@ -17,3 +17,7 @@ dependencies = [
 dev = [
     "ipykernel>=7.1.0",
 ]
+mcp = [
+    "fastmcp>=2.14.4",
+    "mcp>=1.26.0",
+]
