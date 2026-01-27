@@ -12,16 +12,17 @@ from embeddings.utils import (
 from neo4j import Driver
 from data_model.indexes import create_vector_index
 from functools import partial
-
+from typing import Optional
 
 async def _create_openai_embedding(
     embedding_client: AsyncOpenAI,
     embedding_model: str,
     dimensions: int,
     description: str,
-) -> list[float]:
+) -> Optional[list[float]]:
     """
-    Create embedding for a single node's description.
+    Create embedding for a single node's description. 
+    If embedding creation fails, return None.
 
     Parameters
     ----------
@@ -36,8 +37,9 @@ async def _create_openai_embedding(
 
     Returns
     -------
-    list[float]
+    Optional[list[float]]
         The embedding for the node description.
+        If embedding creation fails, return None.
     """
 
     try:
