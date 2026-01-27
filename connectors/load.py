@@ -70,6 +70,7 @@ def load_column_nodes(
     )
     return summary.counters.__dict__
 
+
 def load_value_nodes(
     value_nodes: list[Value],
     neo4j_driver: Driver,
@@ -91,6 +92,7 @@ def load_value_nodes(
         database_=database_name,
     )
     return summary.counters.__dict__
+
 
 def load_contains_table_relationships(
     contains_table_relationships: list[ContainsTable],
@@ -147,6 +149,7 @@ def load_references_relationships(
         database_=database_name,
     )
     return summary.counters.__dict__
+
 
 def load_has_value_relationships(
     has_value_relationships: list[HasValue],

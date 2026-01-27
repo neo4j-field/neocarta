@@ -29,6 +29,7 @@ from neo4j import Driver
 from google.cloud import bigquery
 import pandas as pd
 
+
 def bigquery_workflow(
     client: bigquery.Client,
     project_id: str,
@@ -68,9 +69,18 @@ def bigquery_workflow(
     # iterate over each table and batch of columns to extract unique values
     # TODO: make column batch size configurable
     value_info = pd.DataFrame()
-    for table_name in table_info['table_name'].unique():
-        column_names = column_info[column_info['table_name'] == table_name]['column_name'].unique()
-        value_info = pd.concat([value_info, extract_column_unique_values(client, project_id, dataset_id, table_name, column_names)])
+    for table_name in table_info["table_name"].unique():
+        column_names = column_info[column_info["table_name"] == table_name][
+            "column_name"
+        ].unique()
+        value_info = pd.concat(
+            [
+                value_info,
+                extract_column_unique_values(
+                    client, project_id, dataset_id, table_name, column_names
+                ),
+            ]
+        )
 
     # format metadata into core data model
     database_nodes = transform_to_database_nodes(database_info)

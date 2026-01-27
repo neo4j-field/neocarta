@@ -96,7 +96,6 @@ def transform_to_column_nodes(column_info: pd.DataFrame) -> list[Column]:
 
 
 def transform_to_value_nodes(value_info: pd.DataFrame) -> list[Value]:
-
     """
     Transform BigQuery value information into value nodes.
 
@@ -117,6 +116,7 @@ def transform_to_value_nodes(value_info: pd.DataFrame) -> list[Value]:
         )
         for _, row in value_info.iterrows()
     ]
+
 
 def transform_to_contains_table_relationships(
     table_info: pd.DataFrame,
@@ -213,6 +213,7 @@ def transform_to_references_relationships(
             column_references_info["constraint_type"] == "FOREIGN KEY"
         ].iterrows()
     ]
+
 
 def transform_to_has_value_relationships(value_info: pd.DataFrame) -> list[HasValue]:
     """

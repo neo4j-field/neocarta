@@ -174,8 +174,14 @@ FROM `{project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
 ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 """).to_dataframe()
 
+
 def extract_column_unique_values(
-    client: bigquery.Client, project_id: str, dataset_id: str, table_name: str, column_names: list[str], limit: int = 10
+    client: bigquery.Client,
+    project_id: str,
+    dataset_id: str,
+    table_name: str,
+    column_names: list[str],
+    limit: int = 10,
 ) -> pd.DataFrame:
     """
     Extract BigQuery column unique values to be used as reference values.
@@ -205,28 +211,34 @@ def extract_column_unique_values(
     # Build ARRAY_AGG aggregation for each column
     select_clauses = []
     for col in column_names:
-        select_clauses.append(f"ARRAY_AGG(DISTINCT `{col}` IGNORE NULLS LIMIT {limit}) as `{col}`")
+        select_clauses.append(
+            f"ARRAY_AGG(DISTINCT `{col}` IGNORE NULLS LIMIT {limit}) as `{col}`"
+        )
 
     query = f"""
-    SELECT {', '.join(select_clauses)}
+    SELECT {", ".join(select_clauses)}
     FROM `{project_id}`.`{dataset_id}`.{table_name}
     """
 
     df = client.query(query).to_dataframe()
     # Reshape to long format: column_name, unique_value
     # Melt the dataframe to get column names as a column, then explode the arrays
-    result = df.melt(var_name='column_name', value_name='unique_value')
-    result = result.explode('unique_value').dropna().reset_index(drop=True)
+    result = df.melt(var_name="column_name", value_name="unique_value")
+    result = result.explode("unique_value").dropna().reset_index(drop=True)
 
-    result['unique_value'] = result['unique_value'].astype(str)
+    result["unique_value"] = result["unique_value"].astype(str)
 
     # Add column_id in the format: project_id.dataset_id.table_name.column_name
-    result['column_id'] = project_id + '.' + dataset_id + '.' + table_name + '.' + result['column_name']
+    result["column_id"] = (
+        project_id + "." + dataset_id + "." + table_name + "." + result["column_name"]
+    )
 
     # Hash the unique value and append to column_id for value_id
-    result['value_id'] = result.apply(
-        lambda row: row['column_id'] + '.' + hashlib.md5(row['unique_value'].encode()).hexdigest(),
-        axis=1
+    result["value_id"] = result.apply(
+        lambda row: row["column_id"]
+        + "."
+        + hashlib.md5(row["unique_value"].encode()).hexdigest(),
+        axis=1,
     )
 
     return result

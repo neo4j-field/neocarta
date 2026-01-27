@@ -1,10 +1,12 @@
 from pydantic import BaseModel, Field
 
+
 class Value(BaseModel):
     """A Column Value node representing a unqiue value in a column"""
 
     id: str = Field(..., description="The unique identifier for the value")
     value: str = Field(..., description="The value cast to a string")
+
 
 class HasValue(BaseModel):
     """

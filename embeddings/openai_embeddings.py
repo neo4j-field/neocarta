@@ -14,6 +14,7 @@ from data_model.indexes import create_vector_index
 from functools import partial
 from typing import Optional
 
+
 async def _create_openai_embedding(
     embedding_client: AsyncOpenAI,
     embedding_model: str,
@@ -21,7 +22,7 @@ async def _create_openai_embedding(
     description: str,
 ) -> Optional[list[float]]:
     """
-    Create embedding for a single node's description. 
+    Create embedding for a single node's description.
     If embedding creation fails, return None.
 
     Parameters
