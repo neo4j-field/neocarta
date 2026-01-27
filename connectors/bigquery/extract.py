@@ -1,5 +1,6 @@
 from google.cloud import bigquery
 import pandas as pd
+import hashlib
 
 
 def extract_database_info(
@@ -216,5 +217,16 @@ def extract_column_unique_values(
     # Melt the dataframe to get column names as a column, then explode the arrays
     result = df.melt(var_name='column_name', value_name='unique_value')
     result = result.explode('unique_value').dropna().reset_index(drop=True)
+
+    result['unique_value'] = result['unique_value'].astype(str)
+
+    # Add column_id in the format: project_id.dataset_id.table_name.column_name
+    result['column_id'] = project_id + '.' + dataset_id + '.' + table_name + '.' + result['column_name']
+
+    # Hash the unique value and append to column_id for value_id
+    result['value_id'] = result.apply(
+        lambda row: row['column_id'] + '.' + hashlib.md5(row['unique_value'].encode()).hexdigest(),
+        axis=1
+    )
 
     return result

@@ -7,6 +7,7 @@ from data_model.core import (
     References,
 )
 import pandas as pd
+from data_model.expanded import Value, HasValue
 
 
 def transform_to_database_nodes(database_info: pd.DataFrame) -> list[Database]:
@@ -93,6 +94,29 @@ def transform_to_column_nodes(column_info: pd.DataFrame) -> list[Column]:
         for _, row in column_info.iterrows()
     ]
 
+
+def transform_to_value_nodes(value_info: pd.DataFrame) -> list[Value]:
+
+    """
+    Transform BigQuery value information into value nodes.
+
+    Parameters
+    ----------
+    value_info: pd.DataFrame
+        A Pandas DataFrame containing the BigQuery value information.
+
+    Returns
+    -------
+    list[Value]
+        The value nodes.
+    """
+    return [
+        Value(
+            id=row.value_id,
+            value=row.unique_value,
+        )
+        for _, row in value_info.iterrows()
+    ]
 
 def transform_to_contains_table_relationships(
     table_info: pd.DataFrame,
@@ -188,4 +212,22 @@ def transform_to_references_relationships(
         for _, row in column_references_info[
             column_references_info["constraint_type"] == "FOREIGN KEY"
         ].iterrows()
+    ]
+
+def transform_to_has_value_relationships(value_info: pd.DataFrame) -> list[HasValue]:
+    """
+    Transform BigQuery value information into has value relationships.
+
+    Parameters
+    ----------
+    value_info: pd.DataFrame
+        A Pandas DataFrame containing the BigQuery value information.
+        Must have columns `column_id` and `value_id`.
+    """
+    return [
+        HasValue(
+            column_id=row.column_id,
+            value_id=row.value_id,
+        )
+        for _, row in value_info.iterrows()
     ]
