@@ -2303,6 +2303,7 @@ dev = [
 mcp = [
     { name = "fastmcp" },
     { name = "mcp" },
+    { name = "pydantic-settings" },
 ]
 
 [package.metadata]
@@ -2320,6 +2321,7 @@ dev = [{ name = "ipykernel", specifier = ">=7.1.0" }]
 mcp = [
     { name = "fastmcp", specifier = ">=2.14.4" },
     { name = "mcp", specifier = ">=1.26.0" },
+    { name = "pydantic-settings", specifier = ">=2.12.0" },
 ]
 
 [[package]]

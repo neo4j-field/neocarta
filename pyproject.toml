@@ -20,4 +20,5 @@ dev = [
 mcp = [
     "fastmcp>=2.14.4",
     "mcp>=1.26.0",
+    "pydantic-settings>=2.12.0",
 ]
