@@ -3,16 +3,28 @@ from mcp.client.stdio import stdio_client
 import asyncio
 from dotenv import load_dotenv
 import os
-from mcp import StdioServerParameters
-from langchain_mcp_adapters.tools import load_mcp_tools
-from mcp import ClientSession
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from google.auth import default
+from google.auth.transport.requests import Request
+import httpx
 
 load_dotenv()
 
-mcp_params = StdioServerParameters(
-    command="uv",
-    args=["run", "mcp_server/src/server.py"],
-    env={
+# Custom auth class for Google Cloud
+class GoogleAuth(httpx.Auth):
+    def __init__(self):
+        self.credentials, _ = default()
+
+    def auth_flow(self, request):
+        self.credentials.refresh(Request())
+        request.headers["Authorization"] = f"Bearer {self.credentials.token}"
+        yield request
+
+sql_metadata_graph_mcp_params = {
+    "transport": "stdio",
+    "command": "uv",
+    "args": ["run", "mcp_server/src/server.py"],
+    "env": {
         "NEO4J_URI": os.getenv("NEO4J_URI"),
         "NEO4J_USERNAME": os.getenv("NEO4J_USERNAME"),
         "NEO4J_PASSWORD": os.getenv("NEO4J_PASSWORD"),
@@ -21,6 +33,19 @@ mcp_params = StdioServerParameters(
         "EMBEDDING_MODEL": "text-embedding-3-small",
         "EMBEDDING_DIMENSIONS": "768",
     },
+}
+
+bigquery_mcp_params = {
+    "transport": "http",
+    "url": "https://bigquery.googleapis.com/mcp",
+    "auth": GoogleAuth()
+}
+
+client = MultiServerMCPClient(
+    {
+        "sql_metadata_graph": sql_metadata_graph_mcp_params,
+        "bigquery": bigquery_mcp_params,
+    }
 )
 
 CONFIG = {"configurable": {"thread_id": "1"}}
@@ -28,15 +53,21 @@ CONFIG = {"configurable": {"thread_id": "1"}}
 
 # run the agent with MCP server using stdio transport
 async def main():
-    async with stdio_client(mcp_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            # Initialize the connection
-            await session.initialize()
-
+    
             # Get tools
-            mcp_tools = await load_mcp_tools(session)
+            mcp_tools = await client.get_tools()
 
-            agent = create_text2sql_agent(mcp_tools)
+            tool_names = {
+                # From SQL Metadata Graph MCP Server
+                "get_metadata_schema_by_semantic_similarity", 
+                "get_full_metadata_schema",
+                # From BigQuery MCP Server
+                "execute_sql"
+                }
+
+            allowed_tools = [tool for tool in mcp_tools if tool.name in tool_names]
+
+            agent = create_text2sql_agent(allowed_tools)
 
             # conversation loop
             print(
@@ -47,10 +78,6 @@ async def main():
                 user_input = input("> ")
                 if user_input.lower() in {"exit", "quit", "q"}:
                     break
-
-                # await print_astream(
-                #     agent.astream({"messages": user_input}, config=CONFIG, stream_mode="updates")
-                # )
 
                 async for chunk in agent.astream({
                     "messages": [{"role": "user", "content": user_input}]
