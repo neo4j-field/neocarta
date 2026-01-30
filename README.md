@@ -17,11 +17,13 @@ graph LR
 Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
 Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
 Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
+Value("Value<br/>id: STRING | KEY<br/>value: STRING")
 
 %% Relationships
 Database -->|CONTAINS_TABLE| Table
 Table -->|HAS_COLUMN| Column
 Column -->|REFERENCES| Column
+Column -->|HAS_VALUE| Value
 
 
 %% Styling 
@@ -33,6 +35,9 @@ class Table node_1_color
 
 classDef node_2_color fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:12px
 class Column node_2_color
+
+classDef node_3_color fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-size:12px
+class Value node_3_color
 ```
 
 Nodes
