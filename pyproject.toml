@@ -4,25 +4,43 @@ version = "0.1.0"
 description = "rdbms metadata knowledge graph for text2sql"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
+dependencies = []
+
+[dependency-groups]
+# Development tools
+dev = [
+    "ipykernel>=7.1.0",
+]
+
+# BigQuery metadata extraction and Neo4j loading
+# Overlaps: openai, pydantic, python-dotenv (with mcp-server)
+metadata-graph = [
     "google-cloud-bigquery[pandas]>=3.40.0",
+    "openai>=2.15.0",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
+    "neo4j>=6.1.0",
+    "pandas>=3.0.0",
+]
+
+# Local MCP server for SQL metadata retrieval
+mcp-server = [
+    "fastmcp>=2.14.4",
+    "mcp>=1.26.0",
+    "openai>=2.15.0",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "python-dotenv>=1.2.1",
+    "neo4j>=6.1.0",
+    "pandas>=3.0.0",
+]
+
+# Text2SQL agent with LangChain (includes mcp-server dependencies)
+agent = [
+    { include-group = "mcp-server" },
+    "google-cloud-bigquery>=3.40.0",
     "langchain>=1.2.7",
     "langchain-mcp-adapters>=0.2.1",
     "langchain-openai>=1.1.7",
     "langgraph>=1.0.7",
-    "neo4j>=6.1.0",
-    "openai>=2.15.0",
-    "pandas>=3.0.0",
-    "pydantic>=2.12.5",
-    "python-dotenv>=1.2.1",
-]
-
-[dependency-groups]
-dev = [
-    "ipykernel>=7.1.0",
-]
-mcp = [
-    "fastmcp>=2.14.4",
-    "mcp>=1.26.0",
-    "pydantic-settings>=2.12.0",
 ]

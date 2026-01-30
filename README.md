@@ -2,6 +2,58 @@
 
 End to end template for generating a RDBMS metadata knowledge graph for Text2SQL workflows.
 
+## Installation
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management and requires Python 3.12 or higher.
+
+### Prerequisites
+
+Install uv if you haven't already:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Install All Dependencies (Recommended)
+
+For most users, install all dependencies to run the complete workflow:
+```bash
+make install
+```
+
+This installs all dependency groups and allows you to:
+- Create the metadata graph from BigQuery
+- Run the MCP server
+- Run the Text2SQL agent
+
+### Install Specific Components
+
+If you only need specific components, you can install individual dependency groups:
+
+**Metadata Graph Only** (BigQuery ETL + embeddings)
+```bash
+make install-metadata-graph
+```
+
+**MCP Server Only** (SQL metadata retrieval server)
+```bash
+make install-mcp-server
+```
+
+**Agent Only** (Text2SQL agent with MCP servers)
+```bash
+make install-agent
+```
+*Note: The agent group automatically includes mcp-server dependencies*
+
+### Dependency Groups
+
+The project is organized into the following dependency groups:
+
+- **metadata-graph**: BigQuery metadata extraction, Neo4j loading, and embedding generation
+- **mcp-server**: Local MCP server for SQL metadata retrieval from Neo4j
+- **agent**: Text2SQL agent with LangChain (includes mcp-server dependencies)
+- **dev**: Development tools (Jupyter notebooks)
+
 ## Metadata Graph
 
 The metadata graph has the following schema. All connectors must convert their schema information to this graph schema to be compatible with the provided MCP server and ingestion tooling.
