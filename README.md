@@ -230,10 +230,54 @@ This is the Text2SQL agent that converts natural language questions into SQL que
 1. Retrieve relevant database metadata from Neo4j using semantic similarity
 2. Execute generated SQL queries against BigQuery
 
+The agent architecture can be seen below.
+
+```mermaid
+---
+config:
+    layout: dagre
+---
+
+graph LR
+    
+    subgraph GCP["GCP Environment"]
+        BQMCP(BigQuery<br>MCP)
+
+        subgraph DataWarehouse["Data Warehouse"]
+            BQData[(BigQuery)]
+        end
+        
+        BQMCP <--> BQData
+    end
+
+    subgraph Local["Local Environment"]
+        Agent("Text2SQL Agent")
+        MetadataMCP("SQL Metadata<br/>MCP")
+        
+        subgraph Graph["Database"]
+            NEO[(Neo4j Graph)]
+        end
+        
+        Agent <--> MetadataMCP
+        MetadataMCP <--> NEO
+    end
+    
+    User("User")
+    
+    subgraph LLM["LLM Service"]
+        Model("LLM")
+    end
+    
+    User <--> Agent
+    Agent <--> Model
+    Agent <--> BQMCP
+
+```
+
 **How it works**
 1. User asks a natural language question about the data
 2. Agent calls the SQL Metadata MCP server to retrieve relevant table schemas
-3. Agent generates a SQL query based on the retrieved metadata context
+3. Agent generates a SQL query via an LLM call based on the retrieved metadata context
 4. Agent calls `execute_sql` from the BigQuery MCP server to run the query against BigQuery
 5. Agent returns formatted results to the user
 
