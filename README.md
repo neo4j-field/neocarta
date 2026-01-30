@@ -6,7 +6,34 @@ End to end template for generating a RDBMS metadata knowledge graph for Text2SQL
 
 The metadata graph has the following schema. All connectors must convert their schema information to this graph schema to be compatible with the provided MCP server and ingestion tooling.
 
-IMAGE OF SCHEMA
+```mermaid
+---
+config:
+    layout: elk
+---
+
+graph LR
+%% Nodes
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
+
+%% Relationships
+Database -->|CONTAINS_TABLE| Table
+Table -->|HAS_COLUMN| Column
+Column -->|REFERENCES| Column
+
+
+%% Styling 
+classDef node_0_color fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000,font-size:12px
+class Database node_0_color
+
+classDef node_1_color fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000,font-size:12px
+class Table node_1_color
+
+classDef node_2_color fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:12px
+class Column node_2_color
+```
 
 Nodes
 * `Database`
