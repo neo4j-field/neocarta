@@ -66,7 +66,35 @@ This project provides connectors to
 **BigQuery**
 * Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j
 
-CODE EXAMPLE
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+
+    subgraph Source["Source Repository"]
+        BQ(BigQuery Database)        
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read RDBMS Schema)   
+        PM(Validate + Transform<br>with Pydantic) 
+    
+        QE -->|Raw Data<br/>JSON| PM
+    end
+    
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    BQ -->|Information Schema| QE
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+```
 
 #### Embeddings 
 
