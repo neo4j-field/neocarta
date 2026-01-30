@@ -53,7 +53,7 @@ Relationships
 * `(:Column)-[:REFERENCES]->(:Column)`
 
 
-### Graph Generation
+## Graph Generation
 
 This project provides connectors to 
 * Connect to source data
@@ -61,10 +61,11 @@ This project provides connectors to
 * Transform metadata into defined Neo4j schema
 * Ingest transformed data into Neo4j
 
-#### Connectors
+### Connectors
 
 **BigQuery**
-* Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j
+
+Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j
 
 ```mermaid
 ---
@@ -96,17 +97,52 @@ graph LR
     PM -->|Ingest Data| NEO
 ```
 
-#### Embeddings 
+### Embeddings 
 
 Embeddings are generated for the `description` fields of the following nodes:
 * `Database`
 * `Table`
 * `Column`
 
-This project currently supports the following embeddings Providers
+This project currently supports the following embeddings Providers:
 * OpenAI
 
-CODE EXAMPLE
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+
+    subgraph D["Database Preparation"]
+        VI(Create Vector Index)
+    end
+
+    subgraph ES["Embedding Service"]
+        E(OpenAI Embeddings)
+    end
+
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    subgraph EP["Embedding Workflow"]
+        %% N(2. Read Graph)   
+        C(Create Embeddings) 
+        %% I(4. Write Embeddings)
+    end
+    
+    VI-->NEO
+    %% N-->|Node Descriptions|C
+    %% C-->|Embeddings|I
+
+    C<-->E
+
+    %% NEO-->|Unprocessed Nodes|N
+    NEO-->|Unprocessed Node Descriptions|C
+    %% I-->|Embeddings|NEO
+    C-->|Embeddings|NEO
+```
 
 ## MCP
 
@@ -140,6 +176,12 @@ Since this is a remote server, we don't need to worry about hosting it locally. 
 
 **Tools** (Filtered subset of total tools the server provides)
 * `execute_sql` - Execute a SQL query against BigQuery. Returns the raw results.
+
+*Unused BigQuery MCP Tools*
+* `list_dataset_ids`
+* `get_dataset_info`
+* `list_table_ids`
+* `get_table_info`
 
 #### Set Up
 
