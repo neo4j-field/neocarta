@@ -1,0 +1,50 @@
+flowchart LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+
+    subgraph Source["Source Repository"]
+        BQ(BigQuery Database)        
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read RDBMS Schema)   
+        PM(Validate + Transform<br>with Pydantic) 
+    end
+    
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    subgraph D["Database Preparation"]
+        VI(Create Vector Index)
+    end
+
+    subgraph ES["Embedding Service"]
+        E(OpenAI Embeddings)
+    end
+
+    subgraph EP["Embedding Workflow"]
+        C(Create Embeddings) 
+    end
+
+    %% BigQuery Flow
+    BQ -->|Information Schema| QE
+    QE -->|Raw Data JSON| PM
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+
+    %% Embeddings Flow
+    NEO -->|Database Ready| VI
+    VI -->|Vector Index Created| NEO
+    NEO -->|Unprocessed Node Descriptions| C
+    C <--> E
+    C -->|Embeddings| NEO
+
+    style Source fill:#e1f5ff
+    style ETL fill:#fff4e1
+    style Schema fill:#ffd1dc
+    style Graph fill:#ffe1e1
+    style D fill:#ffd1dc
+    style EP fill:#fff4e1
+    style ES fill:#e1ffe1

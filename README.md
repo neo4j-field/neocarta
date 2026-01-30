@@ -65,8 +65,18 @@ This project provides connectors to
 
 **BigQuery**
 
-Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j
+Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j. Primary and foreign keys must be defined in the Information Schema tables in order for column level relationships to be created in the Neo4j graph.
 
+This workflow requires the following variables to be set in the `.env` file:
+* NEO4J_USERNAME=neo4j-username
+* NEO4J_PASSWORD=neo4j-password
+* NEO4J_URI=neo4j-uri
+* NEO4J_DATABASE=neo4j-database
+* BIGQUERY_PROJECT_ID=project-id
+* BIGQUERY_DATASET_ID=dataset-id
+
+
+#### Workflow Architecture
 ```mermaid
 ---
 config:
@@ -97,6 +107,32 @@ graph LR
     PM -->|Ingest Data| NEO
 ```
 
+#### Code Example
+
+```python
+import asyncio
+import os
+from neo4j import GraphDatabase
+from google.cloud import bigquery
+from connectors.bigquery.workflow import bigquery_workflow
+
+neo4j_driver = GraphDatabase.driver(
+    uri=os.getenv("NEO4J_URI"),
+    auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
+)
+neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+bigquery_client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
+
+# extract, transform, and load BigQuery data into Neo4j
+bigquery_workflow(
+    bigquery_client,
+    os.getenv("BIGQUERY_PROJECT_ID"),
+    os.getenv("BIGQUERY_DATASET_ID"),
+    neo4j_driver,
+    neo4j_database,
+)
+```
+
 ### Embeddings 
 
 Embeddings are generated for the `description` fields of the following nodes:
@@ -106,6 +142,11 @@ Embeddings are generated for the `description` fields of the following nodes:
 
 This project currently supports the following embeddings Providers:
 * OpenAI
+
+This workflow requires the following variables to be set in the `.env` file:
+* OPENAI_API_KEY=sk-...
+
+#### Workflow Architecture
 
 ```mermaid
 ---
@@ -127,21 +168,132 @@ graph LR
     end
 
     subgraph EP["Embedding Workflow"]
-        %% N(2. Read Graph)   
         C(Create Embeddings) 
-        %% I(4. Write Embeddings)
     end
     
     VI-->NEO
-    %% N-->|Node Descriptions|C
-    %% C-->|Embeddings|I
 
     C<-->E
 
-    %% NEO-->|Unprocessed Nodes|N
     NEO-->|Unprocessed Node Descriptions|C
-    %% I-->|Embeddings|NEO
     C-->|Embeddings|NEO
+```
+
+#### Code Example
+
+```python
+import asyncio
+import os
+from neo4j import GraphDatabase
+from openai import AsyncOpenAI
+from embeddings.openai_embeddings import openai_embeddings_workflow
+
+# init connections
+neo4j_driver = GraphDatabase.driver(
+    uri=os.getenv("NEO4J_URI"),
+    auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
+)
+neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# The node labels to generate embeddings for
+node_labels = ["Database", "Table", "Column"]
+
+# create embeddings for the nodes
+await openai_embeddings_workflow(
+    neo4j_driver,
+    embedding_client,
+    "text-embedding-3-small",
+    768,
+    node_labels,
+    neo4j_database,
+)
+```
+
+## Sample Dataset
+
+This repository contains a sample dataset of ecommerce data.
+
+Ensure that the following environment variable is set before running and that you are credentialed via the gcloud cli.
+
+```bash
+BIGQUERY_PROJECT_ID=project-id
+```
+
+To create the dataset in your BigQuery instance, you may run the following Make command.
+
+```bash
+make load-ecommerce-dataset
+```
+
+### Full Pipeline
+
+The full graph generation pipeline will run the BigQuery workflow followed by the embedding generation workflow. 
+
+It requires the following variables to be set in the `.env` file:
+* NEO4J_USERNAME=neo4j-username
+* NEO4J_PASSWORD=neo4j-password
+* NEO4J_URI=neo4j-uri
+* NEO4J_DATABASE=neo4j-database
+* BIGQUERY_PROJECT_ID=project-id
+* BIGQUERY_DATASET_ID=dataset-id
+* OPENAI_API_KEY=sk-...
+
+#### Architecture
+
+The combined BigQuery + Embeddings workflow is seen below.
+
+```mermaid
+flowchart LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+
+    subgraph Source["Source Repository"]
+        BQ(BigQuery Database)        
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read RDBMS Schema)   
+        PM(Validate + Transform<br>with Pydantic) 
+    end
+    
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    subgraph D["Database Preparation"]
+        VI(Create Vector Index)
+    end
+
+    subgraph ES["Embedding Service"]
+        E(OpenAI Embeddings)
+    end
+
+    subgraph EP["Embedding Workflow"]
+        C(Create Embeddings) 
+    end
+
+    %% BigQuery Flow
+    BQ -->|Information Schema| QE
+    QE -->|Raw Data JSON| PM
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+
+    %% Embeddings Flow
+    NEO -->|Database Ready| VI
+    VI -->|Vector Index Created| NEO
+    NEO -->|Unprocessed Node Descriptions| C
+    C <--> E
+    C -->|Embeddings| NEO
+```
+
+**Running The Full Workflow**
+
+To run the full workflow, use the following Make command:
+
+```bash
+make create-graph
 ```
 
 ## MCP
@@ -223,7 +375,6 @@ curl -k \
   https://bigquery.googleapis.com/mcp
 ```
 
-
 ## Agent
 
 This is the Text2SQL agent that converts natural language questions into SQL queries for BigQuery. The agent uses two MCP servers to:
@@ -285,7 +436,7 @@ graph LR
 
 Use this command to run the agent locally:
 ```bash
-uv run run_agent.py
+make agent
 ```
 
 The agent will start an interactive chat session in the terminal where you can ask questions about your data.
@@ -321,7 +472,7 @@ Required environment variables (add to `.env` file):
 * `NEO4J_PASSWORD` - Neo4j password
 * `NEO4J_DATABASE` - Neo4j database name (default: `neo4j`)
 
-**LLMOpenAI**
+**LLM - OpenAI**
 * `OPENAI_API_KEY` - OpenAI API key for embeddings and LLM
 
 **Example Usage**

@@ -17,20 +17,15 @@ graph LR
     end
 
     subgraph EP["Embedding Workflow"]
-        %% N(2. Read Graph)   
+        %% N(2.  Graph)   
         C(Create Embeddings) 
-        %% I(4. Write Embeddings)
     end
     
     VI-->NEO
-    %% N-->|Node Descriptions|C
-    %% C-->|Embeddings|I
 
     C<-->E
 
-    %% NEO-->|Unprocessed Nodes|N
     NEO-->|Unprocessed Node Descriptions|C
-    %% I-->|Embeddings|NEO
     C-->|Embeddings|NEO
     
 
