@@ -1,0 +1,40 @@
+---
+config:
+    layout: elk
+---
+graph LR
+
+    subgraph D["Database Preparation"]
+        VI(Create Vector Index)
+    end
+
+    subgraph ES["Embedding Service"]
+        E(OpenAI Embeddings)
+    end
+
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    subgraph EP["Embedding Workflow"]
+        %% N(2. Read Graph)   
+        C(Create Embeddings) 
+        %% I(4. Write Embeddings)
+    end
+    
+    VI-->NEO
+    %% N-->|Node Descriptions|C
+    %% C-->|Embeddings|I
+
+    C<-->E
+
+    %% NEO-->|Unprocessed Nodes|N
+    NEO-->|Unprocessed Node Descriptions|C
+    %% I-->|Embeddings|NEO
+    C-->|Embeddings|NEO
+    
+
+    style D fill:#ffd1dc
+    style Graph fill:#ffe1e1
+    style EP fill:#fff4e1
+    style ES fill:#e1ffe1

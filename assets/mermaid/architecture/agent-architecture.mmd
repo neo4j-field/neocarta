@@ -1,0 +1,41 @@
+---
+config:
+    layout: dagre
+---
+
+graph LR
+    
+    subgraph GCP["GCP Environment"]
+        BQMCP(BigQuery<br>MCP)
+
+        subgraph DataWarehouse["Data Warehouse"]
+            BQData[(BigQuery)]
+        end
+        
+        BQMCP <--> BQData
+    end
+
+    subgraph Local["Local Environment"]
+        Agent("Text2SQL Agent")
+        MetadataMCP("SQL Metadata<br/>MCP")
+        
+        subgraph Graph["Database"]
+            NEO[(Neo4j Graph)]
+        end
+        
+        Agent <--> MetadataMCP
+        MetadataMCP <--> NEO
+    end
+    
+    User("User")
+    
+    subgraph LLM["LLM Service"]
+        Model("LLM")
+    end
+    
+    User <--> Agent
+    Agent <--> Model
+    Agent <--> BQMCP
+
+    style Graph fill:#ffe1e1
+    style DataWarehouse fill:#ffe1e1

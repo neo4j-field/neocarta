@@ -6,7 +6,39 @@ End to end template for generating a RDBMS metadata knowledge graph for Text2SQL
 
 The metadata graph has the following schema. All connectors must convert their schema information to this graph schema to be compatible with the provided MCP server and ingestion tooling.
 
-IMAGE OF SCHEMA
+```mermaid
+---
+config:
+    layout: elk
+---
+
+graph LR
+%% Nodes
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
+Value("Value<br/>id: STRING | KEY<br/>value: STRING")
+
+%% Relationships
+Database -->|CONTAINS_TABLE| Table
+Table -->|HAS_COLUMN| Column
+Column -->|REFERENCES| Column
+Column -->|HAS_VALUE| Value
+
+
+%% Styling 
+classDef node_0_color fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000,font-size:12px
+class Database node_0_color
+
+classDef node_1_color fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000,font-size:12px
+class Table node_1_color
+
+classDef node_2_color fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:12px
+class Column node_2_color
+
+classDef node_3_color fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-size:12px
+class Value node_3_color
+```
 
 Nodes
 * `Database`
@@ -21,7 +53,7 @@ Relationships
 * `(:Column)-[:REFERENCES]->(:Column)`
 
 
-### Graph Generation
+## Graph Generation
 
 This project provides connectors to 
 * Connect to source data
@@ -29,24 +61,88 @@ This project provides connectors to
 * Transform metadata into defined Neo4j schema
 * Ingest transformed data into Neo4j
 
-#### Connectors
+### Connectors
 
 **BigQuery**
-* Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j
 
-CODE EXAMPLE
+Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j
 
-#### Embeddings 
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+
+    subgraph Source["Source Repository"]
+        BQ(BigQuery Database)        
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read RDBMS Schema)   
+        PM(Validate + Transform<br>with Pydantic) 
+    
+        QE -->|Raw Data<br/>JSON| PM
+    end
+    
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    BQ -->|Information Schema| QE
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+```
+
+### Embeddings 
 
 Embeddings are generated for the `description` fields of the following nodes:
 * `Database`
 * `Table`
 * `Column`
 
-This project currently supports the following embeddings Providers
+This project currently supports the following embeddings Providers:
 * OpenAI
 
-CODE EXAMPLE
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+
+    subgraph D["Database Preparation"]
+        VI(Create Vector Index)
+    end
+
+    subgraph ES["Embedding Service"]
+        E(OpenAI Embeddings)
+    end
+
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    subgraph EP["Embedding Workflow"]
+        %% N(2. Read Graph)   
+        C(Create Embeddings) 
+        %% I(4. Write Embeddings)
+    end
+    
+    VI-->NEO
+    %% N-->|Node Descriptions|C
+    %% C-->|Embeddings|I
+
+    C<-->E
+
+    %% NEO-->|Unprocessed Nodes|N
+    NEO-->|Unprocessed Node Descriptions|C
+    %% I-->|Embeddings|NEO
+    C-->|Embeddings|NEO
+```
 
 ## MCP
 
@@ -80,6 +176,12 @@ Since this is a remote server, we don't need to worry about hosting it locally. 
 
 **Tools** (Filtered subset of total tools the server provides)
 * `execute_sql` - Execute a SQL query against BigQuery. Returns the raw results.
+
+*Unused BigQuery MCP Tools*
+* `list_dataset_ids`
+* `get_dataset_info`
+* `list_table_ids`
+* `get_table_info`
 
 #### Set Up
 
@@ -128,10 +230,54 @@ This is the Text2SQL agent that converts natural language questions into SQL que
 1. Retrieve relevant database metadata from Neo4j using semantic similarity
 2. Execute generated SQL queries against BigQuery
 
+The agent architecture can be seen below.
+
+```mermaid
+---
+config:
+    layout: dagre
+---
+
+graph LR
+    
+    subgraph GCP["GCP Environment"]
+        BQMCP(BigQuery<br>MCP)
+
+        subgraph DataWarehouse["Data Warehouse"]
+            BQData[(BigQuery)]
+        end
+        
+        BQMCP <--> BQData
+    end
+
+    subgraph Local["Local Environment"]
+        Agent("Text2SQL Agent")
+        MetadataMCP("SQL Metadata<br/>MCP")
+        
+        subgraph Graph["Database"]
+            NEO[(Neo4j Graph)]
+        end
+        
+        Agent <--> MetadataMCP
+        MetadataMCP <--> NEO
+    end
+    
+    User("User")
+    
+    subgraph LLM["LLM Service"]
+        Model("LLM")
+    end
+    
+    User <--> Agent
+    Agent <--> Model
+    Agent <--> BQMCP
+
+```
+
 **How it works**
 1. User asks a natural language question about the data
 2. Agent calls the SQL Metadata MCP server to retrieve relevant table schemas
-3. Agent generates a SQL query based on the retrieved metadata context
+3. Agent generates a SQL query via an LLM call based on the retrieved metadata context
 4. Agent calls `execute_sql` from the BigQuery MCP server to run the query against BigQuery
 5. Agent returns formatted results to the user
 
