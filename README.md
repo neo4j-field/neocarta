@@ -262,22 +262,6 @@ await openai_embeddings_workflow(
 )
 ```
 
-## Sample Dataset
-
-This repository contains a sample dataset of ecommerce data.
-
-Ensure that the following environment variable is set before running and that you are credentialed via the gcloud cli.
-
-```bash
-BIGQUERY_PROJECT_ID=project-id
-```
-
-To create the dataset in your BigQuery instance, you may run the following Make command.
-
-```bash
-make load-ecommerce-dataset
-```
-
 ### Full Pipeline
 
 The full graph generation pipeline will run the BigQuery workflow followed by the embedding generation workflow. 
@@ -346,6 +330,22 @@ To run the full workflow, use the following Make command:
 
 ```bash
 make create-graph
+```
+
+## Sample Dataset
+
+This repository contains a sample dataset of ecommerce data.
+
+Ensure that the following environment variable is set before running and that you are credentialed via the gcloud cli.
+
+```bash
+BIGQUERY_PROJECT_ID=project-id
+```
+
+To create the dataset in your BigQuery instance, you may run the following Make command.
+
+```bash
+make load-ecommerce-dataset
 ```
 
 ## MCP
