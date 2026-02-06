@@ -34,8 +34,8 @@ def get_nodes_to_embed(
         - description: The description of the node.
     """
 
-    assert node_label in ["Database", "Table", "Column"], (
-        "Node label must be one of: Database, Table, Column"
+    assert node_label in ["Database", "Schema", "Table", "Column"], (
+        "Node label must be one of: Database, Schema, Table, Column"
     )
     assert min_length > 0, "Minimum length must be greater than 0"
 
@@ -161,8 +161,8 @@ def write_embeddings_to_graph(
         The name of the database to write embeddings to.
     """
 
-    assert node_label in ["Database", "Table", "Column"], (
-        "Node label must be one of: Database, Table, Column"
+    assert node_label in ["Database", "Schema", "Table", "Column"], (
+        "Node label must be one of: Database, Schema, Table, Column"
     )
 
     query = f"""

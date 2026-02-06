@@ -19,6 +19,19 @@ class Database(BaseModel):
     )
 
 
+class Schema(BaseModel):
+    """A Schema node (represents a BigQuery dataset)"""
+
+    id: str = Field(..., description="The unique identifier for the schema")
+    name: str = Field(..., description="The name of the schema")
+    description: Optional[str] = Field(
+        default=None, description="The description of the schema"
+    )
+    embedding: Optional[list[float]] = Field(
+        default=None, description="The embedding of the schema description"
+    )
+
+
 class Table(BaseModel):
     """A Table node"""
 
@@ -63,13 +76,23 @@ class Column(BaseModel):
         return v
 
 
-class ContainsTable(BaseModel):
+class ContainsSchema(BaseModel):
     """
-    A relationship between a database and a table
-    (Database)-[:HAS_TABLE]->(Table)
+    A relationship between a database and a schema
+    (Database)-[:HAS_SCHEMA]->(Schema)
     """
 
     database_id: str = Field(..., description="The unique identifier for the database")
+    schema_id: str = Field(..., description="The unique identifier for the schema")
+
+
+class ContainsTable(BaseModel):
+    """
+    A relationship between a schema and a table
+    (Schema)-[:HAS_TABLE]->(Table)
+    """
+
+    schema_id: str = Field(..., description="The unique identifier for the schema")
     table_id: str = Field(..., description="The unique identifier for the table")
 
 

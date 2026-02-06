@@ -21,7 +21,7 @@ async def main(with_embeddings: bool = True):
     embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     bigquery_client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
 
-    node_labels = ["Database", "Table", "Column"]
+    node_labels = ["Database", "Schema", "Table", "Column"]
 
     print("Extracting, transforming, and loading BigQuery data into Neo4j...")
     # extract, transform, and load BigQuery data into Neo4j

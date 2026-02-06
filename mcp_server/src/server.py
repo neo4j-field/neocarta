@@ -1,7 +1,6 @@
 from fastmcp import FastMCP
 import asyncio
 from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
-import os
 from models import TableContext
 from dotenv import load_dotenv
 from settings import mcp_server_settings
@@ -69,14 +68,15 @@ WITH
 // Get all joins for this table by finding all foreign key relationships
 OPTIONAL MATCH (table)-[:HAS_COLUMN]->(fkCol:Column)-[:REFERENCES]-(otherCol:Column)<-[:HAS_COLUMN]-(otherTable:Table)
 
-// Get Database name for Tables
-MATCH (table)<-[:HAS_TABLE]-(db:Database)
+// Get Schema and Database names for Tables
+MATCH (table)<-[:HAS_TABLE]-(schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
 
 // Group the join columns by target table
-WITH 
+WITH
   table,
   columns,
   db.name AS database_name,
+  schema.name AS schema_name,
   otherTable.name AS join_table_name,
   collect(DISTINCT otherCol.name) AS join_column_names
 WHERE join_table_name IS NOT NULL
@@ -85,6 +85,7 @@ WITH
   table,
   columns,
   database_name,
+  schema_name,
   collect({
     table_name: join_table_name,
     column_names: join_column_names
@@ -94,6 +95,7 @@ RETURN {
   table_name: table.name,
   table_description: table.description,
   database_name: database_name,
+  schema_name: schema_name,
   columns: columns,
   joins: joins
 } AS result
@@ -153,14 +155,15 @@ WITH
 // Get all joins for this table by finding all foreign key relationships
 OPTIONAL MATCH (table)-[:HAS_COLUMN]->(fkCol:Column)-[:REFERENCES]-(otherCol:Column)<-[:HAS_COLUMN]-(otherTable:Table)
 
-// Get Database name for Tables
-MATCH (table)<-[:HAS_TABLE]-(db:Database)
+// Get Schema and Database names for Tables
+MATCH (table)<-[:HAS_TABLE]-(schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
 
 // Group the join columns by target table
-WITH 
+WITH
   table,
   columns,
   db.name AS database_name,
+  schema.name AS schema_name,
   otherTable.name AS join_table_name,
   collect(DISTINCT otherCol.name) AS join_column_names
 WHERE join_table_name IS NOT NULL
@@ -169,6 +172,7 @@ WITH
   table,
   columns,
   database_name,
+  schema_name,
   collect({
     table_name: join_table_name,
     column_names: join_column_names
@@ -178,6 +182,7 @@ RETURN {
   table_name: table.name,
   table_description: table.description,
   database_name: database_name,
+  schema_name: schema_name,
   columns: columns,
   joins: joins
 } AS result

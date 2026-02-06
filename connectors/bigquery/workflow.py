@@ -1,5 +1,6 @@
 from connectors.bigquery.extract import (
     extract_database_info,
+    extract_schema_info,
     extract_table_info,
     extract_column_info,
     extract_column_references_info,
@@ -7,8 +8,10 @@ from connectors.bigquery.extract import (
 )
 from connectors.bigquery.transform import (
     transform_to_database_nodes,
+    transform_to_schema_nodes,
     transform_to_table_nodes,
     transform_to_column_nodes,
+    transform_to_has_schema_relationships,
     transform_to_has_table_relationships,
     transform_to_has_column_relationships,
     transform_to_references_relationships,
@@ -17,9 +20,11 @@ from connectors.bigquery.transform import (
 )
 from connectors.load import (
     load_database_nodes,
+    load_schema_nodes,
     load_table_nodes,
     load_column_nodes,
     load_value_nodes,
+    load_has_schema_relationships,
     load_has_table_relationships,
     load_has_column_relationships,
     load_references_relationships,
@@ -59,7 +64,8 @@ def bigquery_workflow(
         The workflow runs and loads the data into Neo4j.
     """
 
-    database_info = extract_database_info(client, project_id, dataset_id)
+    database_info = extract_database_info(client, project_id)
+    schema_info = extract_schema_info(client, project_id, dataset_id)
     table_info = extract_table_info(client, project_id, dataset_id)
     column_info = extract_column_info(client, project_id, dataset_id)
     column_references_info = extract_column_references_info(
@@ -84,10 +90,12 @@ def bigquery_workflow(
 
     # format metadata into core data model
     database_nodes = transform_to_database_nodes(database_info)
+    schema_nodes = transform_to_schema_nodes(schema_info)
     table_nodes = transform_to_table_nodes(table_info)
     column_nodes = transform_to_column_nodes(column_info)
     value_nodes = transform_to_value_nodes(value_info)
 
+    has_schema_relationships = transform_to_has_schema_relationships(schema_info)
     has_table_relationships = transform_to_has_table_relationships(table_info)
     has_column_relationships = transform_to_has_column_relationships(column_info)
     references_relationships = transform_to_references_relationships(
@@ -97,9 +105,15 @@ def bigquery_workflow(
 
     # load metadata into neo4j
     print(load_database_nodes(database_nodes, neo4j_driver, database_name))
+    print(load_schema_nodes(schema_nodes, neo4j_driver, database_name))
     print(load_table_nodes(table_nodes, neo4j_driver, database_name))
     print(load_column_nodes(column_nodes, neo4j_driver, database_name))
     print(load_value_nodes(value_nodes, neo4j_driver, database_name))
+    print(
+        load_has_schema_relationships(
+            has_schema_relationships, neo4j_driver, database_name
+        )
+    )
     print(
         load_has_table_relationships(
             has_table_relationships, neo4j_driver, database_name

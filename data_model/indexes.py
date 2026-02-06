@@ -15,7 +15,7 @@ def create_vector_index(
     neo4j_driver: Driver
         The Neo4j driver to use.
     node_label: str
-        The label of the node to create a vector index for. Must be one of: Database, Table, Column.
+        The label of the node to create a vector index for. Must be one of: Database, Schema, Table, Column.
     dimensions: int
         The dimensions of the vector index. Must be an integer greater than 0.
     database_name: str
@@ -27,8 +27,8 @@ def create_vector_index(
         The summary of the vector index created.
     """
 
-    assert node_label in ["Database", "Table", "Column"], (
-        "Node label must be one of: Database, Table, Column"
+    assert node_label in ["Database", "Schema", "Table", "Column"], (
+        "Node label must be one of: Database, Schema, Table, Column"
     )
     assert dimensions > 0, "Dimensions must be an integer greater than 0"
 

@@ -7,6 +7,13 @@ FOR (d:Database) REQUIRE d.id IS UNIQUE;
 
 database_id_key_constraint = database_id_unique_constraint.replace("UNIQUE", "NODE KEY")
 
+schema_id_unique_constraint = """
+CREATE CONSTRAINT schema_id_constraint
+FOR (s:Schema) REQUIRE s.id IS UNIQUE;
+"""
+
+schema_id_key_constraint = schema_id_unique_constraint.replace("UNIQUE", "NODE KEY")
+
 table_id_unique_constraint = """
 CREATE CONSTRAINT table_id_constraint
 FOR (t:Table) REQUIRE t.id IS UNIQUE;
@@ -80,6 +87,7 @@ def write_neo4j_constraints(neo4j_driver: Driver, database_name: str = "neo4j") 
         # use key constraints for enterprise edition
         for c in [
             database_id_key_constraint,
+            schema_id_key_constraint,
             table_id_key_constraint,
             column_id_key_constraint,
         ]:
@@ -91,6 +99,7 @@ def write_neo4j_constraints(neo4j_driver: Driver, database_name: str = "neo4j") 
         # use unique constraints for community edition, node keys are not supported
         for c in [
             database_id_unique_constraint,
+            schema_id_unique_constraint,
             table_id_unique_constraint,
             column_id_unique_constraint,
         ]:

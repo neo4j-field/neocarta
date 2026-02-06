@@ -43,6 +43,7 @@ class TableContext(BaseModel):
     table_name: str = Field(..., description="The name of the table")
     table_description: str = Field(..., description="The description of the table")
     database_name: str = Field(..., description="The name of the database")
+    schema_name: str = Field(..., description="The name of the schema")
     columns: list[ColumnContext] = Field(
         ..., description="The relevant columns of the table"
     )
