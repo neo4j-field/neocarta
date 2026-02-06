@@ -10,7 +10,7 @@ Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/
 Value("Value<br/>id: STRING | KEY<br/>value: STRING")
 
 %% Relationships
-Database -->|CONTAINS_TABLE| Table
+Database -->|HAS_TABLE| Table
 Table -->|HAS_COLUMN| Column
 Column -->|REFERENCES| Column
 Column -->|HAS_VALUE| Value

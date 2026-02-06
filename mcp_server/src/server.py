@@ -8,12 +8,16 @@ from settings import mcp_server_settings
 from embeddings import create_embedding
 from openai import AsyncOpenAI
 
-def create_mcp_server(neo4j_driver: AsyncDriver, neo4j_database: str, embedding_client: AsyncOpenAI) -> FastMCP:
 
+def create_mcp_server(
+    neo4j_driver: AsyncDriver, neo4j_database: str, embedding_client: AsyncOpenAI
+) -> FastMCP:
     server = FastMCP("Text2SQL Metadata MCP Server")
 
     @server.tool()
-    async def get_metadata_schema_by_semantic_similarity(query: str) -> list[TableContext]:
+    async def get_metadata_schema_by_semantic_similarity(
+        query: str,
+    ) -> list[TableContext]:
         """
         Get the metadata schema by semantic similarity to the query.
         Uses embedding based semantic similarity and graph traversal to find the most similar metadata schema.
@@ -66,7 +70,7 @@ WITH
 OPTIONAL MATCH (table)-[:HAS_COLUMN]->(fkCol:Column)-[:REFERENCES]-(otherCol:Column)<-[:HAS_COLUMN]-(otherTable:Table)
 
 // Get Database name for Tables
-MATCH (table)<-[:CONTAINS_TABLE]-(db:Database)
+MATCH (table)<-[:HAS_TABLE]-(db:Database)
 
 // Group the join columns by target table
 WITH 
@@ -100,9 +104,9 @@ ORDER BY table.name
             parameters_={"queryEmbedding": embedding},
             database_=neo4j_database,
             routing_=RoutingControl.READ,
-            result_transformer_=lambda x:  x.data(),
+            result_transformer_=lambda x: x.data(),
         )
-        return [TableContext.model_validate(r['result']) for r in results]
+        return [TableContext.model_validate(r["result"]) for r in results]
 
     @server.tool()
     async def get_full_metadata_schema() -> list[TableContext]:
@@ -150,7 +154,7 @@ WITH
 OPTIONAL MATCH (table)-[:HAS_COLUMN]->(fkCol:Column)-[:REFERENCES]-(otherCol:Column)<-[:HAS_COLUMN]-(otherTable:Table)
 
 // Get Database name for Tables
-MATCH (table)<-[:CONTAINS_TABLE]-(db:Database)
+MATCH (table)<-[:HAS_TABLE]-(db:Database)
 
 // Group the join columns by target table
 WITH 
@@ -185,9 +189,10 @@ ORDER BY table.name
             routing_=RoutingControl.READ,
             result_transformer_=lambda x: x.data(),
         )
-        return [TableContext.model_validate(r['result']) for r in results]
-    
+        return [TableContext.model_validate(r["result"]) for r in results]
+
     return server
+
 
 async def main():
     neo4j_driver = AsyncGraphDatabase.driver(
@@ -199,6 +204,7 @@ async def main():
     server = create_mcp_server(neo4j_driver, neo4j_database, embedding_client)
 
     await server.run_stdio_async()
+
 
 if __name__ == "__main__":
     load_dotenv()

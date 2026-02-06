@@ -14,10 +14,11 @@ Rules:
 * Always ensure you have the appropriate BigQuery schema from the Metadata Graph before write a query
 * Return query results to the user in a readable format"""
 
+
 def create_text2sql_agent(mcp_tools: list[BaseTool]) -> CompiledStateGraph:
     return create_agent(
         model="openai:gpt-4o-mini",
         tools=mcp_tools,
         system_prompt=SYSTEM_PROMPT,
-        checkpointer=InMemorySaver()
+        checkpointer=InMemorySaver(),
     )

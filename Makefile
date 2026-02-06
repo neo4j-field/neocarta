@@ -1,4 +1,4 @@
-.PHONY: help agent create-graph clean
+.PHONY: help agent create-graph create-graph-no-embeddings clean
 
 help:
 	@echo "Available commands:"
@@ -10,6 +10,7 @@ help:
 	@echo "  make load-ecommerce-dataset .. Load the ecommerce dataset into BigQuery"
 	@echo "  make agent ................... Run the Text2SQL agent"
 	@echo "  make create-graph ............ Extract BigQuery metadata and load into Neo4j with embeddings"
+	@echo "  make create-graph-no-embeddings  Extract BigQuery metadata (skip embeddings)"
 	@echo "  .............................."
 	@echo "  make clean ................... Remove Python cache files and temporary directories"
 	@echo "  make fmt ..................... Format the code with Ruff"
@@ -20,6 +21,9 @@ agent:
 
 create-graph:
 	uv run run_create_graph.py
+
+create-graph-no-embeddings:
+	uv run run_create_graph.py --skip-embeddings
 
 load-ecommerce-dataset:
 	uv run datasets/ecommerce_bigquery.py

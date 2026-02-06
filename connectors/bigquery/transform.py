@@ -118,7 +118,7 @@ def transform_to_value_nodes(value_info: pd.DataFrame) -> list[Value]:
     ]
 
 
-def transform_to_contains_table_relationships(
+def transform_to_has_table_relationships(
     table_info: pd.DataFrame,
 ) -> list[ContainsTable]:
     """

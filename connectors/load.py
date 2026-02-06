@@ -94,8 +94,8 @@ def load_value_nodes(
     return summary.counters.__dict__
 
 
-def load_contains_table_relationships(
-    contains_table_relationships: list[ContainsTable],
+def load_has_table_relationships(
+    has_table_relationships: list[ContainsTable],
     neo4j_driver: Driver,
     database_name: str = "neo4j",
 ) -> dict:
@@ -104,9 +104,9 @@ def load_contains_table_relationships(
     UNWIND $rows as row
     MATCH (d:Database {id: row.database_id})
     MATCH (t:Table {id: row.table_id})
-    MERGE (d)-[:CONTAINS_TABLE]->(t)
+    MERGE (d)-[:HAS_TABLE]->(t)
     """,
-        parameters_={"rows": [n.model_dump() for n in contains_table_relationships]},
+        parameters_={"rows": [n.model_dump() for n in has_table_relationships]},
         routing_=RoutingControl.WRITE,
         database_=database_name,
     )

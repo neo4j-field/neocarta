@@ -10,6 +10,7 @@ import httpx
 
 load_dotenv()
 
+
 # Custom auth class for Google Cloud
 class GoogleAuth(httpx.Auth):
     def __init__(self):
@@ -19,6 +20,7 @@ class GoogleAuth(httpx.Auth):
         self.credentials.refresh(Request())
         request.headers["Authorization"] = f"Bearer {self.credentials.token}"
         yield request
+
 
 sql_metadata_graph_mcp_params = {
     "transport": "stdio",
@@ -38,7 +40,7 @@ sql_metadata_graph_mcp_params = {
 bigquery_mcp_params = {
     "transport": "http",
     "url": "https://bigquery.googleapis.com/mcp",
-    "auth": GoogleAuth()
+    "auth": GoogleAuth(),
 }
 
 client = MultiServerMCPClient(
@@ -53,41 +55,45 @@ CONFIG = {"configurable": {"thread_id": "1"}}
 
 # run the agent with MCP server using stdio transport
 async def main():
-    
-            # Get tools
-            mcp_tools = await client.get_tools()
+    # Get tools
+    mcp_tools = await client.get_tools()
 
-            tool_names = {
-                # From SQL Metadata Graph MCP Server
-                "get_metadata_schema_by_semantic_similarity", 
-                "get_full_metadata_schema",
-                # From BigQuery MCP Server
-                "execute_sql"
-                }
+    tool_names = {
+        # From SQL Metadata Graph MCP Server
+        "get_metadata_schema_by_semantic_similarity",
+        "get_full_metadata_schema",
+        # From BigQuery MCP Server
+        "execute_sql",
+    }
 
-            allowed_tools = [tool for tool in mcp_tools if tool.name in tool_names]
+    allowed_tools = [tool for tool in mcp_tools if tool.name in tool_names]
 
-            agent = create_text2sql_agent(allowed_tools)
+    agent = create_text2sql_agent(allowed_tools)
 
-            # conversation loop
-            print(
-                "\n===================================== Chat =====================================\n"
-            )
+    # conversation loop
+    print(
+        "\n===================================== Chat =====================================\n"
+    )
 
-            while True:
-                user_input = input("> ")
-                if user_input.lower() in {"exit", "quit", "q"}:
-                    break
+    while True:
+        user_input = input("> ")
+        if user_input.lower() in {"exit", "quit", "q"}:
+            break
 
-                async for chunk in agent.astream({
-                    "messages": [{"role": "user", "content": user_input}]
-                }, stream_mode="values", config=CONFIG):
-                    # Each chunk contains the full state at that point
-                    latest_message = chunk["messages"][-1]
-                    if latest_message.content:
-                        print(f"Agent: {latest_message.content}")
-                    elif latest_message.tool_calls:
-                        print(f"Calling tools: {[tc['name'] for tc in latest_message.tool_calls]}")
+        async for chunk in agent.astream(
+            {"messages": [{"role": "user", "content": user_input}]},
+            stream_mode="values",
+            config=CONFIG,
+        ):
+            # Each chunk contains the full state at that point
+            latest_message = chunk["messages"][-1]
+            if latest_message.content:
+                print(f"Agent: {latest_message.content}")
+            elif latest_message.tool_calls:
+                print(
+                    f"Calling tools: {[tc['name'] for tc in latest_message.tool_calls]}"
+                )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

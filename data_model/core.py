@@ -66,7 +66,7 @@ class Column(BaseModel):
 class ContainsTable(BaseModel):
     """
     A relationship between a database and a table
-    (Database)-[:CONTAINS_TABLE]->(Table)
+    (Database)-[:HAS_TABLE]->(Table)
     """
 
     database_id: str = Field(..., description="The unique identifier for the database")

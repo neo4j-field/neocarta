@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ from google.cloud import bigquery
 from connectors.bigquery.workflow import bigquery_workflow
 
 
-async def main():
+async def main(with_embeddings: bool = True):
     load_dotenv()
     print("Starting workflow...")
     print("Creating drivers and clients...")
@@ -32,19 +33,30 @@ async def main():
         neo4j_database,
     )
 
-    print("Generating embeddings for nodes...")
-    # create embeddings for the nodes
-    await openai_embeddings_workflow(
-        neo4j_driver,
-        embedding_client,
-        "text-embedding-3-small",
-        768,
-        node_labels,
-        neo4j_database,
-    )
+    if with_embeddings:
+        print("Generating embeddings for nodes...")
+        # create embeddings for the nodes
+        await openai_embeddings_workflow(
+            neo4j_driver,
+            embedding_client,
+            "text-embedding-3-small",
+            768,
+            node_labels,
+            neo4j_database,
+        )
 
     print("Workflow completed successfully!")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(
+        description="Extract BigQuery metadata and load into Neo4j (embeddings enabled by default)"
+    )
+    parser.add_argument(
+        "--skip-embeddings",
+        action="store_true",
+        help="Skip embedding generation (only load metadata into Neo4j)",
+    )
+    args = parser.parse_args()
+
+    asyncio.run(main(with_embeddings=not args.skip_embeddings))

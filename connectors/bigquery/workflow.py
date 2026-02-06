@@ -9,7 +9,7 @@ from connectors.bigquery.transform import (
     transform_to_database_nodes,
     transform_to_table_nodes,
     transform_to_column_nodes,
-    transform_to_contains_table_relationships,
+    transform_to_has_table_relationships,
     transform_to_has_column_relationships,
     transform_to_references_relationships,
     transform_to_value_nodes,
@@ -20,7 +20,7 @@ from connectors.load import (
     load_table_nodes,
     load_column_nodes,
     load_value_nodes,
-    load_contains_table_relationships,
+    load_has_table_relationships,
     load_has_column_relationships,
     load_references_relationships,
     load_has_value_relationships,
@@ -88,7 +88,7 @@ def bigquery_workflow(
     column_nodes = transform_to_column_nodes(column_info)
     value_nodes = transform_to_value_nodes(value_info)
 
-    contains_table_relationships = transform_to_contains_table_relationships(table_info)
+    has_table_relationships = transform_to_has_table_relationships(table_info)
     has_column_relationships = transform_to_has_column_relationships(column_info)
     references_relationships = transform_to_references_relationships(
         column_references_info
@@ -101,8 +101,8 @@ def bigquery_workflow(
     print(load_column_nodes(column_nodes, neo4j_driver, database_name))
     print(load_value_nodes(value_nodes, neo4j_driver, database_name))
     print(
-        load_contains_table_relationships(
-            contains_table_relationships, neo4j_driver, database_name
+        load_has_table_relationships(
+            has_table_relationships, neo4j_driver, database_name
         )
     )
     print(

@@ -1,9 +1,7 @@
 from google.cloud import bigquery
 
 
-def load_ecommerce_dataset_to_bigquery(
-    client: bigquery.Client
-) -> None:
+def load_ecommerce_dataset_to_bigquery(client: bigquery.Client) -> None:
     """
     Load the ecommerce dataset to BigQuery.
 
@@ -24,6 +22,4 @@ if __name__ == "__main__":
     import os
 
     client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
-    load_ecommerce_dataset_to_bigquery(
-        client
-    )
+    load_ecommerce_dataset_to_bigquery(client)
