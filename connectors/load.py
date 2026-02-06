@@ -3,8 +3,10 @@
 from neo4j import Driver, RoutingControl
 from data_model.core import (
     Database,
+    Schema,
     Table,
     Column,
+    ContainsSchema,
     ContainsTable,
     HasColumn,
     References,
@@ -28,6 +30,24 @@ def load_database_nodes(
         database_=database_name,
     )
 
+    return summary.counters.__dict__
+
+
+def load_schema_nodes(
+    schema_nodes: list[Schema], neo4j_driver: Driver, database_name: str = "neo4j"
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MERGE (s:Schema {id: row.id})
+    ON CREATE
+        SET s.name = row.name,
+            s.description = row.description
+    """,
+        parameters_={"rows": [n.model_dump() for n in schema_nodes]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
     return summary.counters.__dict__
 
 
@@ -94,6 +114,25 @@ def load_value_nodes(
     return summary.counters.__dict__
 
 
+def load_has_schema_relationships(
+    has_schema_relationships: list[ContainsSchema],
+    neo4j_driver: Driver,
+    database_name: str = "neo4j",
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MATCH (d:Database {id: row.database_id})
+    MATCH (s:Schema {id: row.schema_id})
+    MERGE (d)-[:HAS_SCHEMA]->(s)
+    """,
+        parameters_={"rows": [n.model_dump() for n in has_schema_relationships]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
+    return summary.counters.__dict__
+
+
 def load_has_table_relationships(
     has_table_relationships: list[ContainsTable],
     neo4j_driver: Driver,
@@ -102,9 +141,9 @@ def load_has_table_relationships(
     _, summary, _ = neo4j_driver.execute_query(
         query_="""
     UNWIND $rows as row
-    MATCH (d:Database {id: row.database_id})
+    MATCH (s:Schema {id: row.schema_id})
     MATCH (t:Table {id: row.table_id})
-    MERGE (d)-[:HAS_TABLE]->(t)
+    MERGE (s)-[:HAS_TABLE]->(t)
     """,
         parameters_={"rows": [n.model_dump() for n in has_table_relationships]},
         routing_=RoutingControl.WRITE,

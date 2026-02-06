@@ -1,7 +1,9 @@
 from data_model.core import (
     Database,
+    Schema,
     Table,
     Column,
+    ContainsSchema,
     ContainsTable,
     HasColumn,
     References,
@@ -12,13 +14,13 @@ from data_model.expanded import Value, HasValue
 
 def transform_to_database_nodes(database_info: pd.DataFrame) -> list[Database]:
     """
-    Transform BigQuery database information into database nodes.
+    Transform BigQuery database (project) information into database nodes.
 
     Parameters
     ----------
     database_info: pd.DataFrame
         A Pandas DataFrame containing the BigQuery database information.
-        Has columns `table_catalog`, `table_schema`, and `description`.
+        Has column `project_id`.
 
     Returns
     -------
@@ -27,11 +29,36 @@ def transform_to_database_nodes(database_info: pd.DataFrame) -> list[Database]:
     """
     return [
         Database(
-            id=row.table_catalog + "." + row.table_schema,
-            name=row.table_catalog + "." + row.table_schema,
-            description=row.description,
+            id=row.project_id,
+            name=row.project_id,
+            description=None,
         )
         for _, row in database_info.iterrows()
+    ]
+
+
+def transform_to_schema_nodes(schema_info: pd.DataFrame) -> list[Schema]:
+    """
+    Transform BigQuery schema (dataset) information into schema nodes.
+
+    Parameters
+    ----------
+    schema_info: pd.DataFrame
+        A Pandas DataFrame containing the BigQuery schema information.
+        Has columns `project_id`, `dataset_id`, and `description`.
+
+    Returns
+    -------
+    list[Schema]
+        The schema nodes.
+    """
+    return [
+        Schema(
+            id=row.project_id + "." + row.dataset_id,
+            name=row.dataset_id,
+            description=row.description,
+        )
+        for _, row in schema_info.iterrows()
     ]
 
 
@@ -118,6 +145,32 @@ def transform_to_value_nodes(value_info: pd.DataFrame) -> list[Value]:
     ]
 
 
+def transform_to_has_schema_relationships(
+    schema_info: pd.DataFrame,
+) -> list[ContainsSchema]:
+    """
+    Transform BigQuery schema information into contains schema relationships.
+
+    Parameters
+    ----------
+    schema_info: pd.DataFrame
+        A Pandas DataFrame containing the BigQuery schema information.
+        Has columns `project_id` and `dataset_id`.
+
+    Returns
+    -------
+    list[ContainsSchema]
+        The contains schema relationships.
+    """
+    return [
+        ContainsSchema(
+            database_id=row.project_id,
+            schema_id=row.project_id + "." + row.dataset_id,
+        )
+        for _, row in schema_info.iterrows()
+    ]
+
+
 def transform_to_has_table_relationships(
     table_info: pd.DataFrame,
 ) -> list[ContainsTable]:
@@ -138,7 +191,7 @@ def transform_to_has_table_relationships(
 
     return [
         ContainsTable(
-            database_id=row.table_catalog + "." + row.table_schema,
+            schema_id=row.table_catalog + "." + row.table_schema,
             table_id=row.table_catalog + "." + row.table_schema + "." + row.table_name,
         )
         for _, row in table_info.iterrows()

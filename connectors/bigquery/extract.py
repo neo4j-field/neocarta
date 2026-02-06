@@ -3,11 +3,30 @@ import pandas as pd
 import hashlib
 
 
-def extract_database_info(
+def extract_database_info(client: bigquery.Client, project_id: str) -> pd.DataFrame:
+    """
+    Extract BigQuery database (project) information.
+
+    Parameters
+    ----------
+    client: bigquery.Client
+        The BigQuery client.
+    project_id: str
+        The project ID.
+
+    Returns
+    -------
+    pd.DataFrame
+        A Pandas DataFrame containing the BigQuery database information.
+    """
+    return pd.DataFrame([{"project_id": project_id}])
+
+
+def extract_schema_info(
     client: bigquery.Client, project_id: str, dataset_id: str
 ) -> pd.DataFrame:
     """
-    Extract BigQuery database information.
+    Extract BigQuery schema (dataset) information.
 
     Parameters
     ----------
@@ -21,18 +40,16 @@ def extract_database_info(
     Returns
     -------
     pd.DataFrame
-        A Pandas DataFrame containing the BigQuery database information.
+        A Pandas DataFrame containing the BigQuery schema information.
     """
-
     return client.query(f"""
-SELECT 
-    DISTINCT table_catalog,
-    table_schema,
+SELECT
+    '{project_id}' as project_id,
+    schema_name as dataset_id,
     option_value as description
-FROM `{project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.TABLES tables
-    LEFT JOIN `{project_id}`.INFORMATION_SCHEMA.SCHEMATA_OPTIONS schemata_options
-        ON tables.table_schema = schemata_options.schema_name
-WHERE option_name = 'description'
+FROM `{project_id}`.INFORMATION_SCHEMA.SCHEMATA_OPTIONS
+WHERE schema_name = '{dataset_id}'
+    AND option_name = 'description'
 """).to_dataframe()
 
 

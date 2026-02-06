@@ -63,33 +63,37 @@ The metadata graph has the following schema. All connectors must convert their s
 config:
     layout: elk
 ---
-
 graph LR
 %% Nodes
 Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Schema("Schema<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
 Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
 Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
 Value("Value<br/>id: STRING | KEY<br/>value: STRING")
 
 %% Relationships
-Database -->|HAS_TABLE| Table
+Database -->|HAS_SCHEMA| Schema
+Schema -->|HAS_TABLE| Table
 Table -->|HAS_COLUMN| Column
 Column -->|REFERENCES| Column
 Column -->|HAS_VALUE| Value
 
 
-%% Styling 
+%% Styling
 classDef node_0_color fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000,font-size:12px
 class Database node_0_color
 
-classDef node_1_color fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000,font-size:12px
-class Table node_1_color
+classDef node_1_color fill:#fff9c4,stroke:#f57f17,stroke-width:3px,color:#000,font-size:12px
+class Schema node_1_color
 
-classDef node_2_color fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:12px
-class Column node_2_color
+classDef node_2_color fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000,font-size:12px
+class Table node_2_color
 
-classDef node_3_color fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-size:12px
-class Value node_3_color
+classDef node_3_color fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:12px
+class Column node_3_color
+
+classDef node_4_color fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-size:12px
+class Value node_4_color
 ```
 
 Nodes

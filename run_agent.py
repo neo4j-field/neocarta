@@ -1,5 +1,4 @@
 from agent.agent import create_text2sql_agent
-from mcp.client.stdio import stdio_client
 import asyncio
 from dotenv import load_dotenv
 import os
