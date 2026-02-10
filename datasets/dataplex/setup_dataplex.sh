@@ -56,11 +56,34 @@ gcloud dataplex assets create ecommerce-bigquery-asset \
     --display-name="Ecommerce BigQuery Dataset" \
     --project=${PROJECT_ID} || echo "Asset may already exist"
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Create Aspect Type for primary key constraints
+echo "5. Creating Aspect Type for primary key constraints..."
+gcloud dataplex aspect-types create primary-key-constraint \
+    --project=${PROJECT_ID} \
+    --location=${LOCATION} \
+    --description="Primary key constraint marker" \
+    --metadata-template-file-name="${SCRIPT_DIR}/pk_aspect_template.json" || echo "Primary key aspect type may already exist"
+
+# Create Aspect Type for foreign key constraints
+echo "6. Creating Aspect Type for foreign key constraints..."
+gcloud dataplex aspect-types create foreign-key-constraint \
+    --project=${PROJECT_ID} \
+    --location=${LOCATION} \
+    --description="Foreign key constraint information" \
+    --metadata-template-file-name="${SCRIPT_DIR}/fk_aspect_template.json" || echo "Foreign key aspect type may already exist"
+
 echo ""
 echo "================================================"
 echo "Dataplex setup complete!"
 echo ""
 echo "You can view your Dataplex resources at:"
 echo "https://console.cloud.google.com/dataplex/lakes?project=${PROJECT_ID}"
+echo ""
+echo "Aspect types created:"
+echo "  - primary-key-constraint"
+echo "  - foreign-key-constraint"
 echo ""
 echo "Wait a few minutes for Dataplex to discover and catalog the BigQuery tables."
