@@ -3,85 +3,99 @@
 from google.cloud import dataplex_v1
 import pandas as pd
 from typing import Optional
+from connectors.dataplex.models import BigQueryMetadataInfoResponse, GlossaryInfoResponse
 
 
-# def extract_entity_info(
-#     metadata_client: dataplex_v1.MetadataServiceClient,
-#     project_id: str,
-#     location: str,
-#     lake_id: str,
-#     zone_id: str,
-# ) -> pd.DataFrame:
-#     """
-#     Extract Dataplex entities (tables) from a zone.
+def extract_bigquery_metadata_info(
+    catalog_client: dataplex_v1.CatalogServiceClient,
+    project_id: str,
+    project_number: str,
+    dataplex_location: str,
+    dataset_id: str,
+    table_id: str,
+) -> pd.DataFrame:
+    """
+    Extract full table metadata from Dataplex Universal Catalog for a BigQuery table.
+    Returns project, dataset, table, schema, and service info.
 
-#     Parameters
-#     ----------
-#     metadata_client: dataplex_v1.MetadataServiceClient
-#         The Dataplex Metadata client.
-#     project_id: str
-#         The GCP project ID.
-#     location: str
-#         The location (e.g., 'us-central1').
-#     lake_id: str
-#         The Dataplex lake ID.
-#     zone_id: str
-#         The Dataplex zone ID.
+    Parameters
+    ----------
+    catalog_client: dataplex_v1.CatalogServiceClient
+        The Dataplex Catalog client.
+    project_id: str
+        The GCP project ID.
+    project_number: str
+        The GCP project number.
+    dataplex_location: str
+        The Dataplex location.
+    dataset_id: str
+        The BigQuery dataset ID.
+    table_id: str
+        The BigQuery table ID.
 
-#     Returns
-#     -------
-#     pd.DataFrame
-#         A DataFrame with one row per column. Columns: project_id, dataset_id,
-#         lake_id, zone_id, entity_description, entity_name, entity_id,
-#         column_name, column_id, data_type, nullable, description.
-#     """
-#     parent = f"projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}"
+    Returns
+    -------
+    pd.DataFrame
+        A Pandas DataFrame with one row per column.
+        Has columns: project_id, project_number, dataset_id, table_id, table_display_name, table_description, column_name, column_data_type, column_metadata_type, column_mode, column_description, service, platform, location, resource_name, fully_qualified_name, parent_entry, entry_type.
+    """
 
-#     try:
-#         entities = metadata_client.list_entities(parent=parent)
-#     except Exception as e:
-#         print(f"Error listing entities: {e}")
-#         return pd.DataFrame()
+    table_entry_name = f"projects/{project_number}/locations/{dataplex_location}/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/{project_id}/datasets/{dataset_id}/tables/{table_id}"
 
-#     entity_data = []
 
-#     for entity in entities:
-#         request = dataplex_v1.types.GetEntityRequest(
-#             name=entity.name,
-#             view=dataplex_v1.types.GetEntityRequest.EntityView.SCHEMA,
-#         )
+    request = dataplex_v1.LookupEntryRequest(
+        name=f"projects/{project_id}/locations/{dataplex_location}",
+        entry=table_entry_name,
+        view=dataplex_v1.EntryView.FULL,
+    )
+    entry = catalog_client.lookup_entry(request=request)
 
-#         bq_project, bq_dataset, bq_table = "UNKNOWN", "UNKNOWN", "UNKNOWN"
-#         # Format: projects/{project}/datasets/{dataset}/tables/{table}
-#         if entity.data_path:
-#             parts = entity.data_path.split("/")
-#             if len(parts) >= 6:
-#                 bq_project = parts[1]
-#                 bq_dataset = parts[3]
-#                 bq_table = parts[5]
+    # Parse FQN: "bigquery:ai-field-alex-g.demo_ecommerce.customers"
+    fqn = entry.fully_qualified_name
 
-#         entity_info = metadata_client.get_entity(request=request)
-#         if entity_info.schema and entity_info.schema.fields:
-#             entity_id = f"{bq_project}.{bq_dataset}.{bq_table}"
-#             for field in entity_info.schema.fields:
-#                 entity_data.append(
-#                     {
-#                         "project_id": bq_project,
-#                         "dataset_id": bq_dataset,
-#                         "lake_id": lake_id,
-#                         "zone_id": zone_id,
-#                         "entity_description": entity_info.description or "",
-#                         "entity_name": bq_table,
-#                         "entity_id": entity_id,
-#                         "column_name": field.name,
-#                         "column_id": f"{entity_id}.{field.name}",
-#                         "data_type": field.type_.name if field.type_ else "STRING",
-#                         "nullable": field.mode.name == "NULLABLE",
-#                         "description": field.description or "",
-#                     }
-#                 )
+    # Entry source metadata
+    src = entry.entry_source
 
-#     return pd.DataFrame(entity_data)
+    # Storage aspect for resource name
+    storage = {}
+    for key, aspect in entry.aspects.items():
+        if "storage" in key and aspect.data:
+            storage = dict(aspect.data)
+        
+    # Schema fields
+    schema_fields = []
+    for key, aspect in entry.aspects.items():
+        print(key)
+        if "schema" in key and aspect.data:
+            print(dict(aspect.data))
+            for field in aspect.data["fields"]:
+                print(dict(field))
+                schema_fields.append(dict(field))
+
+    records = []
+    for col in schema_fields:
+        records.append(BigQueryMetadataInfoResponse(
+            project_id=project_id,
+            project_number=project_number,
+            dataset_id=dataset_id,
+            table_id=table_id,
+            table_display_name=src.display_name,
+            table_description=src.description,
+            column_name=col.get("name"),
+            column_data_type=col.get("dataType"),
+            column_metadata_type=col.get("metadataType"),
+            column_mode=col.get("mode"),
+            column_description=col.get("description", ""),
+            service=src.system,
+            platform=src.platform,
+            location=src.location,
+            resource_name=storage.get("resourceName", ""),
+            fully_qualified_name=fqn,
+            parent_entry=entry.parent_entry,
+            entry_type=entry.entry_type,
+        ))
+
+    return pd.DataFrame(records)
 
 def _parse_glossary_category_id(term_parent: str) -> Optional[str]:
     """
@@ -114,18 +128,18 @@ def extract_glossary_info(
     Returns
     -------
     pd.DataFrame
-        A DataFrame with one row per term. Columns: term_id, term_name,
-        term_description, glossary_id, glossary_name.
+        A Pandas DataFrame with one row per term.
+        Has columns: term_id, term_name, term_description, glossary_id, glossary_name, term_parent, category_id.
     """
     parent = f"projects/{project_id}/locations/{location}"
 
-    terms_data = []
+    records = []
 
     try:
         glossaries = glossary_client.list_glossaries(parent=parent)
     except Exception as e:
         print(f"Error listing glossaries: {e}")
-        return pd.DataFrame()
+        return []
 
     for glossary in glossaries:
         glossary_id = glossary.name.split("/")[-1]
@@ -138,118 +152,18 @@ def extract_glossary_info(
             continue
 
         for term in terms:
-            terms_data.append(
-                {
-                    "term_id": term.name,
-                    "term_name": term.display_name or term.name.split("/")[-1],
-                    "term_description": term.description or "",
-                    "glossary_id": glossary_id,
-                    "glossary_name": glossary_name,
-                    "term_parent": term.parent,
-                    "category_id": _parse_glossary_category_id(term.parent),
-                }
+            records.append(
+                GlossaryInfoResponse(
+                    term_id=term.name,
+                    term_name=term.display_name or term.name.split("/")[-1],
+                    term_description=term.description or "",
+                    glossary_id=glossary_id,
+                    glossary_name=glossary_name,
+                    term_parent=term.parent,
+                    category_id=_parse_glossary_category_id(term.parent),
+                )
             )
 
-    return pd.DataFrame(terms_data)
+    return pd.DataFrame(records)
 
 
-def _parse_entry_name_to_id(entry_name: str) -> Optional[str]:
-    """
-    Parse a Dataplex entry name to a table or column ID
-    (project.dataset.table or project.dataset.table.column).
-
-    BigQuery entries in the @bigquery entry group have names like:
-    projects/{project}/locations/{location}/entryGroups/@bigquery/entries/{encoded}
-
-    Where {encoded} encodes the BigQuery path, e.g.:
-    bigquery.googleapis.com/projects/{p}/datasets/{d}/tables/{t}
-    """
-    try:
-        parts = entry_name.split("/entries/")
-        if len(parts) != 2:
-            return None
-
-        encoded_id = parts[1]
-
-        if "bigquery.googleapis.com" not in encoded_id:
-            return None
-
-        bq_path = encoded_id.replace("bigquery.googleapis.com/", "")
-        path_parts = bq_path.split("/")
-
-        # Expect: ["projects", "{p}", "datasets", "{d}", "tables", "{t}"]
-        if len(path_parts) < 6:
-            return None
-
-        project = path_parts[1]
-        dataset = path_parts[3]
-        table = path_parts[5]
-
-        # Column level: .../tables/{t}/fields/{col}
-        if len(path_parts) >= 8 and path_parts[6] == "fields":
-            column = path_parts[7]
-            return f"{project}.{dataset}.{table}.{column}"
-
-        return f"{project}.{dataset}.{table}"
-    except Exception:
-        return None
-
-
-def extract_entry_links(
-    catalog_client: dataplex_v1.CatalogServiceClient,
-    project_id: str,
-    location: str,
-) -> pd.DataFrame:
-    """
-    Extract EntryLinks that associate glossary terms with data entries
-    (tables or columns).
-
-    Parameters
-    ----------
-    catalog_client: dataplex_v1.CatalogServiceClient
-        The Dataplex Catalog client.
-    project_id: str
-        The GCP project ID.
-    location: str
-        The location (e.g., 'us-central1').
-
-    Returns
-    -------
-    pd.DataFrame
-        A DataFrame with columns: entry_id (table or column ID), term_id
-        (full glossary term resource name). Empty if no links are found.
-    """
-    DEFINITION_LINK_TYPE = (
-        "projects/dataplex-types/locations/global/entryLinkTypes/definition"
-    )
-    parent = f"projects/{project_id}/locations/{location}/entryGroups/@bigquery"
-
-    links_data = []
-
-    try:
-        entry_links = catalog_client.list_entry_links(parent=parent)
-        for link in entry_links:
-            if link.entry_link_type != DEFINITION_LINK_TYPE:
-                continue
-
-            term_id = None
-            entry_id = None
-
-            for entry_ref in [link.source_entry, link.target_entry]:
-                name = entry_ref.name
-                if "/glossaries/" in name and "/terms/" in name:
-                    term_id = name
-                else:
-                    entry_id = _parse_entry_name_to_id(name)
-
-            if term_id and entry_id:
-                links_data.append({"entry_id": entry_id, "term_id": term_id})
-
-    except Exception as e:
-        print(f"Note: Could not extract entry links from @bigquery entry group: {e}")
-
-    return (
-        pd.DataFrame(links_data)
-        if links_data
-        else pd.DataFrame(columns=["entry_id", "term_id"])
-    )
