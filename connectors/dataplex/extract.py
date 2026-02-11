@@ -152,6 +152,7 @@ def extract_glossary_info(
             continue
 
         for term in terms:
+            print(term)
             records.append(
                 GlossaryInfoResponse(
                     term_id=term.name,
