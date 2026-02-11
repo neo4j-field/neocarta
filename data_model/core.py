@@ -11,6 +11,8 @@ class Database(BaseModel):
 
     id: str = Field(..., description="The unique identifier for the database")
     name: str = Field(..., description="The name of the database")
+    platform: Optional[str] = Field(default=None, description="The platform of the database", examples=["GCP"])
+    service: Optional[str] = Field(default=None, description="The service running the database", examples=["BIGQUERY"])
     description: Optional[str] = Field(
         default=None, description="The description of the database"
     )
