@@ -3,8 +3,8 @@ from data_model.core import (
     Schema,
     Table,
     Column,
-    ContainsSchema,
-    ContainsTable,
+    HasSchema,
+    HasTable,
     HasColumn,
     References,
 )
@@ -147,7 +147,7 @@ def transform_to_value_nodes(value_info: pd.DataFrame) -> list[Value]:
 
 def transform_to_has_schema_relationships(
     schema_info: pd.DataFrame,
-) -> list[ContainsSchema]:
+) -> list[HasSchema]:
     """
     Transform BigQuery schema information into contains schema relationships.
 
@@ -159,11 +159,11 @@ def transform_to_has_schema_relationships(
 
     Returns
     -------
-    list[ContainsSchema]
+    list[HasSchema]
         The contains schema relationships.
     """
     return [
-        ContainsSchema(
+        HasSchema(
             database_id=row.project_id,
             schema_id=row.project_id + "." + row.dataset_id,
         )
@@ -173,7 +173,7 @@ def transform_to_has_schema_relationships(
 
 def transform_to_has_table_relationships(
     table_info: pd.DataFrame,
-) -> list[ContainsTable]:
+) -> list[HasTable]:
     """
     Transform BigQuery table information into contains table relationships.
 
@@ -185,12 +185,12 @@ def transform_to_has_table_relationships(
 
     Returns
     -------
-    list[ContainsTable]
+    list[HasTable]
         The contains table relationships.
     """
 
     return [
-        ContainsTable(
+        HasTable(
             schema_id=row.table_catalog + "." + row.table_schema,
             table_id=row.table_catalog + "." + row.table_schema + "." + row.table_name,
         )

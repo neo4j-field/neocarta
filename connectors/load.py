@@ -6,8 +6,8 @@ from data_model.core import (
     Schema,
     Table,
     Column,
-    ContainsSchema,
-    ContainsTable,
+    HasSchema,
+    HasTable,
     HasColumn,
     References,
 )
@@ -115,7 +115,7 @@ def load_value_nodes(
 
 
 def load_has_schema_relationships(
-    has_schema_relationships: list[ContainsSchema],
+    has_schema_relationships: list[HasSchema],
     neo4j_driver: Driver,
     database_name: str = "neo4j",
 ) -> dict:
@@ -134,7 +134,7 @@ def load_has_schema_relationships(
 
 
 def load_has_table_relationships(
-    has_table_relationships: list[ContainsTable],
+    has_table_relationships: list[HasTable],
     neo4j_driver: Driver,
     database_name: str = "neo4j",
 ) -> dict:
