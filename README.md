@@ -128,7 +128,7 @@ This workflow requires the following variables to be set in the `.env` file:
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
 * NEO4J_DATABASE=neo4j-database
-* BIGQUERY_PROJECT_ID=project-id
+* GCP_PROJECT_ID=project-id
 * BIGQUERY_DATASET_ID=dataset-id
 
 
@@ -177,12 +177,12 @@ neo4j_driver = GraphDatabase.driver(
     auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
 )
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
-bigquery_client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
+bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
 # extract, transform, and load BigQuery data into Neo4j
 bigquery_workflow(
     bigquery_client,
-    os.getenv("BIGQUERY_PROJECT_ID"),
+    os.getenv("GCP_PROJECT_ID"),
     os.getenv("BIGQUERY_DATASET_ID"),
     neo4j_driver,
     neo4j_database,
@@ -275,7 +275,7 @@ It requires the following variables to be set in the `.env` file:
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
 * NEO4J_DATABASE=neo4j-database
-* BIGQUERY_PROJECT_ID=project-id
+* GCP_PROJECT_ID=project-id
 * BIGQUERY_DATASET_ID=dataset-id
 * OPENAI_API_KEY=sk-...
 
@@ -343,7 +343,7 @@ This repository contains a sample dataset of ecommerce data.
 Ensure that the following environment variable is set before running and that you are credentialed via the gcloud cli.
 
 ```bash
-BIGQUERY_PROJECT_ID=project-id
+GCP_PROJECT_ID=project-id
 ```
 
 To create the dataset in your BigQuery instance, you may run the following Make command.

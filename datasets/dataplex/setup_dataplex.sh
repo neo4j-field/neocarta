@@ -12,7 +12,7 @@ set -e
 # Load environment variables
 source .env
 
-PROJECT_ID=${BIGQUERY_PROJECT_ID}
+PROJECT_ID=${GCP_PROJECT_ID}
 DATASET_ID=${BIGQUERY_DATASET_ID}
 LOCATION="us-central1"  # Change if needed
 LAKE_ID="ecommerce-lake"

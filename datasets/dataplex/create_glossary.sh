@@ -3,8 +3,8 @@ set -e
 # Load environment variables
 source .env
 
-PROJECT_ID=${BIGQUERY_PROJECT_ID}
-LOCATION=us-central1
+PROJECT_ID=${GCP_PROJECT_ID}
+LOCATION=us
 GLOSSARY=retail-business-glossary
 
 # 1. Create the glossary
