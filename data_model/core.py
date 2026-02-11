@@ -78,7 +78,7 @@ class Column(BaseModel):
         return v
 
 
-class ContainsSchema(BaseModel):
+class HasSchema(BaseModel):
     """
     A relationship between a database and a schema
     (Database)-[:HAS_SCHEMA]->(Schema)
@@ -88,7 +88,7 @@ class ContainsSchema(BaseModel):
     schema_id: str = Field(..., description="The unique identifier for the schema")
 
 
-class ContainsTable(BaseModel):
+class HasTable(BaseModel):
     """
     A relationship between a schema and a table
     (Schema)-[:HAS_TABLE]->(Table)
