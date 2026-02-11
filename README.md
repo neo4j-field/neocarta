@@ -98,12 +98,14 @@ class Value node_4_color
 
 Nodes
 * `Database`
+* `Schema`
 * `Table`
 * `Column`
 * `Value`
 
 Relationships
-* `(:Database)-[:HAS_TABLE]->(:Table)`
+* `(:Database)-[:HAS_Schema]->(:Schema)`
+* `(:Schema)-[:HAS_TABLE]->(:Table)`
 * `(:Table)-[:HAS_COLUMN]->(:Column)`
 * `(:Column)-[:HAS_VALUE]->(:Value)`
 * `(:Column)-[:REFERENCES]->(:Column)`
