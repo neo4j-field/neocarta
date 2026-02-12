@@ -47,9 +47,9 @@ class HasCategory(BaseModel):
 class HasBusinessTerm(BaseModel):
     """
     A relationship between a Category and a Business Term
-    (Glossary)-[:HAS_BUSINESS_TERM]->(BusinessTerm)
+    (Category)-[:HAS_BUSINESS_TERM]->(BusinessTerm)
     """
-    glossary_id: str = Field(..., description="The unique identifier for the glossary")
+    category_id: str = Field(..., description="The unique identifier for the category")
     business_term_id: str = Field(..., description="The unique identifier for the business term")
 
 
