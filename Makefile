@@ -15,6 +15,9 @@ help:
 	@echo "  make clean ................... Remove Python cache files and temporary directories"
 	@echo "  make fmt ..................... Format the code with Ruff"
 	@echo "  make lint .................... Lint the code with Ruff"
+	@echo "  .............................."
+	@echo "  make refresh-mermaid-data-model-images .... Refresh the data model images"
+	@echo "  make refresh-mermaid-architecture-images .. Refresh the architecture images"
 
 agent:
 	uv run run_agent.py
@@ -46,6 +49,17 @@ install-mcp-server:
 install-agent:
 	uv sync --group agent
 
+refresh-mermaid-data-model-images:
+	mmdc -i assets/mermaid/data_model/glossary-metadata-data-model-1.mmd -o assets/images/data_model/glossary-metadata-data-model-1.png
+	mmdc -i assets/mermaid/data_model/glossary-data-model-1.mmd -o assets/images/data_model/glossary-data-model-1.png
+	mmdc -i assets/mermaid/data_model/sql-graph-data-model-core.mmd -o assets/images/data_model/sql-graph-data-model-core.png
+	mmdc -i assets/mermaid/data_model/sql-graph-data-model-expanded-1.mmd -o assets/images/data_model/sql-graph-data-model-expanded-1.png
+
+refresh-mermaid-architecture-images:
+	mmdc -i assets/mermaid/architecture/bigquery-workflow-architecture.mmd -o assets/images/architecture/bigquery-workflow-architecture.png
+	mmdc -i assets/mermaid/architecture/embeddings-workflow-architecture.mmd -o assets/images/architecture/embeddings-workflow-architecture.png
+	mmdc -i assets/mermaid/architecture/full-workflow-architecture.mmd -o assets/images/architecture/full-workflow-architecture.png
+	mmdc -i assets/mermaid/architecture/agent-architecture.mmd -o assets/images/architecture/agent-architecture.png
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
