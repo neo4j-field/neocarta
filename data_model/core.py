@@ -20,6 +20,13 @@ class Database(BaseModel):
         default=None, description="The embedding of the database description"
     )
 
+    @field_validator("platform", "service", mode="after")
+    def validate_string_uppercase(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is in uppercase.
+        """
+        return v.upper() if v is not None else None
+
 
 class Schema(BaseModel):
     """A Schema node (represents a BigQuery dataset)"""

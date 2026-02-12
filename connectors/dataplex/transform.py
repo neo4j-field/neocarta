@@ -174,7 +174,7 @@ def transform_to_category_nodes(category_info: pd.DataFrame) -> list[Category]:
     """
     return [
         Category(
-            id=row.glossary_id + "." + row.category_id,
+            id=row.category_id,
             name=row.category_id,
             description=None, # no description in extraction step
         )

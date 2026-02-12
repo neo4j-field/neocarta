@@ -105,7 +105,7 @@ async def openai_embeddings_workflow(
     embedding_client: AsyncOpenAI,
     embedding_model: str = "text-embedding-3-small",
     dimensions: int = 768,
-    node_labels: list[str] = ["Database", "Schema", "Table", "Column"],
+    node_labels: list[str] = ["Table", "Column"],
     database_name: str = "neo4j",
 ) -> None:
     """
@@ -125,13 +125,10 @@ async def openai_embeddings_workflow(
     dimensions: int
         The dimensions of the vector index. Must be an integer greater than 0.
     node_labels: list[str]
-        The labels of the nodes to embed. Labels must be one of: Database, Schema, Table, Column.
+        The labels of the nodes to embed.
     database_name: str
         The name of the database to write embeddings to.
     """
-    assert all(
-        label in ["Database", "Schema", "Table", "Column"] for label in node_labels
-    ), "Node labels must be one of: Database, Schema, Table, Column"
 
     for label in node_labels:
         print(f"Processing {label} nodes...")

@@ -6,6 +6,57 @@ from typing import Optional
 from connectors.dataplex.models import BigQueryMetadataInfoResponse, GlossaryInfoResponse
 
 
+def extract_dataset_table_ids(
+    catalog_client: dataplex_v1.CatalogServiceClient,
+    project_id: str,
+    project_number: str,
+    dataplex_location: str,
+    dataset_id: str,
+) -> list[str]:
+    """
+    Discover all BigQuery table IDs in a dataset via Dataplex Universal Catalog.
+
+    Lists entries in the managed ``@bigquery`` entry group and filters for
+    entries whose name contains the target dataset's table path.
+
+    Parameters
+    ----------
+    catalog_client: dataplex_v1.CatalogServiceClient
+        The Dataplex Catalog client.
+    project_id: str
+        The GCP project ID.
+    project_number: str
+        The GCP project number (used to address the @bigquery entry group).
+    dataplex_location: str
+        The Dataplex location (e.g. 'us-central1').
+    dataset_id: str
+        The BigQuery dataset ID.
+
+    Returns
+    -------
+    list[str]
+        A list of table IDs within the dataset.
+    """
+    entry_group = (
+        f"projects/{project_number}/locations/{dataplex_location}"
+        f"/entryGroups/@bigquery"
+    )
+
+    # Table entries have names of the form:
+    # .../@bigquery/entries/bigquery.googleapis.com/projects/{project_id}/datasets/{dataset_id}/tables/{table_id}
+    table_path_segment = (
+        f"bigquery.googleapis.com/projects/{project_id}"
+        f"/datasets/{dataset_id}/tables/"
+    )
+
+    table_ids = []
+    for entry in catalog_client.list_entries(parent=entry_group):
+        if table_path_segment in entry.name:
+            table_ids.append(entry.name.split("/tables/")[-1])
+
+    return table_ids
+
+
 def extract_bigquery_metadata_info(
     catalog_client: dataplex_v1.CatalogServiceClient,
     project_id: str,
@@ -65,11 +116,8 @@ def extract_bigquery_metadata_info(
     # Schema fields
     schema_fields = []
     for key, aspect in entry.aspects.items():
-        print(key)
         if "schema" in key and aspect.data:
-            print(dict(aspect.data))
             for field in aspect.data["fields"]:
-                print(dict(field))
                 schema_fields.append(dict(field))
 
     records = []
@@ -152,7 +200,6 @@ def extract_glossary_info(
             continue
 
         for term in terms:
-            print(term)
             records.append(
                 GlossaryInfoResponse(
                     term_id=term.name,
@@ -161,7 +208,7 @@ def extract_glossary_info(
                     glossary_id=glossary_id,
                     glossary_name=glossary_name,
                     term_parent=term.parent,
-                    category_id=_parse_glossary_category_id(term.parent),
+                    category_id=term.parent,
                 )
             )
 

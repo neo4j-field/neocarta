@@ -287,9 +287,9 @@ def load_has_business_term_relationships(
     _, summary, _ = neo4j_driver.execute_query(
         query_="""
     UNWIND $rows as row
-    MATCH (cat:Category {id: row.category_id})
+    MATCH (parent:Category {id: row.category_id})
     MATCH (bt:BusinessTerm {id: row.business_term_id})
-    MERGE (cat)-[:HAS_BUSINESS_TERM]->(bt)
+    MERGE (parent)-[:HAS_BUSINESS_TERM]->(bt)
     """,
         parameters_={"rows": [n.model_dump() for n in has_business_term_relationships]},
         routing_=RoutingControl.WRITE,

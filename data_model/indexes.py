@@ -27,9 +27,6 @@ def create_vector_index(
         The summary of the vector index created.
     """
 
-    assert node_label in ["Database", "Schema", "Table", "Column"], (
-        "Node label must be one of: Database, Schema, Table, Column"
-    )
     assert dimensions > 0, "Dimensions must be an integer greater than 0"
 
     vector_index_query = f"""

@@ -1,0 +1,95 @@
+import argparse
+import asyncio
+import os
+from dotenv import load_dotenv
+from neo4j import GraphDatabase
+from openai import AsyncOpenAI
+from google.cloud import dataplex_v1
+from embeddings.openai_embeddings import openai_embeddings_workflow
+from connectors.dataplex.workflow import dataplex_workflow
+
+
+async def main(
+    with_embeddings: bool = True,
+    include_schema: bool = True,
+    include_glossary: bool = True,
+):
+    load_dotenv()
+    print("Starting Dataplex workflow...")
+    print("Creating drivers and clients...")
+
+    neo4j_driver = GraphDatabase.driver(
+        uri=os.getenv("NEO4J_URI"),
+        auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
+    )
+    neo4j_database = "dataplex-2"
+
+    catalog_client = dataplex_v1.CatalogServiceClient()
+    glossary_client = dataplex_v1.BusinessGlossaryServiceClient()
+
+    
+
+    # Node labels to embed — filtered to what was actually ingested
+    node_labels = []
+    if include_schema:
+        node_labels += ["Database", "Schema", "Table", "Column"]
+    if include_glossary:
+        node_labels += ["Glossary", "Category", "BusinessTerm"]
+
+    print("Extracting, transforming, and loading Dataplex metadata into Neo4j...")
+    dataplex_workflow(
+        catalog_client=catalog_client,
+        glossary_client=glossary_client,
+        project_id=os.getenv("GCP_PROJECT_ID"),
+        project_number=os.getenv("GCP_PROJECT_NUMBER"),
+        dataplex_location=os.getenv("DATAPLEX_LOCATION"),
+        dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
+        neo4j_driver=neo4j_driver,
+        database_name=neo4j_database,
+        include_schema=include_schema,
+        include_glossary=include_glossary,
+    )
+
+    if with_embeddings and node_labels:
+        embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        print("Generating embeddings for nodes...")
+        await openai_embeddings_workflow(
+            neo4j_driver,
+            embedding_client,
+            "text-embedding-3-small",
+            768,
+            node_labels,
+            neo4j_database,
+        )
+
+    print("Workflow completed successfully!")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Extract Dataplex metadata and load into Neo4j (embeddings enabled by default)"
+    )
+    parser.add_argument(
+        "--skip-embeddings",
+        action="store_true",
+        help="Skip embedding generation (only load metadata into Neo4j)",
+    )
+    parser.add_argument(
+        "--skip-schema",
+        action="store_true",
+        help="Skip BigQuery schema ingestion (Database, Schema, Table, Column)",
+    )
+    parser.add_argument(
+        "--skip-glossary",
+        action="store_true",
+        help="Skip business glossary ingestion (Glossary, Category, BusinessTerm)",
+    )
+    args = parser.parse_args()
+
+    asyncio.run(
+        main(
+            with_embeddings=not args.skip_embeddings,
+            include_schema=not args.skip_schema,
+            include_glossary=not args.skip_glossary,
+        )
+    )
