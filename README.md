@@ -191,12 +191,19 @@ bigquery_workflow(
 )
 ```
 
+**GCP Dataplex Universal Catalog**
+
+Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./connectors/dataplex/README.md) for more information and caveats of using this connector.
+
+
 ### Embeddings 
 
-Embeddings are generated for the `description` fields of the following nodes:
+Embeddings may be generated for the `description` fields of the following nodes:
 * `Database`
+* `Schema`
 * `Table`
 * `Column`
+* `BusinessTerm`
 
 This project currently supports the following embeddings Providers:
 * OpenAI
