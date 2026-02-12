@@ -6,7 +6,7 @@ This connector reads information from the GCP Dataplex Universal Catalog via the
 
 Currently this connector supports reading BigQuery metadata stored in Dataplex and Glossary information.
 
-## Data Model
+## Data Models
 
 ### BigQuery Metadata
 
