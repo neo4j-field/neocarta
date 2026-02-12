@@ -55,7 +55,7 @@ Category -->|HAS_BUSINESS_TERM| BusinessTerm
 
 ### Unable to connect business terms to columns
 
-The Dataplex API has no method of retrieving entityLink IDs. This means that we can not automatically retrieve the connections between columns and business terms. This is a feature that is in the preview version of the Dataplex API and should be released in the future. Once publically available, it will be implemented in this library. 
+The Dataplex API has no method of retrieving entityLink IDs. This means that we can not automatically retrieve the connections between columns and business terms. This is a feature that is in [the preview version](https://docs.cloud.google.com/dataplex/docs/manage-glossaries#rest_23) of the Dataplex API and should be released in the future. Once publically available, it will be implemented in this library. 
 
 The goal data model is shown below. Note that `Value` nodes are still absent in the Dataplex output.
 

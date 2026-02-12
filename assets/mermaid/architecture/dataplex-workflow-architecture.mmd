@@ -1,0 +1,39 @@
+---
+config:
+    layout: elk
+---
+graph LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+    subgraph Big["Google Cloud Platform"]
+        BQ(BigQuery Database)        
+    
+
+        subgraph Source["GCP Dataplex Universal Catalog"]
+            G(Glossaries)
+            MT(Metadata Types)        
+        end
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read Data Catalog)   
+        PM(Validate + Transform<br>with Pydantic) 
+    
+        QE -->|Raw Data<br/>JSON| PM
+    end
+    
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    BQ -->|BigQuery Metadata|MT
+    G -->| Glossary Content| QE
+    MT -->|BigQuery Metadata| QE
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+
+    style Source fill:#e1f5ff
+    style ETL fill:#fff4e1
+    style Schema fill:#ffd1dc
+    style Graph fill:#ffe1e1

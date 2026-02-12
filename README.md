@@ -195,7 +195,44 @@ bigquery_workflow(
 
 Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./connectors/dataplex/README.md) for more information and caveats of using this connector.
 
+#### Workflow Architecture 
 
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+    subgraph Big["Google Cloud Platform"]
+        BQ(BigQuery Database)        
+    
+
+        subgraph Source["GCP Dataplex Universal Catalog"]
+            G(Glossaries)
+            MT(Metadata Types)        
+        end
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read Data Catalog)   
+        PM(Validate + Transform<br>with Pydantic) 
+    
+        QE -->|Raw Data<br/>JSON| PM
+    end
+    
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    BQ -->|BigQuery Metadata|MT
+    G -->| Glossary Content| QE
+    MT -->|BigQuery Metadata| QE
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+```
 ### Embeddings 
 
 Embeddings may be generated for the `description` fields of the following nodes:
