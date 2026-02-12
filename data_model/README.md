@@ -19,13 +19,13 @@ Nodes
     * Contains information about a column within a table
 
 Relationships
-* `(:Database)-[:HAS_Schema]->(:Schema)`
+* [`(:Database)-[:HAS_SCHEMA]->(:Schema)`](./core.py#L88)
     * Defines the database to schema hierarchy
-* `(:Schema)-[:HAS_TABLE]->(:Table)`
+* [`(:Schema)-[:HAS_TABLE]->(:Table)`](./core.py#L98)
     * Defines the schema to table hierarchy
-* `(:Table)-[:HAS_COLUMN]->(:Column)`
+* [`(:Table)-[:HAS_COLUMN]->(:Column)`](./core.py#L108)
     * Defines the table to column hierarchy
-* `(:Column)-[:REFERENCES]->(:Column)`
+* [`(:Column)-[:REFERENCES]->(:Column)`](./core.py#L118)
     * Defines relationship where two columns represent the same information, but exist in different tables
     * Columns identifed with this relationship may be used to join their respective tables
 
@@ -36,13 +36,13 @@ For example upon matching a `Column`, `k` values may be returned as examples by 
 If values are constrained to a set of options, these may be provded as an enum in the context to provide additional guidance.
 
 Nodes
-* `Value`
+* [`Value`](./expanded.py#L5)
     * Represents a single unique value within a column
     * Values are unique on the column level within the graph
     * A value may not have more than one relationship with a `Column` node
 
 Relationships
-* `(:Column)-[:HAS_VALUE]->(:Value)`
+* [`(:Column)-[:HAS_VALUE]->(:Value)`](./expanded.py#L12)
     * Defines a value's parent column
 
 ## Glossary Data Model **(Partially Implemented)**
@@ -52,18 +52,18 @@ This allows table relationships to be inferred by shared business terms between 
 For example `TableA.customer_id` and `TableB.cstmr_id` both are tagged with the business term "Customer ID", implying that we can join these tables on `customer_id` and `cstmr_id`.
 
 Nodes
-* `Glossary`
+* [`Glossary`](./expanded.py#L21)
     * The glossary containing categories and business terms
-* `Category`
+* [`Category`](./expanded.py#L27)
     * Contains information about a category in the glossary
-* `BusinessTerm`
+* [`BusinessTerm`](./expanded.py#L33)
     * A leaf level term in the glossary
     * Defines globally recognized term across databases in the system
 
 Relationships
-* `(:Glossary)-[:HAS_CATEGORY]->(:Category)`
-    * Defines glossary to category hierarchy 
-* `(:Category)-[:HAS_BUSINESS_TERM]->(:BusinessTerm)`
+* [`(:Glossary)-[:HAS_CATEGORY]->(:Category)`](./expanded.py#L42)
+    * Defines glossary to category hierarchy
+* [`(:Category)-[:HAS_BUSINESS_TERM]->(:BusinessTerm)`](./expanded.py#L50)
     * Defines category to business term hierarchy
 * `(:Column)-[:RESOLVES_TO]->(:BusinessTerm)`
     * Defines how a column resolves to a business term
