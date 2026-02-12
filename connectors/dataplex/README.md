@@ -57,6 +57,39 @@ Category -->|HAS_BUSINESS_TERM| BusinessTerm
 
 The Dataplex API has no method of retrieving entityLink IDs. This means that we can not automatically retrieve the connections between columns and business terms. This is a feature that is in the preview version of the Dataplex API and should be released in the future. Once publically available, it will be implemented in this library. 
 
+The goal data model is shown below. Note that `Value` nodes are still absent in the Dataplex output.
+
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+%% Database Nodes
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Schema("Schema<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
+Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
+
+%% Glossary Nodes
+Glossary("Glossary<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING")
+Category("Category<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING")
+BusinessTerm("BusinessTerm<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+
+%% Database Relationships
+Database -->|HAS_SCHEMA| Schema
+Schema -->|HAS_TABLE| Table
+Table -->|HAS_COLUMN| Column
+Column -->|REFERENCES| Column
+
+%% Glossary Relationships
+Glossary -->|HAS_CATEGORY| Category
+Category -->|HAS_BUSINESS_TERM| BusinessTerm
+
+%% Cross-domain Relationship
+Column -->|RESOLVES_TO| BusinessTerm
+```
+
 ### Aspect handling
 
 Information such as primary / foreign keys and data stewardship may be defined as Dataplex Aspects. Aspects are custom definitions and so automating the indetification and mapping of Aspects to Steward nodes, for example, is difficult. Additionally, the inaccessible entityLink IDs mean that even if we properly map these Aspects to nodes in our data model, we can't identify relationships via the Dataplex API.
