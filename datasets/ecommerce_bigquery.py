@@ -21,5 +21,5 @@ def load_ecommerce_dataset_to_bigquery(client: bigquery.Client) -> None:
 if __name__ == "__main__":
     import os
 
-    client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
+    client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
     load_ecommerce_dataset_to_bigquery(client)

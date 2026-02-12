@@ -19,7 +19,7 @@ async def main(with_embeddings: bool = True):
     )
     neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
     embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    bigquery_client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
+    bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
     node_labels = ["Database", "Schema", "Table", "Column"]
 
@@ -27,7 +27,7 @@ async def main(with_embeddings: bool = True):
     # extract, transform, and load BigQuery data into Neo4j
     bigquery_workflow(
         bigquery_client,
-        os.getenv("BIGQUERY_PROJECT_ID"),
+        os.getenv("GCP_PROJECT_ID"),
         os.getenv("BIGQUERY_DATASET_ID"),
         neo4j_driver,
         neo4j_database,

@@ -11,12 +11,21 @@ class Database(BaseModel):
 
     id: str = Field(..., description="The unique identifier for the database")
     name: str = Field(..., description="The name of the database")
+    platform: Optional[str] = Field(default=None, description="The platform of the database", examples=["GCP"])
+    service: Optional[str] = Field(default=None, description="The service running the database", examples=["BIGQUERY"])
     description: Optional[str] = Field(
         default=None, description="The description of the database"
     )
     embedding: Optional[list[float]] = Field(
         default=None, description="The embedding of the database description"
     )
+
+    @field_validator("platform", "service", mode="after")
+    def validate_string_uppercase(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is in uppercase.
+        """
+        return v.upper() if v is not None else None
 
 
 class Schema(BaseModel):

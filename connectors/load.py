@@ -11,7 +11,15 @@ from data_model.core import (
     HasColumn,
     References,
 )
-from data_model.expanded import Value, HasValue
+from data_model.expanded import (
+    Value,
+    HasValue,
+    Glossary,
+    Category,
+    BusinessTerm,
+    HasCategory,
+    HasBusinessTerm,
+)
 
 
 def load_database_nodes(
@@ -23,7 +31,9 @@ def load_database_nodes(
     MERGE (d:Database {id: row.id})
     ON CREATE
         SET d.name = row.name, 
-            d.description = row.description
+            d.description = row.description,
+            d.service = row.service,
+            d.platform = row.platform
     """,
         parameters_={"rows": [n.model_dump() for n in database_nodes]},
         routing_=RoutingControl.WRITE,
@@ -184,6 +194,104 @@ def load_references_relationships(
     MERGE (c1)-[:REFERENCES]->(c2)
     """,
         parameters_={"rows": [n.model_dump() for n in references_relationships]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
+    return summary.counters.__dict__
+
+
+def load_glossary_nodes(
+    glossary_nodes: list[Glossary],
+    neo4j_driver: Driver,
+    database_name: str = "neo4j",
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MERGE (g:Glossary {id: row.id})
+    ON CREATE
+        SET g.name = row.name,
+            g.description = row.description
+    """,
+        parameters_={"rows": [n.model_dump() for n in glossary_nodes]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
+    return summary.counters.__dict__
+
+
+def load_category_nodes(
+    category_nodes: list[Category],
+    neo4j_driver: Driver,
+    database_name: str = "neo4j",
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MERGE (cat:Category {id: row.id})
+    ON CREATE
+        SET cat.name = row.name,
+            cat.description = row.description
+    """,
+        parameters_={"rows": [n.model_dump() for n in category_nodes]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
+    return summary.counters.__dict__
+
+
+def load_business_term_nodes(
+    business_term_nodes: list[BusinessTerm],
+    neo4j_driver: Driver,
+    database_name: str = "neo4j",
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MERGE (bt:BusinessTerm {id: row.id})
+    ON CREATE
+        SET bt.name = row.name,
+            bt.description = row.description
+    """,
+        parameters_={"rows": [n.model_dump() for n in business_term_nodes]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
+    return summary.counters.__dict__
+
+
+def load_has_category_relationships(
+    has_category_relationships: list[HasCategory],
+    neo4j_driver: Driver,
+    database_name: str = "neo4j",
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MATCH (g:Glossary {id: row.glossary_id})
+    MATCH (cat:Category {id: row.category_id})
+    MERGE (g)-[:HAS_CATEGORY]->(cat)
+    """,
+        parameters_={"rows": [n.model_dump() for n in has_category_relationships]},
+        routing_=RoutingControl.WRITE,
+        database_=database_name,
+    )
+    return summary.counters.__dict__
+
+
+def load_has_business_term_relationships(
+    has_business_term_relationships: list[HasBusinessTerm],
+    neo4j_driver: Driver,
+    database_name: str = "neo4j",
+) -> dict:
+    _, summary, _ = neo4j_driver.execute_query(
+        query_="""
+    UNWIND $rows as row
+    MATCH (parent:Category {id: row.category_id})
+    MATCH (bt:BusinessTerm {id: row.business_term_id})
+    MERGE (parent)-[:HAS_BUSINESS_TERM]->(bt)
+    """,
+        parameters_={"rows": [n.model_dump() for n in has_business_term_relationships]},
         routing_=RoutingControl.WRITE,
         database_=database_name,
     )

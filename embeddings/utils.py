@@ -34,9 +34,6 @@ def get_nodes_to_embed(
         - description: The description of the node.
     """
 
-    assert node_label in ["Database", "Schema", "Table", "Column"], (
-        "Node label must be one of: Database, Schema, Table, Column"
-    )
     assert min_length > 0, "Minimum length must be greater than 0"
 
     query = f"""

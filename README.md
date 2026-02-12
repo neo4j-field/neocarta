@@ -65,10 +65,10 @@ config:
 ---
 graph LR
 %% Nodes
-Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
-Schema("Schema<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
-Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST")
-Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: LIST<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+Schema("Schema<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR<br/>type: STRING<br/>nullable: BOOLEAN<br/>isPrimaryKey: BOOLEAN<br/>isForeignKey: BOOLEAN")
 Value("Value<br/>id: STRING | KEY<br/>value: STRING")
 
 %% Relationships
@@ -130,7 +130,7 @@ This workflow requires the following variables to be set in the `.env` file:
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
 * NEO4J_DATABASE=neo4j-database
-* BIGQUERY_PROJECT_ID=project-id
+* GCP_PROJECT_ID=project-id
 * BIGQUERY_DATASET_ID=dataset-id
 
 
@@ -179,24 +179,31 @@ neo4j_driver = GraphDatabase.driver(
     auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
 )
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
-bigquery_client = bigquery.Client(project=os.getenv("BIGQUERY_PROJECT_ID"))
+bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
 # extract, transform, and load BigQuery data into Neo4j
 bigquery_workflow(
     bigquery_client,
-    os.getenv("BIGQUERY_PROJECT_ID"),
+    os.getenv("GCP_PROJECT_ID"),
     os.getenv("BIGQUERY_DATASET_ID"),
     neo4j_driver,
     neo4j_database,
 )
 ```
 
+**GCP Dataplex Universal Catalog**
+
+Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./connectors/dataplex/README.md) for more information and caveats of using this connector.
+
+
 ### Embeddings 
 
-Embeddings are generated for the `description` fields of the following nodes:
+Embeddings may be generated for the `description` fields of the following nodes:
 * `Database`
+* `Schema`
 * `Table`
 * `Column`
+* `BusinessTerm`
 
 This project currently supports the following embeddings Providers:
 * OpenAI
@@ -277,7 +284,7 @@ It requires the following variables to be set in the `.env` file:
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
 * NEO4J_DATABASE=neo4j-database
-* BIGQUERY_PROJECT_ID=project-id
+* GCP_PROJECT_ID=project-id
 * BIGQUERY_DATASET_ID=dataset-id
 * OPENAI_API_KEY=sk-...
 
@@ -345,7 +352,7 @@ This repository contains a sample dataset of ecommerce data.
 Ensure that the following environment variable is set before running and that you are credentialed via the gcloud cli.
 
 ```bash
-BIGQUERY_PROJECT_ID=project-id
+GCP_PROJECT_ID=project-id
 ```
 
 To create the dataset in your BigQuery instance, you may run the following Make command.

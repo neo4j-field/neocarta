@@ -29,6 +29,28 @@ FOR (c:Column) REQUIRE c.id IS UNIQUE;
 column_id_key_constraint = column_id_unique_constraint.replace("UNIQUE", "NODE KEY")
 
 
+glossary_id_unique_constraint = """
+CREATE CONSTRAINT glossary_id_constraint
+FOR (g:Glossary) REQUIRE g.id IS UNIQUE;
+"""
+
+glossary_id_key_constraint = glossary_id_unique_constraint.replace("UNIQUE", "NODE KEY")
+
+business_term_id_unique_constraint = """
+CREATE CONSTRAINT business_term_id_constraint
+FOR (b:BusinessTerm) REQUIRE b.id IS UNIQUE;
+"""
+
+business_term_id_key_constraint = business_term_id_unique_constraint.replace("UNIQUE", "NODE KEY")
+
+
+category_id_unique_constraint = """
+CREATE CONSTRAINT category_id_constraint
+FOR (c:Category) REQUIRE c.id IS UNIQUE;
+"""
+
+category_id_key_constraint = category_id_unique_constraint.replace("UNIQUE", "NODE KEY")    
+
 def is_enterprise_edition(neo4j_driver: Driver, database_name: str = "neo4j") -> bool:
     """
     Check if using enterprise edition of Neo4j.
