@@ -35,7 +35,10 @@ class BusinessTerm(BaseModel):
     id: str = Field(..., description="The unique identifier for the business term")
     name: str = Field(..., description="The name of the business term")
     description: Optional[str] = Field(default=None, description="The description of the business term")
-
+    embedding: Optional[list[float]] = Field(
+        default=None, description="The embedding of the business term description"
+    )
+    
 class HasCategory(BaseModel):
     """
     A relationship between a Glossary and a Category
