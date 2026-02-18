@@ -6,6 +6,10 @@ from connectors.bigquery.models import InfoTablesCache
 
 
 class BigQueryExtractor:
+    """
+    Extractor class for BigQuery. 
+    Extracts metadata from BigQuery Information Tables.
+    """
     def __init__(self, client: bigquery.Client, project_id: Optional[str] = None, dataset_id: Optional[str] = None):
         """
         Initialize the BigQuery extractor.
@@ -50,9 +54,14 @@ class BigQueryExtractor:
         return dataset_id
 
 
-    def extract_database_info(self) -> pd.DataFrame:
+    def extract_database_info(self, cache: bool = False) -> pd.DataFrame:
         """
         Extract BigQuery database (project) information.
+
+        Parameters
+        ----------
+        cache: bool = False
+            Whether to cache the extract. If True, will cache the database information in the instance.
 
         Returns
         -------
@@ -60,8 +69,11 @@ class BigQueryExtractor:
             A Pandas DataFrame containing the BigQuery database information.
         """
 
-        self.info_tables["database_info"] = pd.DataFrame([{"project_id": self.project_id}])
-        return self.info_tables["database_info"]
+        df = pd.DataFrame([{"project_id": self.project_id}])
+        if cache:
+            self.info_tables["database_info"] = df
+
+        return df
 
 
     def extract_schema_info(
@@ -253,7 +265,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         return df
 
 
-    def extract_column_unique_values(
+    def extract_column_unique_values_for_table(
         self, 
         table_name: str,
         column_names: list[str],
@@ -318,8 +330,62 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             + hashlib.md5(row["unique_value"].encode()).hexdigest(),
             axis=1,
         )
-
+        
+        # TODO: Handle caching duplicate column information if method run multiple times for same table and columns.
         if cache:
-            self.info_tables["column_unique_values"] = result
+            self.info_tables["column_unique_values"] = pd.concat([self.info_tables["column_unique_values"], result], ignore_index=True)
 
         return result
+
+    def extract_column_unique_values_for_all_tables(
+        self, dataset_id: Optional[str] = None, 
+        table_info: Optional[pd.DataFrame] = None, 
+        column_info: Optional[pd.DataFrame] = None, 
+        cache: bool = False
+    ) -> pd.DataFrame:
+        """
+        Extract BigQuery column unique values for all tables in the dataset.
+
+        Parameters
+        ----------
+        dataset_id: Optional[str] = None
+            The dataset ID. If not provided, will use default instance `dataset_id`.
+        table_info: Optional[pd.DataFrame] = None
+            The table information. If not provided, will use cached table information.
+        column_info: Optional[pd.DataFrame] = None
+            The column information. If not provided, will use cached column information.
+        cache: bool = False
+            Whether to cache the extract. If True, will cache the column unique values in the instance.
+
+        Returns
+        -------
+        pd.DataFrame
+            A Pandas DataFrame.
+            Each row represents one unique value for a column.
+        """
+        column_info = column_info or self.info_tables.get("column_info", None)
+        if column_info is None:
+            raise ValueError("Column information is required to extract column unique values for all tables. Please use `extract_column_info` method to extract column information. You may cache results by setting method argument `cache` to True.")
+
+        table_info = table_info or self.info_tables.get("table_info", None)
+        if table_info is None:
+            raise ValueError("Table information is required to extract column unique values for all tables. Please use `extract_table_info` method to extract table information. You may cache results by setting method argument `cache` to True.")
+
+        dataset_id = self._get_dataset_id(dataset_id)
+
+        value_info = pd.DataFrame()
+        for table_name in table_info["table_name"].unique():
+            column_names = column_info[column_info["table_name"] == table_name][
+                "column_name"
+            ].unique()
+            value_info = pd.concat(
+                [
+                    value_info,
+                    self.extract_column_unique_values_for_table(table_name, column_names, dataset_id)
+                ]
+            )
+
+        if cache:
+            self.info_tables["column_unique_values"] = value_info
+
+        return value_info

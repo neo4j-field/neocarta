@@ -6,7 +6,7 @@ from neo4j import GraphDatabase
 from openai import AsyncOpenAI
 from embeddings.openai_embeddings import openai_embeddings_workflow
 from google.cloud import bigquery
-from connectors.bigquery.workflow import bigquery_workflow
+from connectors.bigquery.workflow import BigQueryWorkflow
 
 
 async def main(with_embeddings: bool = True):
@@ -25,13 +25,14 @@ async def main(with_embeddings: bool = True):
 
     print("Extracting, transforming, and loading BigQuery data into Neo4j...")
     # extract, transform, and load BigQuery data into Neo4j
-    bigquery_workflow(
-        bigquery_client,
-        os.getenv("GCP_PROJECT_ID"),
-        os.getenv("BIGQUERY_DATASET_ID"),
-        neo4j_driver,
-        neo4j_database,
+    bigquery_workflow = BigQueryWorkflow(
+        client=bigquery_client,
+        project_id=os.getenv("GCP_PROJECT_ID"),
+        dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
+        neo4j_driver=neo4j_driver,
+        database_name=neo4j_database,
     )
+    bigquery_workflow.run()
 
     if with_embeddings:
         print("Generating embeddings for nodes...")
