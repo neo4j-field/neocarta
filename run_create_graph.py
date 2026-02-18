@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from embeddings.openai_embeddings import openai_embeddings_workflow
+from embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
 from google.cloud import bigquery
 from connectors.bigquery.workflow import BigQueryWorkflow
 
@@ -37,14 +37,14 @@ async def main(with_embeddings: bool = True):
     if with_embeddings:
         print("Generating embeddings for nodes...")
         # create embeddings for the nodes
-        await openai_embeddings_workflow(
-            neo4j_driver,
-            embedding_client,
-            "text-embedding-3-small",
-            768,
-            node_labels,
-            neo4j_database,
+        openai_embedding_workflow = OpenAIEmbeddingWorkflow(
+            async_embedding_client=embedding_client,
+            embedding_model="text-embedding-3-small",
+            dimensions=768,
+            neo4j_driver=neo4j_driver,
+            database_name=neo4j_database,
         )
+        await openai_embedding_workflow.arun(node_labels=node_labels)
 
     print("Workflow completed successfully!")
 
