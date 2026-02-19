@@ -32,6 +32,48 @@ class BigQueryExtractor:
 
         self.dataset_id = dataset_id
         self.info_tables: InfoTablesCache = InfoTablesCache()
+    
+    @property
+    def database_info(self) -> pd.DataFrame:
+        """
+        Get the database information.
+        """
+        return self.info_tables.get("database_info", pd.DataFrame())
+
+    @property
+    def schema_info(self) -> pd.DataFrame:
+        """
+        Get the schema information.
+        """
+        return self.info_tables.get("schema_info", pd.DataFrame())
+
+    @property
+    def table_info(self) -> pd.DataFrame:
+        """
+        Get the table information.
+        """
+        return self.info_tables.get("table_info", pd.DataFrame())
+
+    @property
+    def column_info(self) -> pd.DataFrame:
+        """
+        Get the column information.
+        """
+        return self.info_tables.get("column_info", pd.DataFrame())
+
+    @property
+    def column_references_info(self) -> pd.DataFrame:
+        """
+        Get the column references information.
+        """
+        return self.info_tables.get("column_references_info", pd.DataFrame())
+
+    @property
+    def column_unique_values(self) -> pd.DataFrame:
+        """
+        Get the column unique values.
+        """
+        return self.info_tables.get("column_unique_values", pd.DataFrame())
 
     def _get_dataset_id(self, dataset_id: Optional[str] = None) -> str:
         """

@@ -25,6 +25,88 @@ class BigQueryTransformer:
         self.metadata_nodes_cache: MetadataNodesCache = MetadataNodesCache()
         self.metadata_relationships_cache: MetadataRelationshipsCache = MetadataRelationshipsCache()
 
+    @property
+    def database_nodes(self) -> list[Database]:
+        """
+        Get the database nodes.
+        (:Database)
+        """
+        return self.metadata_nodes_cache.get("database_nodes", [])
+
+
+    @property
+    def schema_nodes(self) -> list[Schema]:
+        """
+        Get the schema nodes.
+        (:Schema)
+        """
+        return self.metadata_nodes_cache.get("schema_nodes", [])
+
+    @property
+    def table_nodes(self) -> list[Table]:
+        """
+        Get the table nodes.
+        (:Table)
+        """
+        return self.metadata_nodes_cache.get("table_nodes", [])
+
+    @property
+    def column_nodes(self) -> list[Column]:
+        """
+        Get the column nodes.
+        (:Column)
+        """
+        return self.metadata_nodes_cache.get("column_nodes", [])
+
+    @property
+    def value_nodes(self) -> list[Value]:
+        """
+        Get the value nodes.
+        (:Value)
+        """
+        return self.metadata_nodes_cache.get("value_nodes", [])
+
+    @property
+    def has_schema_relationships(self) -> list[HasSchema]:
+        """
+        Get the has schema relationships.
+        (:Database)-[:HAS_SCHEMA]->(:Schema)
+        """
+        return self.metadata_relationships_cache.get("has_schema_relationships", [])
+
+    @property
+    def has_table_relationships(self) -> list[HasTable]:
+        """
+        Get the has table relationships.
+        (:Schema)-[:HAS_TABLE]->(:Table)
+        """
+        return self.metadata_relationships_cache.get("has_table_relationships", [])
+
+    @property
+    def has_column_relationships(self) -> list[HasColumn]:
+        """
+        Get the has column relationships.
+        (:Table)-[:HAS_COLUMN]->(:Column)
+        """
+        return self.metadata_relationships_cache.get("has_column_relationships", [])
+
+    @property
+    def references_relationships(self) -> list[References]:
+        """
+        Get the references relationships.
+        (:Column)-[:REFERENCES]->(:Column)
+        """
+        return self.metadata_relationships_cache.get("references_relationships", [])
+
+    @property
+    def has_value_relationships(self) -> list[HasValue]:
+        """
+        Get the has value relationships. 
+        (:Column)-[:HAS_VALUE]->(:Value)
+        """
+        return self.metadata_relationships_cache.get("has_value_relationships", [])
+
+    @property
     def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = False) -> list[Database]:
         """
         Transform BigQuery database (project) information into database nodes.

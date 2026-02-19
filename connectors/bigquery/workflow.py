@@ -50,33 +50,33 @@ class BigQueryWorkflow:
         """
         Transform and cache metadata from BigQuery. `extract_metadata` must be called before this method.
         """
-        self.transformer.transform_to_database_nodes(self.extractor.info_tables["database_info"], cache=True)
-        self.transformer.transform_to_schema_nodes(self.extractor.info_tables["schema_info"], cache=True)
-        self.transformer.transform_to_table_nodes(self.extractor.info_tables["table_info"], cache=True)
-        self.transformer.transform_to_column_nodes(self.extractor.info_tables["column_info"], cache=True)
-        self.transformer.transform_to_value_nodes(self.extractor.info_tables["column_unique_values"], cache=True)
+        self.transformer.transform_to_database_nodes(self.extractor.database_info, cache=True)
+        self.transformer.transform_to_schema_nodes(self.extractor.schema_info, cache=True)
+        self.transformer.transform_to_table_nodes(self.extractor.table_info, cache=True)
+        self.transformer.transform_to_column_nodes(self.extractor.column_info, cache=True)
+        self.transformer.transform_to_value_nodes(self.extractor.column_unique_values, cache=True)
 
-        self.transformer.transform_to_has_schema_relationships(self.extractor.info_tables["schema_info"], cache=True)
-        self.transformer.transform_to_has_table_relationships(self.extractor.info_tables["table_info"], cache=True)
-        self.transformer.transform_to_has_column_relationships(self.extractor.info_tables["column_info"], cache=True)
-        self.transformer.transform_to_references_relationships(self.extractor.info_tables["column_references_info"], cache=True)
-        self.transformer.transform_to_has_value_relationships(self.extractor.info_tables["column_unique_values"], cache=True)
+        self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info, cache=True)
+        self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
+        self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
+        self.transformer.transform_to_references_relationships(self.extractor.column_references_info, cache=True)
+        self.transformer.transform_to_has_value_relationships(self.extractor.column_unique_values, cache=True)
         
     def load_metadata(self) -> None:
         """
         Load BigQuery metadata into Neo4j. `transform_metadata` must be called before this method.
         """
-        print(self.loader.load_database_nodes(self.transformer.metadata_nodes_cache["database_nodes"]))
-        print(self.loader.load_schema_nodes(self.transformer.metadata_nodes_cache["schema_nodes"]))
-        print(self.loader.load_table_nodes(self.transformer.metadata_nodes_cache["table_nodes"]))
-        print(self.loader.load_column_nodes(self.transformer.metadata_nodes_cache["column_nodes"]))
-        print(self.loader.load_value_nodes(self.transformer.metadata_nodes_cache["value_nodes"]))
+        print(self.loader.load_database_nodes(self.transformer.database_nodes))
+        print(self.loader.load_schema_nodes(self.transformer.schema_nodes))
+        print(self.loader.load_table_nodes(self.transformer.table_nodes))
+        print(self.loader.load_column_nodes(self.transformer.column_nodes))
+        print(self.loader.load_value_nodes(self.transformer.value_nodes))
 
-        print(self.loader.load_has_schema_relationships(self.transformer.metadata_relationships_cache["has_schema_relationships"]))
-        print(self.loader.load_has_table_relationships(self.transformer.metadata_relationships_cache["has_table_relationships"]))
-        print(self.loader.load_has_column_relationships(self.transformer.metadata_relationships_cache["has_column_relationships"]))
-        print(self.loader.load_references_relationships(self.transformer.metadata_relationships_cache["references_relationships"]))
-        print(self.loader.load_has_value_relationships(self.transformer.metadata_relationships_cache["has_value_relationships"]))
+        print(self.loader.load_has_schema_relationships(self.transformer.has_schema_relationships))
+        print(self.loader.load_has_table_relationships(self.transformer.has_table_relationships))
+        print(self.loader.load_has_column_relationships(self.transformer.has_column_relationships))
+        print(self.loader.load_references_relationships(self.transformer.references_relationships))
+        print(self.loader.load_has_value_relationships(self.transformer.has_value_relationships))
     
     def run(self, dataset_id: Optional[str] = None) -> None:
         """
