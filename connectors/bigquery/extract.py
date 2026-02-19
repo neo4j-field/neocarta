@@ -31,49 +31,49 @@ class BigQueryExtractor:
             raise ValueError("Project ID is required as argument in constructor or as attribute in BigQueryclient.")
 
         self.dataset_id = dataset_id
-        self.info_tables: InfoTablesCache = InfoTablesCache()
+        self._cache: InfoTablesCache = InfoTablesCache()
     
     @property
     def database_info(self) -> pd.DataFrame:
         """
         Get the database information.
         """
-        return self.info_tables.get("database_info", pd.DataFrame())
+        return self._cache.get("database_info", pd.DataFrame())
 
     @property
     def schema_info(self) -> pd.DataFrame:
         """
         Get the schema information.
         """
-        return self.info_tables.get("schema_info", pd.DataFrame())
+        return self._cache.get("schema_info", pd.DataFrame())
 
     @property
     def table_info(self) -> pd.DataFrame:
         """
         Get the table information.
         """
-        return self.info_tables.get("table_info", pd.DataFrame())
+        return self._cache.get("table_info", pd.DataFrame())
 
     @property
     def column_info(self) -> pd.DataFrame:
         """
         Get the column information.
         """
-        return self.info_tables.get("column_info", pd.DataFrame())
+        return self._cache.get("column_info", pd.DataFrame())
 
     @property
     def column_references_info(self) -> pd.DataFrame:
         """
         Get the column references information.
         """
-        return self.info_tables.get("column_references_info", pd.DataFrame())
+        return self._cache.get("column_references_info", pd.DataFrame())
 
     @property
     def column_unique_values(self) -> pd.DataFrame:
         """
         Get the column unique values.
         """
-        return self.info_tables.get("column_unique_values", pd.DataFrame())
+        return self._cache.get("column_unique_values", pd.DataFrame())
 
     def _get_dataset_id(self, dataset_id: Optional[str] = None) -> str:
         """
@@ -113,7 +113,7 @@ class BigQueryExtractor:
 
         df = pd.DataFrame([{"project_id": self.project_id}])
         if cache:
-            self.info_tables["database_info"] = df
+            self._cache["database_info"] = df
 
         return df
 
@@ -150,7 +150,7 @@ WHERE schema_name = '{dataset_id}'
 """).to_dataframe()
 
         if cache:
-            self.info_tables["schema_info"] = df
+            self._cache["schema_info"] = df
 
         return df
 
@@ -195,7 +195,7 @@ ORDER BY table_name
 """).to_dataframe()
 
         if cache:
-            self.info_tables["table_info"] = df
+            self._cache["table_info"] = df
 
         return df
 
@@ -257,7 +257,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
         df["is_foreign_key"] = df.apply(_is_fk, axis=1)
 
         if cache:
-            self.info_tables["column_info"] = df
+            self._cache["column_info"] = df
 
         return df
 
@@ -302,7 +302,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 """).to_dataframe()
 
         if cache:
-            self.info_tables["column_references_info"] = df
+            self._cache["column_references_info"] = df
 
         return df
 
@@ -375,7 +375,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         
         # TODO: Handle caching duplicate column information if method run multiple times for same table and columns.
         if cache:
-            self.info_tables["column_unique_values"] = pd.concat([self.info_tables["column_unique_values"], result], ignore_index=True)
+            self._cache["column_unique_values"] = pd.concat([self._cache["column_unique_values"], result], ignore_index=True)
 
         return result
 
@@ -405,11 +405,11 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             A Pandas DataFrame.
             Each row represents one unique value for a column.
         """
-        column_info = column_info or self.info_tables.get("column_info", None)
+        column_info = column_info or self._cache.get("column_info", None)
         if column_info is None:
             raise ValueError("Column information is required to extract column unique values for all tables. Please use `extract_column_info` method to extract column information. You may cache results by setting method argument `cache` to True.")
 
-        table_info = table_info or self.info_tables.get("table_info", None)
+        table_info = table_info or self._cache.get("table_info", None)
         if table_info is None:
             raise ValueError("Table information is required to extract column unique values for all tables. Please use `extract_table_info` method to extract table information. You may cache results by setting method argument `cache` to True.")
 
@@ -428,6 +428,6 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             )
 
         if cache:
-            self.info_tables["column_unique_values"] = value_info
+            self._cache["column_unique_values"] = value_info
 
         return value_info

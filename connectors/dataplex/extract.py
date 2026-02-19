@@ -45,7 +45,7 @@ class DataplexExtractor:
         self.dataset_id = dataset_id
         self.dataplex_location = dataplex_location
 
-        self.cache: DataplexExtractorCache = DataplexExtractorCache()
+        self._cache: DataplexExtractorCache = DataplexExtractorCache()
 
     @property
     def database_info(self) -> pd.DataFrame:
@@ -53,7 +53,7 @@ class DataplexExtractor:
         Get the database information DataFrame.
         """
         cols = ["project_id", "service", "platform"]
-        return self.cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id"])[cols]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id"])[cols]
 
     @property
     def schema_info(self) -> pd.DataFrame:
@@ -61,7 +61,7 @@ class DataplexExtractor:
         Get the schema information DataFrame.
         """
         cols = ["project_id", "dataset_id"]
-        return self.cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id"])[cols]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id"])[cols]
 
     @property
     def table_info(self) -> pd.DataFrame:
@@ -69,7 +69,7 @@ class DataplexExtractor:
         Get the table information DataFrame.
         """
         cols = ["project_id", "dataset_id", "table_id", "table_display_name", "table_description"]
-        return self.cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id", "table_id"])[cols]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id", "table_id"])[cols]
     
     @property
     def column_info(self) -> pd.DataFrame:
@@ -77,7 +77,7 @@ class DataplexExtractor:
         Get the column information DataFrame.
         """
         cols = ["project_id", "dataset_id", "table_id", "column_name", "column_description", "column_data_type", "column_mode"]
-        return self.cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id", "table_id", "column_name"])[cols]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id", "table_id", "column_name"])[cols]
 
 
     @property
@@ -86,7 +86,7 @@ class DataplexExtractor:
         Get the glossary information DataFrame.
         """
         cols = ["glossary_id", "glossary_name"]
-        return self.cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id"])[cols]
+        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id"])[cols]
     
     @property
     def category_info(self) -> pd.DataFrame:
@@ -94,7 +94,7 @@ class DataplexExtractor:
         Get the category information DataFrame.
         """
         cols = ["glossary_id", "category_id"]
-        return self.cache.get("category_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id", "category_id"])[cols]
+        return self._cache.get("category_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id", "category_id"])[cols]
     
     @property
     def business_term_info(self) -> pd.DataFrame:
@@ -102,7 +102,7 @@ class DataplexExtractor:
         Get the business term information DataFrame.
         """
         cols = ["glossary_id", "category_id", "term_id", "term_name", "term_description"]
-        return self.cache.get("business_term_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id", "category_id", "term_id"])[cols]
+        return self._cache.get("business_term_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id", "category_id", "term_id"])[cols]
     
     def _get_dataset_id(self, dataset_id: Optional[str] = None) -> str:
         """
@@ -250,7 +250,7 @@ class DataplexExtractor:
         # TODO: Handle caching duplicate table information if method run multiple times for same table.
         df = pd.DataFrame(records)
         if cache:
-            self.cache["table_info"] = pd.concat([self.cache["table_info"], df], ignore_index=True)
+            self._cache["table_info"] = pd.concat([self._cache["table_info"], df], ignore_index=True)
 
         return df
 
@@ -318,7 +318,7 @@ class DataplexExtractor:
         # TODO: Handle caching duplicate glossary information if method run multiple times for same glossary.
         df = pd.DataFrame(records)
         if cache:
-            self.cache["glossary_info"] = pd.concat([self.cache["glossary_info"], df], ignore_index=True)
+            self._cache["glossary_info"] = pd.concat([self._cache["glossary_info"], df], ignore_index=True)
 
         return df
 

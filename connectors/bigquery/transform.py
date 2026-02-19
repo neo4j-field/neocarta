@@ -10,7 +10,7 @@ from data_model.core import (
 )
 import pandas as pd
 from data_model.expanded import Value, HasValue
-from connectors.bigquery.models import MetadataNodesCache, MetadataRelationshipsCache
+from connectors.models import NodesCache, RelationshipsCache
 
 class BigQueryTransformer:
     """
@@ -22,8 +22,8 @@ class BigQueryTransformer:
         """
         Initialize the BigQuery transformer.
         """
-        self.metadata_nodes_cache: MetadataNodesCache = MetadataNodesCache()
-        self.metadata_relationships_cache: MetadataRelationshipsCache = MetadataRelationshipsCache()
+        self._node_cache: NodesCache = NodesCache()
+        self._relationships_cache: RelationshipsCache = RelationshipsCache()
 
     @property
     def database_nodes(self) -> list[Database]:
@@ -31,7 +31,7 @@ class BigQueryTransformer:
         Get the database nodes.
         (:Database)
         """
-        return self.metadata_nodes_cache.get("database_nodes", [])
+        return self.metadata__node_cache.get("database_nodes", [])
 
 
     @property
@@ -40,7 +40,7 @@ class BigQueryTransformer:
         Get the schema nodes.
         (:Schema)
         """
-        return self.metadata_nodes_cache.get("schema_nodes", [])
+        return self.metadata__node_cache.get("schema_nodes", [])
 
     @property
     def table_nodes(self) -> list[Table]:
@@ -48,7 +48,7 @@ class BigQueryTransformer:
         Get the table nodes.
         (:Table)
         """
-        return self.metadata_nodes_cache.get("table_nodes", [])
+        return self.metadata__node_cache.get("table_nodes", [])
 
     @property
     def column_nodes(self) -> list[Column]:
@@ -56,7 +56,7 @@ class BigQueryTransformer:
         Get the column nodes.
         (:Column)
         """
-        return self.metadata_nodes_cache.get("column_nodes", [])
+        return self.metadata__node_cache.get("column_nodes", [])
 
     @property
     def value_nodes(self) -> list[Value]:
@@ -64,7 +64,7 @@ class BigQueryTransformer:
         Get the value nodes.
         (:Value)
         """
-        return self.metadata_nodes_cache.get("value_nodes", [])
+        return self.metadata__node_cache.get("value_nodes", [])
 
     @property
     def has_schema_relationships(self) -> list[HasSchema]:
@@ -72,7 +72,7 @@ class BigQueryTransformer:
         Get the has schema relationships.
         (:Database)-[:HAS_SCHEMA]->(:Schema)
         """
-        return self.metadata_relationships_cache.get("has_schema_relationships", [])
+        return self.metadata__relationships_cache.get("has_schema_relationships", [])
 
     @property
     def has_table_relationships(self) -> list[HasTable]:
@@ -80,7 +80,7 @@ class BigQueryTransformer:
         Get the has table relationships.
         (:Schema)-[:HAS_TABLE]->(:Table)
         """
-        return self.metadata_relationships_cache.get("has_table_relationships", [])
+        return self.metadata__relationships_cache.get("has_table_relationships", [])
 
     @property
     def has_column_relationships(self) -> list[HasColumn]:
@@ -88,7 +88,7 @@ class BigQueryTransformer:
         Get the has column relationships.
         (:Table)-[:HAS_COLUMN]->(:Column)
         """
-        return self.metadata_relationships_cache.get("has_column_relationships", [])
+        return self.metadata__relationships_cache.get("has_column_relationships", [])
 
     @property
     def references_relationships(self) -> list[References]:
@@ -96,7 +96,7 @@ class BigQueryTransformer:
         Get the references relationships.
         (:Column)-[:REFERENCES]->(:Column)
         """
-        return self.metadata_relationships_cache.get("references_relationships", [])
+        return self.metadata__relationships_cache.get("references_relationships", [])
 
     @property
     def has_value_relationships(self) -> list[HasValue]:
@@ -104,7 +104,7 @@ class BigQueryTransformer:
         Get the has value relationships. 
         (:Column)-[:HAS_VALUE]->(:Value)
         """
-        return self.metadata_relationships_cache.get("has_value_relationships", [])
+        return self.metadata__relationships_cache.get("has_value_relationships", [])
 
     @property
     def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = False) -> list[Database]:
@@ -134,7 +134,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_nodes_cache["database_nodes"] = database_nodes
+            self.metadata__node_cache["database_nodes"] = database_nodes
 
         return database_nodes
 
@@ -164,7 +164,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_nodes_cache["schema_nodes"] = schema_nodes
+            self.metadata__node_cache["schema_nodes"] = schema_nodes
 
         return schema_nodes
 
@@ -196,7 +196,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_nodes_cache["table_nodes"] = table_nodes
+            self.metadata__node_cache["table_nodes"] = table_nodes
 
         return table_nodes
 
@@ -238,7 +238,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_nodes_cache["column_nodes"] = column_nodes
+            self.metadata__node_cache["column_nodes"] = column_nodes
 
         return column_nodes
 
@@ -268,7 +268,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_nodes_cache["value_nodes"] = value_nodes
+            self.metadata__node_cache["value_nodes"] = value_nodes
 
         return value_nodes
 
@@ -300,7 +300,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_relationships_cache["has_schema_relationships"] = has_schema_relationships
+            self.metadata__relationships_cache["has_schema_relationships"] = has_schema_relationships
 
         return has_schema_relationships
 
@@ -335,7 +335,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_relationships_cache["has_table_relationships"] = has_table_relationships
+            self.metadata__relationships_cache["has_table_relationships"] = has_table_relationships
 
         return has_table_relationships
 
@@ -372,7 +372,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_relationships_cache["has_column_relationships"] = has_column_relationships
+            self.metadata__relationships_cache["has_column_relationships"] = has_column_relationships
 
         return has_column_relationships
 
@@ -420,7 +420,7 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_relationships_cache["references_relationships"] = references_relationships
+            self.metadata__relationships_cache["references_relationships"] = references_relationships
 
         return references_relationships
 
@@ -451,6 +451,6 @@ class BigQueryTransformer:
         ]
 
         if cache:
-            self.metadata_relationships_cache["has_value_relationships"] = has_value_relationships
+            self.metadata__relationships_cache["has_value_relationships"] = has_value_relationships
 
         return has_value_relationships
