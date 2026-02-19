@@ -1,136 +1,96 @@
-from connectors.bigquery.extract import (
-    extract_database_info,
-    extract_schema_info,
-    extract_table_info,
-    extract_column_info,
-    extract_column_references_info,
-    extract_column_unique_values,
-)
-from connectors.bigquery.transform import (
-    transform_to_database_nodes,
-    transform_to_schema_nodes,
-    transform_to_table_nodes,
-    transform_to_column_nodes,
-    transform_to_has_schema_relationships,
-    transform_to_has_table_relationships,
-    transform_to_has_column_relationships,
-    transform_to_references_relationships,
-    transform_to_value_nodes,
-    transform_to_has_value_relationships,
-)
-from connectors.load import (
-    load_database_nodes,
-    load_schema_nodes,
-    load_table_nodes,
-    load_column_nodes,
-    load_value_nodes,
-    load_has_schema_relationships,
-    load_has_table_relationships,
-    load_has_column_relationships,
-    load_references_relationships,
-    load_has_value_relationships,
-)
 from neo4j import Driver
 from google.cloud import bigquery
-import pandas as pd
+from typing import Optional
 
+from connectors.bigquery.extract import BigQueryExtractor
+from connectors.bigquery.transform import BigQueryTransformer
+from connectors.load import Neo4jLoader
 
-def bigquery_workflow(
-    client: bigquery.Client,
-    project_id: str,
-    dataset_id: str,
-    neo4j_driver: Driver,
-    database_name: str = "neo4j",
-) -> None:
+class BigQueryWorkflow:
     """
     A workflow for extracting, transforming, and loading BigQuery data into Neo4j.
-
-    Parameters
-    ----------
-    client: bigquery.Client
-        The BigQuery client.
-    project_id: str
-        The project ID.
-    dataset_id: str
-        The dataset ID.
-    neo4j_driver: Driver
-        The Neo4j driver used to load the data into Neo4j.
-    database_name: str
-        The name of the database to write data to.
-
-    Returns
-    -------
-    None
-        The workflow runs and loads the data into Neo4j.
     """
 
-    database_info = extract_database_info(client, project_id)
-    schema_info = extract_schema_info(client, project_id, dataset_id)
-    table_info = extract_table_info(client, project_id, dataset_id)
-    column_info = extract_column_info(client, project_id, dataset_id)
-    column_references_info = extract_column_references_info(
-        client, project_id, dataset_id
-    )
+    def __init__(self, client: bigquery.Client, project_id: str, dataset_id: str, neo4j_driver: Driver, database_name: str = "neo4j"):
+        """
+        Initialize the BigQuery workflow.
+        """
 
-    # iterate over each table and batch of columns to extract unique values
-    # TODO: make column batch size configurable
-    value_info = pd.DataFrame()
-    for table_name in table_info["table_name"].unique():
-        column_names = column_info[column_info["table_name"] == table_name][
-            "column_name"
-        ].unique()
-        value_info = pd.concat(
-            [
-                value_info,
-                extract_column_unique_values(
-                    client, project_id, dataset_id, table_name, column_names
-                ),
-            ]
-        )
+        self.client = client
+        self.project_id = client.project or project_id
 
-    # format metadata into core data model
-    database_nodes = transform_to_database_nodes(database_info)
-    schema_nodes = transform_to_schema_nodes(schema_info)
-    table_nodes = transform_to_table_nodes(table_info)
-    column_nodes = transform_to_column_nodes(column_info)
-    value_nodes = transform_to_value_nodes(value_info)
+        if self.project_id is None:
+            raise ValueError("Project ID is required as argument in constructor or as attribute in BigQueryclient.")
 
-    has_schema_relationships = transform_to_has_schema_relationships(schema_info)
-    has_table_relationships = transform_to_has_table_relationships(table_info)
-    has_column_relationships = transform_to_has_column_relationships(column_info)
-    references_relationships = transform_to_references_relationships(
-        column_references_info
-    )
-    has_value_relationships = transform_to_has_value_relationships(value_info)
+        self.dataset_id = dataset_id
+        self.neo4j_driver = neo4j_driver
+        self.database_name = database_name
 
-    # load metadata into neo4j
-    print(load_database_nodes(database_nodes, neo4j_driver, database_name))
-    print(load_schema_nodes(schema_nodes, neo4j_driver, database_name))
-    print(load_table_nodes(table_nodes, neo4j_driver, database_name))
-    print(load_column_nodes(column_nodes, neo4j_driver, database_name))
-    print(load_value_nodes(value_nodes, neo4j_driver, database_name))
-    print(
-        load_has_schema_relationships(
-            has_schema_relationships, neo4j_driver, database_name
-        )
-    )
-    print(
-        load_has_table_relationships(
-            has_table_relationships, neo4j_driver, database_name
-        )
-    )
-    print(
-        load_has_column_relationships(
-            has_column_relationships, neo4j_driver, database_name
-        )
-    )
-    print(
-        load_references_relationships(
-            references_relationships, neo4j_driver, database_name
-        )
-    )
-    print(
-        load_has_value_relationships(
-            has_value_relationships, neo4j_driver, database_name
-        )
-    )
+        self.extractor = BigQueryExtractor(client, project_id, dataset_id)
+        self.transformer = BigQueryTransformer()
+        self.loader = Neo4jLoader(neo4j_driver, database_name)
+
+    def extract_metadata(self, dataset_id: Optional[str] = None) -> None:
+        """
+        Extract and cachemetadata from BigQuery.
+
+        Parameters
+        ----------
+        dataset_id: Optional[str] = None
+            The dataset ID. If not provided, will use default instance `dataset_id`.
+        """
+        self.extractor.extract_database_info(cache=True)
+        self.extractor.extract_schema_info(dataset_id=dataset_id, cache=True)
+        self.extractor.extract_table_info(dataset_id=dataset_id, cache=True)
+        self.extractor.extract_column_info(dataset_id=dataset_id, cache=True)
+        self.extractor.extract_column_references_info(dataset_id=dataset_id, cache=True)
+        self.extractor.extract_column_unique_values_for_all_tables(dataset_id=dataset_id, cache=True)
+    
+    def transform_metadata(self) -> None:
+        """
+        Transform and cache metadata from BigQuery. `extract_metadata` must be called before this method.
+        """
+        self.transformer.transform_to_database_nodes(self.extractor.database_info, cache=True)
+        self.transformer.transform_to_schema_nodes(self.extractor.schema_info, cache=True)
+        self.transformer.transform_to_table_nodes(self.extractor.table_info, cache=True)
+        self.transformer.transform_to_column_nodes(self.extractor.column_info, cache=True)
+        self.transformer.transform_to_value_nodes(self.extractor.column_unique_values, cache=True)
+
+        self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info, cache=True)
+        self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
+        self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
+        self.transformer.transform_to_references_relationships(self.extractor.column_references_info, cache=True)
+        self.transformer.transform_to_has_value_relationships(self.extractor.column_unique_values, cache=True)
+        
+    def load_metadata(self) -> None:
+        """
+        Load BigQuery metadata into Neo4j. `transform_metadata` must be called before this method.
+        """
+        print(self.loader.load_database_nodes(self.transformer.database_nodes))
+        print(self.loader.load_schema_nodes(self.transformer.schema_nodes))
+        print(self.loader.load_table_nodes(self.transformer.table_nodes))
+        print(self.loader.load_column_nodes(self.transformer.column_nodes))
+        print(self.loader.load_value_nodes(self.transformer.value_nodes))
+
+        print(self.loader.load_has_schema_relationships(self.transformer.has_schema_relationships))
+        print(self.loader.load_has_table_relationships(self.transformer.has_table_relationships))
+        print(self.loader.load_has_column_relationships(self.transformer.has_column_relationships))
+        print(self.loader.load_references_relationships(self.transformer.references_relationships))
+        print(self.loader.load_has_value_relationships(self.transformer.has_value_relationships))
+    
+    def run(self, dataset_id: Optional[str] = None) -> None:
+        """
+        Run the BigQuery workflow.
+
+        Parameters
+        ----------
+        dataset_id: Optional[str] = None
+            The dataset ID. If not provided, will use default instance `dataset_id`.
+        """
+        print("Extracting metadata from BigQuery...")
+        self.extract_metadata(dataset_id)
+        print("Transforming metadata from BigQuery...")
+        self.transform_metadata()
+        print("Loading metadata into Neo4j...")
+        self.load_metadata()
+        print("BigQuery workflow completed successfully!")

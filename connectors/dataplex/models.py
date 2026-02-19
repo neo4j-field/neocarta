@@ -1,5 +1,6 @@
 from pydantic import Field
-from typing import TypedDict
+from typing import TypedDict, Optional
+import pandas as pd
 
 class BigQueryMetadataInfoResponse(TypedDict):
     project_id: str = Field(..., description="The project ID")
@@ -29,3 +30,10 @@ class GlossaryInfoResponse(TypedDict):
     glossary_name: str = Field(..., description="The glossary name")
     term_parent: str = Field(..., description="The term parent")
     category_id: str = Field(..., description="The category ID")
+
+
+class DataplexExtractorCache(TypedDict):
+    """Cache dictionary used to store extracted Dataplex information."""
+    table_info: Optional[pd.DataFrame]
+    glossary_info: Optional[pd.DataFrame]
+        
