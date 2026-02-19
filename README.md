@@ -113,11 +113,51 @@ Relationships
 
 ## Graph Generation
 
-This project provides connectors to 
-* Connect to source data
-* Read metadata tables 
-* Transform metadata into defined Neo4j schema
-* Ingest transformed data into Neo4j
+This project provides workflow classes that organize the ETL process into reusable components:
+* **Extractors** - Connect to source data and read metadata tables
+* **Transformers** - Transform metadata into defined Neo4j schema
+* **Loaders** - Ingest transformed data into Neo4j
+* **Workflows** - Orchestrate the extract, transform, and load process
+
+Each workflow is implemented as a class that encapsulates its extractor, transformer, and loader components, providing a clean interface for metadata ingestion.
+
+### Workflow Class Architecture
+
+All workflows follow a consistent class-based architecture:
+
+```python
+class Workflow:
+    def __init__(self, clients, config):
+        # Initialize with required clients and configuration
+        self.extractor = Extractor(...)
+        self.transformer = Transformer(...)
+        self.loader = Loader(...)
+
+    def extract_metadata(self):
+        # Extract data from source and cache
+        pass
+
+    def transform_metadata(self):
+        # Transform extracted data to graph schema and cache
+        pass
+
+    def load_metadata(self):
+        # Load transformed data into Neo4j
+        pass
+
+    def run(self):
+        # Orchestrate the full ETL pipeline
+        self.extract_metadata()
+        self.transform_metadata()
+        self.load_metadata()
+```
+
+**Benefits of the class-based approach:**
+* **Modularity** - Each component (extractor, transformer, loader) is independently testable
+* **Reusability** - Components can be reused across different workflows
+* **Maintainability** - Clear separation of concerns makes the codebase easier to understand and modify
+* **Caching** - Intermediate results are cached as class properties, enabling step-by-step execution
+* **Flexibility** - Individual ETL steps can be run separately for debugging or custom workflows
 
 ### Connectors
 
@@ -168,12 +208,12 @@ graph LR
 #### Code Example
 
 ```python
-import asyncio
 import os
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from connectors.bigquery.workflow import bigquery_workflow
+from connectors.bigquery.workflow import BigQueryWorkflow
 
+# Initialize clients
 neo4j_driver = GraphDatabase.driver(
     uri=os.getenv("NEO4J_URI"),
     auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
@@ -181,14 +221,17 @@ neo4j_driver = GraphDatabase.driver(
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
-# extract, transform, and load BigQuery data into Neo4j
-bigquery_workflow(
-    bigquery_client,
-    os.getenv("GCP_PROJECT_ID"),
-    os.getenv("BIGQUERY_DATASET_ID"),
-    neo4j_driver,
-    neo4j_database,
+# Create workflow instance
+workflow = BigQueryWorkflow(
+    client=bigquery_client,
+    project_id=os.getenv("GCP_PROJECT_ID"),
+    dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database,
 )
+
+# Run the workflow to extract, transform, and load BigQuery metadata into Neo4j
+workflow.run()
 ```
 
 **GCP Dataplex Universal Catalog**
@@ -288,9 +331,9 @@ import asyncio
 import os
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from embeddings.openai_embeddings import openai_embeddings_workflow
+from embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
 
-# init connections
+# Initialize clients
 neo4j_driver = GraphDatabase.driver(
     uri=os.getenv("NEO4J_URI"),
     auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
@@ -298,18 +341,20 @@ neo4j_driver = GraphDatabase.driver(
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Create workflow instance
+workflow = OpenAIEmbeddingWorkflow(
+    async_embedding_client=embedding_client,
+    embedding_model="text-embedding-3-small",
+    dimensions=768,
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database,
+)
+
 # The node labels to generate embeddings for
 node_labels = ["Database", "Table", "Column"]
 
-# create embeddings for the nodes
-await openai_embeddings_workflow(
-    neo4j_driver,
-    embedding_client,
-    "text-embedding-3-small",
-    768,
-    node_labels,
-    neo4j_database,
-)
+# Run the workflow to create embeddings for the nodes
+await workflow.arun(node_labels=node_labels)
 ```
 
 ### Full Pipeline
