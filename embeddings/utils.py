@@ -158,10 +158,6 @@ def write_embeddings_to_graph(
         The name of the database to write embeddings to.
     """
 
-    assert node_label in ["Database", "Schema", "Table", "Column"], (
-        "Node label must be one of: Database, Schema, Table, Column"
-    )
-
     query = f"""
     UNWIND $rows as row
     MATCH (n:{node_label} {{id: row.id}})

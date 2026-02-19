@@ -375,7 +375,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         
         # TODO: Handle caching duplicate column information if method run multiple times for same table and columns.
         if cache:
-            self._cache["column_unique_values"] = pd.concat([self._cache["column_unique_values"], result], ignore_index=True)
+            self._cache["column_unique_values"] = pd.concat([self._cache.get("column_unique_values", pd.DataFrame()), result], ignore_index=True)
 
         return result
 
@@ -428,6 +428,6 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             )
 
         if cache:
-            self._cache["column_unique_values"] = value_info
+            self._cache["column_unique_values"] = pd.concat([self._cache.get("column_unique_values", pd.DataFrame()), value_info], ignore_index=True)
 
         return value_info

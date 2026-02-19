@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
 from google.cloud import dataplex_v1
-from embeddings.openai_embeddings import openai_embeddings_workflow
-from connectors.dataplex.workflow import dataplex_workflow
+from embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from connectors.dataplex.workflow import DataplexWorkflow
 
 
 async def main(
@@ -22,7 +22,7 @@ async def main(
         uri=os.getenv("NEO4J_URI"),
         auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
     )
-    neo4j_database = "dataplex-2"
+    neo4j_database = "dataplex-class-test"
 
     catalog_client = dataplex_v1.CatalogServiceClient()
     glossary_client = dataplex_v1.BusinessGlossaryServiceClient()
@@ -32,12 +32,12 @@ async def main(
     # Node labels to embed — filtered to what was actually ingested
     node_labels = []
     if include_schema:
-        node_labels += ["Database", "Schema", "Table", "Column"]
+        node_labels += ["Table", "Column"]
     if include_glossary:
-        node_labels += ["Glossary", "Category", "BusinessTerm"]
+        node_labels += ["BusinessTerm"]
 
     print("Extracting, transforming, and loading Dataplex metadata into Neo4j...")
-    dataplex_workflow(
+    workflow = DataplexWorkflow(
         catalog_client=catalog_client,
         glossary_client=glossary_client,
         project_id=os.getenv("GCP_PROJECT_ID"),
@@ -49,18 +49,19 @@ async def main(
         include_schema=include_schema,
         include_glossary=include_glossary,
     )
+    workflow.run()
 
     if with_embeddings and node_labels:
         embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         print("Generating embeddings for nodes...")
-        await openai_embeddings_workflow(
-            neo4j_driver,
+        embeddings = OpenAIEmbeddingWorkflow(
             embedding_client,
             "text-embedding-3-small",
             768,
-            node_labels,
+            neo4j_driver,
             neo4j_database,
         )
+        await embeddings.arun(node_labels=node_labels)
 
     print("Workflow completed successfully!")
 

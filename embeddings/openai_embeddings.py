@@ -110,7 +110,7 @@ class OpenAIEmbeddingWorkflow:
         batch_size: int = 100,
     ) -> None:
         """
-        This workflow
+        This async workflow:
         * Gathers nodes from the Neo4j database that are missing embeddings
         * Creates embeddings of the description fields on found nodes
         * Ingests embeddings into the Neo4j database
