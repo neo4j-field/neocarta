@@ -127,7 +127,17 @@ Nodes
 Relationships
 * `(:Metric&KPI)-[:HAS_SQL_QUERY]->(:SQLQuery)`
 
+## Transformations **(Not Implemented)**
 
+`Transform` nodes trace data lineage and how downstream columns are calculated. 
+These nodes may also contain metadata such as SQL queries, transformation logic or algorithms run to process the data.
+
+Nodes
+* `Transform`
+
+Relationships
+* `(:Column)-[:INPUT_TO]->(:Transform)`
+`(:Transform)-[:PRODUCES]->(:Column)`
 
 
 
