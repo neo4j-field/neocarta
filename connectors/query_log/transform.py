@@ -1,0 +1,192 @@
+from connectors.models import NodesCache, RelationshipsCache
+from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
+import pandas as pd
+
+class QueryLogTransformer:
+    """
+    Transformer class for query log files.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialize the query log transformer.
+        """
+        self._node_cache: NodesCache = NodesCache()
+        self._relationships_cache: RelationshipsCache = RelationshipsCache()
+
+    @property
+    def database_nodes(self) -> list[Database]:
+        """
+        Get the database nodes.
+        (:Database)
+        """
+        return self._node_cache.get("database_nodes", [])
+
+
+    @property
+    def schema_nodes(self) -> list[Schema]:
+        """
+        Get the schema nodes.
+        (:Schema)
+        """
+        return self._node_cache.get("schema_nodes", [])
+
+    @property
+    def table_nodes(self) -> list[Table]:
+        """
+        Get the table nodes.
+        (:Table)
+        """
+        return self._node_cache.get("table_nodes", [])
+
+    @property
+    def column_nodes(self) -> list[Column]:
+        """
+        Get the column nodes.
+        (:Column)
+        """
+        return self._node_cache.get("column_nodes", [])
+
+    @property
+    def has_schema_relationships(self) -> list[HasSchema]:
+        """
+        Get the has schema relationships.
+        (:Database)-[:HAS_SCHEMA]->(:Schema)
+        """
+        return self._relationships_cache.get("has_schema_relationships", [])
+
+    @property
+    def has_table_relationships(self) -> list[HasTable]:
+        """
+        Get the has table relationships.
+        (:Schema)-[:HAS_TABLE]->(:Table)
+        """
+        return self._relationships_cache.get("has_table_relationships", [])
+
+    @property
+    def has_column_relationships(self) -> list[HasColumn]:
+        """
+        Get the has column relationships.
+        (:Table)-[:HAS_COLUMN]->(:Column)
+        """
+        return self._relationships_cache.get("has_column_relationships", [])
+
+    @property
+    def references_relationships(self) -> list[References]:
+        """
+        Get the references relationships.
+        (:Column)-[:REFERENCES]->(:Column)
+        """
+        return self._relationships_cache.get("references_relationships", [])
+
+    def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = False) -> list[Database]:
+        """
+        Transform query log database information into database nodes.
+        """
+        database_nodes = [
+            Database(id=row.project_id, name=row.project_name, description=None)
+            for _, row in database_info.iterrows()
+        ]
+
+        if cache:
+            self._node_cache["database_nodes"] = database_nodes
+
+        return database_nodes
+    
+    def transform_to_schema_nodes(self, schema_info: pd.DataFrame, cache: bool = False) -> list[Schema]:
+        """
+        Transform query log schema information into schema nodes.
+        """
+        schema_nodes = [
+            Schema(id=row.dataset_id, name=row.dataset_name, description=None)
+            for _, row in schema_info.iterrows()
+        ]
+
+        if cache:
+            self._node_cache["schema_nodes"] = schema_nodes
+
+        return schema_nodes
+    
+    def transform_to_table_nodes(self, table_info: pd.DataFrame, cache: bool = False) -> list[Table]:
+        """
+        Transform query log table information into table nodes.
+        """
+        table_nodes = [
+            Table(id=row.table_id, name=row.table_name, description=None)
+            for _, row in table_info.iterrows()
+        ]
+
+        if cache:
+            self._node_cache["table_nodes"] = table_nodes
+
+        return table_nodes
+    
+    def transform_to_column_nodes(self, column_info: pd.DataFrame, cache: bool = False) -> list[Column]:
+        """
+        Transform query log column information into column nodes.
+        """
+        column_nodes = [
+            Column(id=row.column_id, name=row.column_name, description=None)
+            for _, row in column_info.iterrows()
+        ]
+
+        if cache:
+            self._node_cache["column_nodes"] = column_nodes
+
+        return column_nodes
+    
+    def transform_to_has_schema_relationships(self, schema_info: pd.DataFrame, cache: bool = False) -> list[HasSchema]:
+        """
+        Transform query log schema information into has schema relationships.
+        """
+        has_schema_relationships = [
+            HasSchema(database_id=row.project_id, schema_id=row.dataset_id)
+            for _, row in schema_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["has_schema_relationships"] = has_schema_relationships
+
+        return has_schema_relationships
+    
+    def transform_to_has_table_relationships(self, table_info: pd.DataFrame, cache: bool = False) -> list[HasTable]:
+        """
+        Transform query log table information into has table relationships.
+        """
+        has_table_relationships = [
+            HasTable(schema_id=row.dataset_id, table_id=row.table_id)
+            for _, row in table_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["has_table_relationships"] = has_table_relationships
+
+        return has_table_relationships
+    
+    def transform_to_has_column_relationships(self, column_info: pd.DataFrame, cache: bool = False) -> list[HasColumn]:
+        """
+        Transform query log column information into has column relationships.
+        """
+        has_column_relationships = [
+            HasColumn(table_id=row.table_id, column_id=row.column_id)
+            for _, row in column_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["has_column_relationships"] = has_column_relationships
+
+        return has_column_relationships
+    
+    def transform_to_references_relationships(self, column_references_info: pd.DataFrame, cache: bool = False) -> list[References]:
+        """
+        Transform query log column references information into references relationships.
+        """
+        references_relationships = [
+            References(source_column_id=row.left_column_id, target_column_id=row.right_column_id)
+            for _, row in column_references_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["references_relationships"] = references_relationships
+
+        return references_relationships

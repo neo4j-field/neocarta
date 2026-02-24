@@ -103,6 +103,8 @@ def parse_sql_query(query: str, query_id: str, read: str = "bigquery") -> dict[s
                 "table_id": table_id,
                 "table_name": table_name,
                 "dataset_id": f"{t.catalog}.{t.db}",
+                "dataset_name": t.db,
+                "project_name": t.catalog,
                 "project_id": t.catalog,
                 "table_alias": table_alias,
                 "query_id": query_id,

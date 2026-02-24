@@ -195,6 +195,8 @@ class Neo4jLoader:
         MATCH (c1:Column {id: row.source_column_id})
         MATCH (c2:Column {id: row.target_column_id})
         MERGE (c1)-[:REFERENCES]->(c2)
+        ON CREATE
+            SET r.criteria = row.criteria
         """,
             parameters_={"rows": [n.model_dump() for n in references_relationships]},
             routing_=RoutingControl.WRITE,
