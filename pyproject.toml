@@ -4,14 +4,14 @@ version = "0.1.0"
 description = "rdbms metadata knowledge graph for text2sql"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "sqlglot>=28.10.1",
-]
+dependencies = []
+
 
 [dependency-groups]
 # Development tools
 dev = [
     "ipykernel>=7.1.0",
+    "pytest>=9.0.2",
 ]
 
 # BigQuery metadata extraction and Neo4j loading
@@ -24,6 +24,7 @@ metadata-graph = [
     "neo4j>=6.1.0",
     "pandas>=3.0.0",
     "google-cloud-dataplex>=2.16.0",
+    "sqlglot>=28.10.1",
 ]
 
 # Local MCP server for SQL metadata retrieval
@@ -47,3 +48,7 @@ agent = [
     "langchain-openai>=1.1.7",
     "langgraph>=1.0.7",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = "."
+testpaths = ["tests"]

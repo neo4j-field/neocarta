@@ -1,0 +1,143 @@
+[
+    {
+      "insertId": "abc",
+      "logName": "projects/...",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "authenticationInfo": {
+          "oauthInfo": {
+            "oauthClientId": "123456789-example.apps.googleusercontent.com"
+          },
+          "principalEmail": "user@example.com"
+        },
+        "authorizationInfo": [
+          {
+            "granted": true,
+            "permission": "bigquery.jobs.create",
+            "permissionType": "ADMIN_WRITE",
+            "resource": "projects/example-project-id",
+            "resourceAttributes": {}
+          },
+          {
+            "granted": true,
+            "permission": "bigquery.tables.getData",
+            "permissionType": "DATA_READ",
+            "resource": "projects/example-project-id/datasets/demo_ecommerce/tables/products",
+            "resourceAttributes": {}
+          },
+          {
+            "granted": true,
+            "permission": "bigquery.tables.getData",
+            "permissionType": "DATA_READ",
+            "resource": "projects/example-project-id/datasets/demo_ecommerce/tables/order_items",
+            "resourceAttributes": {}
+          },
+          {
+            "granted": true,
+            "permission": "bigquery.tables.getData",
+            "permissionType": "DATA_READ",
+            "resource": "projects/example-project-id/datasets/demo_ecommerce/tables/orders",
+            "resourceAttributes": {}
+          }
+        ],
+        "methodName": "jobservice.query",
+        "requestMetadata": {
+          "callerIp": "192.0.2.1",
+          "callerSuppliedUserAgent": "python-httpx/0.28.1,gzip(gfe)",
+          "destinationAttributes": {},
+          "requestAttributes": {}
+        },
+        "resourceName": "projects/example-project-id/queries",
+        "serviceData": {
+          "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+          "jobQueryRequest": {
+            "defaultDataset": {},
+            "maxResults": 3000,
+            "projectId": "example-project-id",
+            "query": "SELECT o.order_id, oi.order_item_id, p.product_name, oi.quantity, oi.price\nFROM `example-project-id.demo_ecommerce.orders` AS o\nJOIN `example-project-id.demo_ecommerce.order_items` AS oi ON o.order_id = oi.order_id\nJOIN `example-project-id.demo_ecommerce.products` AS p ON oi.product_id = p.product_id;"
+          },
+          "jobQueryResponse": {
+            "job": {
+              "jobConfiguration": {
+                "labels": {
+                  "goog-mcp-server": "true"
+                },
+                "query": {
+                  "createDisposition": "CREATE_IF_NEEDED",
+                  "defaultDataset": {},
+                  "destinationTable": {
+                    "datasetId": "_125d9cd0f305ba8730d7b977d9752e38eb22fe30",
+                    "projectId": "example-project-id",
+                    "tableId": "anonbe97aa40298e4f6e9faddfe73660608ddf072a28dad0ae8f6261e02e1081fed5"
+                  },
+                  "query": "SELECT o.order_id, oi.order_item_id, p.product_name, oi.quantity, oi.price\nFROM `example-project-id.demo_ecommerce.orders` AS o\nJOIN `example-project-id.demo_ecommerce.order_items` AS oi ON o.order_id = oi.order_id\nJOIN `example-project-id.demo_ecommerce.products` AS p ON oi.product_id = p.product_id;",
+                  "queryPriority": "QUERY_INTERACTIVE",
+                  "statementType": "SELECT",
+                  "writeDisposition": "WRITE_TRUNCATE"
+                }
+              },
+              "jobName": {
+                "jobId": "job_KdTqQKUIQqqpA6x0MgovsuofygX4",
+                "location": "US",
+                "projectId": "example-project-id"
+              },
+              "jobStatistics": {
+                "billingTier": 1,
+                "createTime": "2026-02-20T20:45:58.715Z",
+                "endTime": "2026-02-20T20:45:59.186Z",
+                "queryOutputRowCount": "61",
+                "referencedTables": [
+                  {
+                    "datasetId": "demo_ecommerce",
+                    "projectId": "example-project-id",
+                    "tableId": "products"
+                  },
+                  {
+                    "datasetId": "demo_ecommerce",
+                    "projectId": "example-project-id",
+                    "tableId": "orders"
+                  },
+                  {
+                    "datasetId": "demo_ecommerce",
+                    "projectId": "example-project-id",
+                    "tableId": "order_items"
+                  }
+                ],
+                "reservation": "unreserved",
+                "startTime": "2026-02-20T20:45:58.809Z",
+                "totalBilledBytes": "31457280",
+                "totalProcessedBytes": "3658",
+                "totalSlotMs": "24",
+                "totalTablesProcessed": 3
+              },
+              "jobStatus": {
+                "error": {},
+                "state": "DONE"
+              }
+            },
+            "totalResults": "61"
+          }
+        },
+        "serviceName": "bigquery.googleapis.com",
+        "status": {}
+      },
+      "receiveTimestamp": "2026-02-20T20:45:59.968388348Z",
+      "resource": {
+        "labels": {
+          "project_id": "example-project-id"
+        },
+        "type": "bigquery_resource"
+      },
+      "severity": "INFO",
+      "timestamp": "2026-02-20T20:45:59.237002Z"
+    },
+    {
+        "protoPayload": {
+            "serviceData": {
+                "fillerKey": {
+                    "fillerValue": "fillerValue"
+                }
+            }
+        }
+    }
+]

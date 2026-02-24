@@ -32,7 +32,7 @@ class QueryLogExtractor:
         """
         Get the table information.
         """
-        return self._cache.get("table_info", pd.DataFrame())[["project_id", "dataset_id", "table_id"]].drop_duplicates()
+        return self._cache.get("table_info", pd.DataFrame())[["project_id", "dataset_id", "table_id", "table_name"]].drop_duplicates()
     
     @property
     def column_info(self) -> pd.DataFrame: 

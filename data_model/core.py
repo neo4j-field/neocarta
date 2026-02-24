@@ -65,7 +65,7 @@ class Column(BaseModel):
     embedding: Optional[list[float]] = Field(
         default=None, description="The embedding of the column description"
     )
-    type: str = Field(..., description="The data type of the column")
+    type: Optional[str] = Field(default=None, description="The data type of the column. Data types may be unavailable in source data such as query logs.")
     nullable: bool = Field(default=True, description="Whether the column can be null")
     is_primary_key: bool = Field(
         default=False, description="Whether the column is a primary key"
