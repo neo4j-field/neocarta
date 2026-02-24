@@ -208,3 +208,4 @@ __marimo__/
 
 test.ipynb
 test_dataplex.ipynb
+bigquery_query_logs.json

@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "rdbms metadata knowledge graph for text2sql"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "sqlglot>=28.10.1",
+]
 
 [dependency-groups]
 # Development tools

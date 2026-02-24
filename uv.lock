@@ -2629,6 +2629,15 @@ wheels = [
 ]
 
 [[package]]
+name = "sqlglot"
+version = "28.10.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/66/b2b300f325227044aa6f511ea7c9f3109a1dc74b13a0897931c1754b504e/sqlglot-28.10.1.tar.gz", hash = "sha256:66e0dae43b4bce23314b80e9aef41b8c88fea0e17ada62de095b45262084a8c5", size = 5739510 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/ff/5a768b34202e1ee485737bfa167bd84592585aa40383f883a8e346d767cc/sqlglot-28.10.1-py3-none-any.whl", hash = "sha256:214aef51fd4ce16407022f81cfc80c173409dab6d0f6ae18c52b43f43b31d4dd", size = 597053 },
+]
+
+[[package]]
 name = "sse-starlette"
 version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2681,6 +2690,9 @@ wheels = [
 name = "text2sql-template"
 version = "0.1.0"
 source = { virtual = "." }
+dependencies = [
+    { name = "sqlglot" },
+]
 
 [package.dev-dependencies]
 agent = [
@@ -2722,6 +2734,7 @@ metadata-graph = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "sqlglot", specifier = ">=28.10.1" }]
 
 [package.metadata.requires-dev]
 agent = [
