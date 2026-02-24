@@ -165,3 +165,26 @@ def query_log_extractor_with_cache() -> QueryLogExtractor:
 @pytest.fixture(scope="function")
 def query_log_transformer() -> QueryLogTransformer:
     return QueryLogTransformer()
+
+@pytest.fixture(scope="function")
+def query_log_transformer_with_cache() -> QueryLogTransformer:
+    t = QueryLogTransformer()
+
+    database_nodes = []
+    schema_nodes = []
+    table_nodes = []
+    column_nodes = []
+    has_schema_relationships = []
+    has_table_relationships = []
+    has_column_relationships = []
+    references_relationships = []
+
+    t._node_cache["database_nodes"] = database_nodes
+    t._node_cache["schema_nodes"] = schema_nodes
+    t._node_cache["table_nodes"] = table_nodes
+    t._node_cache["column_nodes"] = column_nodes
+    t._relationships_cache["has_schema_relationships"] = has_schema_relationships
+    t._relationships_cache["has_table_relationships"] = has_table_relationships
+    t._relationships_cache["has_column_relationships"] = has_column_relationships
+    t._relationships_cache["references_relationships"] = references_relationships
+    return t
