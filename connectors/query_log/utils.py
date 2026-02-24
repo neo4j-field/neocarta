@@ -70,6 +70,17 @@ def parse_sql_query(query: str, query_id: str, read: str = "bigquery") -> dict[s
         - column_info: A list of dictionaries with the column information.
         - references_info: A list of dictionaries with the references information.
     """
+
+    # Database node properties
+    platform = None
+    service = None
+
+    match read:
+        case "bigquery":
+            platform = "GCP"
+            service = "BIGQUERY"
+        case _:
+            raise ValueError(f"Unsupported read argument: {read}")
     try:
         parsed = sqlglot.parse_one(query, read=read)
         # tables = set()
@@ -100,6 +111,8 @@ def parse_sql_query(query: str, query_id: str, read: str = "bigquery") -> dict[s
 
             table_ids.add(table_id)
             table_info.append({
+                "platform": platform,
+                "service": service,
                 "table_id": table_id,
                 "table_name": table_name,
                 "dataset_id": f"{t.catalog}.{t.db}",

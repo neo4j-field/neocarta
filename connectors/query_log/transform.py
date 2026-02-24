@@ -84,7 +84,7 @@ class QueryLogTransformer:
         Transform query log database information into database nodes.
         """
         database_nodes = [
-            Database(id=row.project_id, name=row.project_name, description=None)
+            Database(id=row.project_id, name=row.project_name, platform=row.platform, service=row.service)
             for _, row in database_info.iterrows()
         ]
 
@@ -98,7 +98,7 @@ class QueryLogTransformer:
         Transform query log schema information into schema nodes.
         """
         schema_nodes = [
-            Schema(id=row.dataset_id, name=row.dataset_name, description=None)
+            Schema(id=row.dataset_id, name=row.dataset_name)
             for _, row in schema_info.iterrows()
         ]
 
@@ -112,7 +112,7 @@ class QueryLogTransformer:
         Transform query log table information into table nodes.
         """
         table_nodes = [
-            Table(id=row.table_id, name=row.table_name, description=None)
+            Table(id=row.table_id, name=row.table_name)
             for _, row in table_info.iterrows()
         ]
 
@@ -126,7 +126,7 @@ class QueryLogTransformer:
         Transform query log column information into column nodes.
         """
         column_nodes = [
-            Column(id=row.column_id, name=row.column_name, description=None)
+            Column(id=row.column_id, name=row.column_name)
             for _, row in column_info.iterrows()
         ]
 

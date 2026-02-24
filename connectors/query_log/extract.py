@@ -18,7 +18,7 @@ class QueryLogExtractor:
         """
         Get the database information.
         """
-        return self._cache.get("table_info", pd.DataFrame())[["project_id", "project_name"]].drop_duplicates()
+        return self._cache.get("table_info", pd.DataFrame())[["project_id", "project_name", "platform", "service"]].drop_duplicates()
     
     @property
     def schema_info(self) -> pd.DataFrame:
