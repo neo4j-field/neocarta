@@ -13,6 +13,7 @@ from data_model.core import (
     References,
 )
 from data_model.expanded import Value, HasValue, Glossary, Category, BusinessTerm, HasCategory, HasBusinessTerm
+from data_model.expanded import Query, UsesTable, UsesColumn
 
 class NodesCache(TypedDict):
     """Cache dictionary used to store transformed metadata nodes."""
@@ -29,6 +30,9 @@ class NodesCache(TypedDict):
     category_nodes: Optional[list[Category]]
     business_term_nodes: Optional[list[BusinessTerm]]
 
+    # Query nodes
+    query_nodes: Optional[list[Query]]
+
 class RelationshipsCache(TypedDict):
     """Cache dictionary used to store transformed metadata relationships."""
     # Core relationships
@@ -43,3 +47,7 @@ class RelationshipsCache(TypedDict):
     # Glossary relationships
     has_category_relationships: Optional[list[HasCategory]]
     has_business_term_relationships: Optional[list[HasBusinessTerm]]
+
+    # Query relationships
+    uses_table_relationships: Optional[list[UsesTable]]
+    uses_column_relationships: Optional[list[UsesColumn]]

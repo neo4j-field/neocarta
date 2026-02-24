@@ -58,6 +58,20 @@ class QueryLogExtractor:
         Get the query information.
         """
         return self._cache.get("query_info", pd.DataFrame())
+    
+    @property
+    def query_table_info(self) -> pd.DataFrame:
+        """
+        Get the query table information.
+        """
+        return self._cache.get("table_info", pd.DataFrame())[["query_id", "table_id"]].drop_duplicates()
+    
+    @property
+    def query_column_info(self) -> pd.DataFrame:
+        """
+        Get the query column information.
+        """
+        return self._cache.get("column_info", pd.DataFrame())[["query_id", "column_id"]].drop_duplicates()
 
     def extract_info_from_query_log_json(self, query_log_file: str, source: str = "bigquery", cache: bool = False) -> dict[str, pd.DataFrame]:
         """

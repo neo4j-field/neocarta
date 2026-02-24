@@ -127,3 +127,6 @@ class References(BaseModel):
     target_column_id: str = Field(
         ..., description="The unique identifier for the target column"
     )
+    criteria: Optional[str] = Field(
+        default=None, description="The criteria for the references relationship. This is the join condition for the two columns."
+    )

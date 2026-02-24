@@ -89,6 +89,30 @@ def test_transform_to_reference_relationships(query_log_transformer: QueryLogTra
     assert query_log_transformer.references_relationships[1].source_column_id == "example-project-id.demo_ecommerce.order_items.product_id"
     assert query_log_transformer.references_relationships[1].target_column_id == "example-project-id.demo_ecommerce.products.product_id"
 
+def test_transform_to_query_nodes(query_log_transformer: QueryLogTransformer, query_log_extractor_with_cache: QueryLogExtractor):
+    query_log_transformer.transform_to_query_nodes(query_log_extractor_with_cache.query_info, cache=True)
+    assert len(query_log_transformer.query_nodes()) == 1
+    assert query_log_transformer.query_nodes()[0].id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert "SELECT o.order_id" in query_log_transformer.query_nodes()[0].content
+
+def test_transform_to_uses_table_relationships(query_log_transformer: QueryLogTransformer, query_log_extractor_with_cache: QueryLogExtractor):
+    query_log_transformer.transform_to_uses_table_relationships(query_log_extractor_with_cache.query_table_info, cache=True)
+    assert len(query_log_transformer.uses_table_relationships) == 3
+    assert query_log_transformer.uses_table_relationships[0].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer.uses_table_relationships[0].table_id == "example-project-id.demo_ecommerce.orders"
+    assert query_log_transformer.uses_table_relationships[1].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer.uses_table_relationships[1].table_id == "example-project-id.demo_ecommerce.order_items"
+    assert query_log_transformer.uses_table_relationships[2].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer.uses_table_relationships[2].table_id == "example-project-id.demo_ecommerce.products"
+
+def test_transform_to_uses_column_relationships(query_log_transformer: QueryLogTransformer, query_log_extractor_with_cache: QueryLogExtractor):
+    query_log_transformer.transform_to_uses_column_relationships(query_log_extractor_with_cache.query_column_info, cache=True)
+    assert len(query_log_transformer.uses_column_relationships) == 8
+    assert query_log_transformer.uses_column_relationships[0].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer.uses_column_relationships[0].column_id == "example-project-id.demo_ecommerce.orders.order_id"
+    assert query_log_transformer.uses_column_relationships[1].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer.uses_column_relationships[1].column_id == "example-project-id.demo_ecommerce.orders.order_date"
+
 def test_get_database_nodes(query_log_transformer_with_cache: QueryLogTransformer):
     assert len(query_log_transformer_with_cache.database_nodes) == 1
     assert query_log_transformer_with_cache.database_nodes[0].id == "example-project-id"
@@ -149,3 +173,24 @@ def test_get_reference_relationships(query_log_transformer_with_cache: QueryLogT
     assert query_log_transformer_with_cache.references_relationships[0].target_column_id == "example-project-id.demo_ecommerce.order_items.order_id"
     assert query_log_transformer_with_cache.references_relationships[1].source_column_id == "example-project-id.demo_ecommerce.order_items.product_id"
     assert query_log_transformer_with_cache.references_relationships[1].target_column_id == "example-project-id.demo_ecommerce.products.product_id"
+
+def test_get_query_nodes(query_log_transformer_with_cache: QueryLogTransformer):
+    assert len(query_log_transformer_with_cache.query_nodes()) == 1
+    assert query_log_transformer_with_cache.query_nodes()[0].id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert "SELECT o.order_id" in query_log_transformer_with_cache.query_nodes()[0].content
+
+def test_get_uses_table_relationships(query_log_transformer_with_cache: QueryLogTransformer):
+    assert len(query_log_transformer_with_cache.uses_table_relationships) == 3
+    assert query_log_transformer_with_cache.uses_table_relationships[0].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer_with_cache.uses_table_relationships[0].table_id == "example-project-id.demo_ecommerce.orders"
+    assert query_log_transformer_with_cache.uses_table_relationships[1].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer_with_cache.uses_table_relationships[1].table_id == "example-project-id.demo_ecommerce.order_items"
+    assert query_log_transformer_with_cache.uses_table_relationships[2].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer_with_cache.uses_table_relationships[2].table_id == "example-project-id.demo_ecommerce.products"
+
+def test_get_uses_column_relationships(query_log_transformer_with_cache: QueryLogTransformer):
+    assert len(query_log_transformer_with_cache.uses_column_relationships) == 8
+    assert query_log_transformer_with_cache.uses_column_relationships[0].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer_with_cache.uses_column_relationships[0].column_id == "example-project-id.demo_ecommerce.orders.order_id"
+    assert query_log_transformer_with_cache.uses_column_relationships[1].query_id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert query_log_transformer_with_cache.uses_column_relationships[1].column_id == "example-project-id.demo_ecommerce.orders.order_date"

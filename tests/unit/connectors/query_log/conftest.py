@@ -4,6 +4,7 @@ from connectors.query_log.extract import QueryLogExtractor
 from connectors.query_log.utils import parse_bigquery_query_log_json
 import pandas as pd
 from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
+from data_model.expanded import Query, UsesTable, UsesColumn
 
 @pytest.fixture(scope="function")
 def query_log_extractor() -> QueryLogExtractor:
@@ -214,13 +215,34 @@ def query_log_transformer_with_cache() -> QueryLogTransformer:
         References(source_column_id="example-project-id.demo_ecommerce.orders.order_id", target_column_id="example-project-id.demo_ecommerce.order_items.order_id", criteria="o.order_id = oi.order_id"),
         References(source_column_id="example-project-id.demo_ecommerce.order_items.product_id", target_column_id="example-project-id.demo_ecommerce.products.product_id", criteria="oi.product_id = p.product_id"),
     ]
+    query_nodes = [
+        Query(id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", content="SELECT o.order_id, oi.order_item_id, p.product_name, oi.quantity, oi.price\nFROM `example-project-id.demo_ecommerce.orders` AS o\nJOIN `example-project-id.demo_ecommerce.order_items` AS oi ON o.order_id = oi.order_id\nJOIN `example-project-id.demo_ecommerce.products` AS p ON oi.product_id = p.product_id;")
+    ]
+    uses_table_relationships = [
+        UsesTable(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", table_id="example-project-id.demo_ecommerce.orders"),
+        UsesTable(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", table_id="example-project-id.demo_ecommerce.order_items"),
+        UsesTable(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", table_id="example-project-id.demo_ecommerce.products"),
+    ]
+    uses_column_relationships = [
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.orders.order_id"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.orders.order_date"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.orders.customer_id"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.orders.total_amount"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.order_items.order_item_id"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.order_items.order_id"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.order_items.product_id"),
+        UsesColumn(query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76", column_id="example-project-id.demo_ecommerce.order_items.quantity"),
+    ]
     t._node_cache["database_nodes"] = database_nodes
     t._node_cache["schema_nodes"] = schema_nodes
     t._node_cache["table_nodes"] = table_nodes
     t._node_cache["column_nodes"] = column_nodes
+    t._node_cache["query_nodes"] = query_nodes
     t._relationships_cache["has_schema_relationships"] = has_schema_relationships
     t._relationships_cache["has_table_relationships"] = has_table_relationships
     t._relationships_cache["has_column_relationships"] = has_column_relationships
     t._relationships_cache["references_relationships"] = references_relationships
+    t._relationships_cache["uses_table_relationships"] = uses_table_relationships
+    t._relationships_cache["uses_column_relationships"] = uses_column_relationships
 
     return t

@@ -1,5 +1,7 @@
 from connectors.models import NodesCache, RelationshipsCache
 from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
+from data_model.expanded import Query, UsesTable, UsesColumn
+
 import pandas as pd
 
 class QueryLogTransformer:
@@ -46,6 +48,13 @@ class QueryLogTransformer:
         (:Column)
         """
         return self._node_cache.get("column_nodes", [])
+    
+    def query_nodes(self) -> list[Query]:
+        """
+        Get the query nodes.
+        (:Query)
+        """
+        return self._node_cache.get("query_nodes", [])
 
     @property
     def has_schema_relationships(self) -> list[HasSchema]:
@@ -78,6 +87,22 @@ class QueryLogTransformer:
         (:Column)-[:REFERENCES]->(:Column)
         """
         return self._relationships_cache.get("references_relationships", [])
+    
+    @property
+    def uses_table_relationships(self) -> list[UsesTable]:
+        """
+        Get the uses table relationships.
+        (:Query)-[:USES_TABLE]->(:Table)
+        """
+        return self._relationships_cache.get("uses_table_relationships", [])
+    
+    @property
+    def uses_column_relationships(self) -> list[UsesColumn]:
+        """
+        Get the uses column relationships.
+        (:Query)-[:USES_COLUMN]->(:Column)
+        """
+        return self._relationships_cache.get("uses_column_relationships", [])
 
     def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = False) -> list[Database]:
         """
@@ -135,6 +160,20 @@ class QueryLogTransformer:
 
         return column_nodes
     
+    def transform_to_query_nodes(self, query_info: pd.DataFrame, cache: bool = False) -> list[Query]:
+        """
+        Transform query log query information into query nodes.
+        """
+        query_nodes = [
+            Query(id=row.query_id, content=row.query)
+            for _, row in query_info.iterrows()
+        ]
+    
+        if cache:
+                self._node_cache["query_nodes"] = query_nodes
+
+        return query_nodes
+    
     def transform_to_has_schema_relationships(self, schema_info: pd.DataFrame, cache: bool = False) -> list[HasSchema]:
         """
         Transform query log schema information into has schema relationships.
@@ -182,7 +221,7 @@ class QueryLogTransformer:
         Transform query log column references information into references relationships.
         """
         references_relationships = [
-            References(source_column_id=row.left_column_id, target_column_id=row.right_column_id)
+            References(source_column_id=row.left_column_id, target_column_id=row.right_column_id, criteria=row.criteria)
             for _, row in column_references_info.iterrows()
         ]
 
@@ -190,3 +229,33 @@ class QueryLogTransformer:
             self._relationships_cache["references_relationships"] = references_relationships
 
         return references_relationships
+    
+    def transform_to_uses_table_relationships(self, query_table_info: pd.DataFrame, cache: bool = False) -> list[UsesTable]:
+        """
+        Transform query log table information into uses table relationships.
+        """
+
+        uses_table_relationships = [
+            UsesTable(query_id=row.query_id, table_id=row.table_id)
+            for _, row in query_table_info.iterrows()
+        ]
+    
+        if cache:
+            self._relationships_cache["uses_table_relationships"] = uses_table_relationships
+
+        return uses_table_relationships
+    
+    def transform_to_uses_column_relationships(self, query_column_info: pd.DataFrame, cache: bool = False) -> list[UsesColumn]:
+        """
+        Transform query log column information into uses column relationships.
+        """
+
+        uses_column_relationships = [
+            UsesColumn(query_id=row.query_id, column_id=row.column_id)
+            for _, row in query_column_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["uses_column_relationships"] = uses_column_relationships
+
+        return uses_column_relationships

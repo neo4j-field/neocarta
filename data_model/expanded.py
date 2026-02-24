@@ -55,4 +55,28 @@ class HasBusinessTerm(BaseModel):
     category_id: str = Field(..., description="The unique identifier for the category")
     business_term_id: str = Field(..., description="The unique identifier for the business term")
 
+class Query(BaseModel):
+    """A Query node representing a query in a query log"""
+    id: str = Field(..., description="The unique identifier for the query")
+    content: str = Field(..., description="The content of the query")
+    description: Optional[str] = Field(default=None, description="The description of the query")
+    embedding: Optional[list[float]] = Field(
+        default=None, description="The embedding of the query description"
+    )
+
+class UsesTable(BaseModel):
+    """
+    A relationship between a query and a table
+    (Query)-[:USES_TABLE]->(Table)
+    """
+    query_id: str = Field(..., description="The unique identifier for the query")
+    table_id: str = Field(..., description="The unique identifier for the table")
+
+class UsesColumn(BaseModel):
+    """
+    A relationship between a query and a column
+    (Query)-[:USES_COLUMN]->(Column)
+    """
+    query_id: str = Field(..., description="The unique identifier for the query")
+    column_id: str = Field(..., description="The unique identifier for the column")
 
