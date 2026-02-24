@@ -161,7 +161,7 @@ class Workflow:
 
 ### Connectors
 
-**BigQuery**
+#### **BigQuery**
 
 Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j. Primary and foreign keys must be defined in the Information Schema tables in order for column level relationships to be created in the Neo4j graph.
 
@@ -174,7 +174,7 @@ This workflow requires the following variables to be set in the `.env` file:
 * BIGQUERY_DATASET_ID=dataset-id
 
 
-#### Workflow Architecture
+##### Workflow Architecture
 ```mermaid
 ---
 config:
@@ -205,7 +205,7 @@ graph LR
     PM -->|Ingest Data| NEO
 ```
 
-#### Code Example
+##### Code Example
 
 ```python
 import os
@@ -234,11 +234,11 @@ workflow = BigQueryWorkflow(
 workflow.run()
 ```
 
-**GCP Dataplex Universal Catalog**
+#### **GCP Dataplex Universal Catalog**
 
 Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./connectors/dataplex/README.md) for more information and caveats of using this connector.
 
-#### Workflow Architecture 
+##### Workflow Architecture 
 
 ```mermaid
 ---
@@ -250,7 +250,9 @@ graph LR
         GS(Data Model Definition)
     end
     subgraph Big["Google Cloud Platform"]
-        BQ(BigQuery Database)        
+        subgraph SR["Source Repository"]
+            BQ(BigQuery Database)  
+        end      
     
 
         subgraph Source["GCP Dataplex Universal Catalog"]
@@ -276,6 +278,49 @@ graph LR
     GS -->|Schema Definition| PM
     PM -->|Ingest Data| NEO
 ```
+
+#### **Query Logs**
+
+Connector for parsing query log JSON files into Neo4j. Please see the [Query Logs README](./connectors/query_log/README.md) for more information and caveats of using this connector.
+
+##### Workflow Architecture
+
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+    subgraph Big["Google Cloud Platform"]
+        subgraph Source["Source Repository"]
+            BQ(BigQuery Database)
+        end
+
+        subgraph Logging["GCP Logging"]
+            GL(Logs)
+        end
+    end
+
+    subgraph ETL["ETL Processes"]
+        QL(Read Query Logs)
+        PM(Validate + Transform<br>with Pydantic)
+
+        QL -->|Raw Logs<br/>JSON| PM
+    end
+
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    BQ -->|Query Logs| GL
+    GL -->|Query Logs| QL
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+```
+
 ### Embeddings 
 
 Embeddings may be generated for the `description` fields of the following nodes:
