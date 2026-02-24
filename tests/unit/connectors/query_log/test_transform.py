@@ -91,9 +91,9 @@ def test_transform_to_reference_relationships(query_log_transformer: QueryLogTra
 
 def test_transform_to_query_nodes(query_log_transformer: QueryLogTransformer, query_log_extractor_with_cache: QueryLogExtractor):
     query_log_transformer.transform_to_query_nodes(query_log_extractor_with_cache.query_info, cache=True)
-    assert len(query_log_transformer.query_nodes()) == 1
-    assert query_log_transformer.query_nodes()[0].id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
-    assert "SELECT o.order_id" in query_log_transformer.query_nodes()[0].content
+    assert len(query_log_transformer.query_nodes) == 1
+    assert query_log_transformer.query_nodes[0].id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert "SELECT o.order_id" in query_log_transformer.query_nodes[0].content
 
 def test_transform_to_uses_table_relationships(query_log_transformer: QueryLogTransformer, query_log_extractor_with_cache: QueryLogExtractor):
     query_log_transformer.transform_to_uses_table_relationships(query_log_extractor_with_cache.query_table_info, cache=True)
@@ -175,9 +175,9 @@ def test_get_reference_relationships(query_log_transformer_with_cache: QueryLogT
     assert query_log_transformer_with_cache.references_relationships[1].target_column_id == "example-project-id.demo_ecommerce.products.product_id"
 
 def test_get_query_nodes(query_log_transformer_with_cache: QueryLogTransformer):
-    assert len(query_log_transformer_with_cache.query_nodes()) == 1
-    assert query_log_transformer_with_cache.query_nodes()[0].id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
-    assert "SELECT o.order_id" in query_log_transformer_with_cache.query_nodes()[0].content
+    assert len(query_log_transformer_with_cache.query_nodes) == 1
+    assert query_log_transformer_with_cache.query_nodes[0].id == "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76"
+    assert "SELECT o.order_id" in query_log_transformer_with_cache.query_nodes[0].content
 
 def test_get_uses_table_relationships(query_log_transformer_with_cache: QueryLogTransformer):
     assert len(query_log_transformer_with_cache.uses_table_relationships) == 3

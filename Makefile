@@ -62,6 +62,9 @@ refresh-mermaid-architecture-images:
 	mmdc -i assets/mermaid/architecture/agent-architecture.mmd -o assets/images/architecture/agent-architecture.png
 	mmdc -i assets/mermaid/architecture/dataplex-workflow-architecture.mmd -o assets/images/architecture/dataplex-workflow-architecture.png
 
+test-unit:
+	uv run pytest tests/unit
+
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true

@@ -61,8 +61,8 @@ class QueryLogWorkflow:
         self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
         self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
         self.transformer.transform_to_references_relationships(self.extractor.column_references_info, cache=True)
-        self.transformer.transform_to_uses_table_relationships(self.extractor.table_info, cache=True)
-        self.transformer.transform_to_uses_column_relationships(self.extractor.column_info, cache=True)
+        self.transformer.transform_to_uses_table_relationships(self.extractor.query_table_info, cache=True)
+        self.transformer.transform_to_uses_column_relationships(self.extractor.query_column_info, cache=True)
     
     def load_metadata(self) -> None:
         """

@@ -49,6 +49,7 @@ class QueryLogTransformer:
         """
         return self._node_cache.get("column_nodes", [])
     
+    @property
     def query_nodes(self) -> list[Query]:
         """
         Get the query nodes.

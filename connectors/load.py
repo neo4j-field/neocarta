@@ -19,6 +19,9 @@ from data_model.expanded import (
     BusinessTerm,
     HasCategory,
     HasBusinessTerm,
+    Query,
+    UsesTable,
+    UsesColumn,
 )
 
 
@@ -304,6 +307,55 @@ class Neo4jLoader:
         MERGE (c)-[:HAS_VALUE]->(v)
         """,
             parameters_={"rows": [n.model_dump() for n in has_value_relationships]},
+            routing_=RoutingControl.WRITE,
+            database_=self.database_name,
+        )
+        return summary.counters.__dict__
+
+    def load_query_nodes(
+        self, query_nodes: list[Query]
+    ) -> dict:
+        _, summary, _ = self.neo4j_driver.execute_query(
+            query_="""
+        UNWIND $rows as row
+        MERGE (q:Query {id: row.id})
+        ON CREATE
+            SET q.content = row.content,
+                q.description = row.description
+        """,
+            parameters_={"rows": [n.model_dump() for n in query_nodes]},
+            routing_=RoutingControl.WRITE,
+            database_=self.database_name,
+        )
+        return summary.counters.__dict__
+
+    def load_uses_table_relationships(
+        self, uses_table_relationships: list[UsesTable]
+    ) -> dict:
+        _, summary, _ = self.neo4j_driver.execute_query(
+            query_="""
+        UNWIND $rows as row
+        MATCH (q:Query {id: row.query_id})
+        MATCH (t:Table {id: row.table_id})
+        MERGE (q)-[:USES_TABLE]->(t)
+        """,
+            parameters_={"rows": [n.model_dump() for n in uses_table_relationships]},
+            routing_=RoutingControl.WRITE,
+            database_=self.database_name,
+        )
+        return summary.counters.__dict__
+
+    def load_uses_column_relationships(
+        self, uses_column_relationships: list[UsesColumn]
+    ) -> dict:
+        _, summary, _ = self.neo4j_driver.execute_query(
+            query_="""
+        UNWIND $rows as row
+        MATCH (q:Query {id: row.query_id})
+        MATCH (c:Column {id: row.column_id})
+        MERGE (q)-[:USES_COLUMN]->(c)
+        """,    
+            parameters_={"rows": [n.model_dump() for n in uses_column_relationships]},
             routing_=RoutingControl.WRITE,
             database_=self.database_name,
         )
