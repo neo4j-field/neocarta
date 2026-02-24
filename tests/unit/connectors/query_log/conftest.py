@@ -3,6 +3,7 @@ from connectors.query_log.transform import QueryLogTransformer
 from connectors.query_log.extract import QueryLogExtractor
 from connectors.query_log.utils import parse_bigquery_query_log_json
 import pandas as pd
+from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
 
 @pytest.fixture(scope="function")
 def query_log_extractor() -> QueryLogExtractor:
@@ -170,15 +171,49 @@ def query_log_transformer() -> QueryLogTransformer:
 def query_log_transformer_with_cache() -> QueryLogTransformer:
     t = QueryLogTransformer()
 
-    database_nodes = []
-    schema_nodes = []
-    table_nodes = []
-    column_nodes = []
-    has_schema_relationships = []
-    has_table_relationships = []
-    has_column_relationships = []
-    references_relationships = []
-
+    database_nodes = [
+        Database(id="example-project-id", name="example-project-id", platform="GCP", service="BIGQUERY")
+    ]
+    schema_nodes = [
+        Schema(id="example-project-id.demo_ecommerce", name="demo_ecommerce")
+    ]
+    table_nodes = [
+        Table(id="example-project-id.demo_ecommerce.orders", name="orders"),
+        Table(id="example-project-id.demo_ecommerce.order_items", name="order_items"),
+        Table(id="example-project-id.demo_ecommerce.products", name="products"),
+    ]
+    column_nodes = [
+        Column(id="example-project-id.demo_ecommerce.orders.order_id", name="order_id"),
+        Column(id="example-project-id.demo_ecommerce.orders.order_date", name="order_date"),
+        Column(id="example-project-id.demo_ecommerce.orders.customer_id", name="customer_id"),
+        Column(id="example-project-id.demo_ecommerce.orders.total_amount", name="total_amount"),
+        Column(id="example-project-id.demo_ecommerce.order_items.order_item_id", name="order_item_id"),
+        Column(id="example-project-id.demo_ecommerce.order_items.order_id", name="order_id"),
+        Column(id="example-project-id.demo_ecommerce.order_items.product_id", name="product_id"),
+        Column(id="example-project-id.demo_ecommerce.order_items.quantity", name="quantity"),
+    ]
+    has_schema_relationships = [
+        HasSchema(database_id="example-project-id", schema_id="example-project-id.demo_ecommerce")
+    ]
+    has_table_relationships = [
+        HasTable(schema_id="example-project-id.demo_ecommerce", table_id="example-project-id.demo_ecommerce.orders"),
+        HasTable(schema_id="example-project-id.demo_ecommerce", table_id="example-project-id.demo_ecommerce.order_items"),
+        HasTable(schema_id="example-project-id.demo_ecommerce", table_id="example-project-id.demo_ecommerce.products"),
+    ]
+    has_column_relationships = [
+        HasColumn(table_id="example-project-id.demo_ecommerce.orders", column_id="example-project-id.demo_ecommerce.orders.order_id"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.orders", column_id="example-project-id.demo_ecommerce.orders.order_date"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.orders", column_id="example-project-id.demo_ecommerce.orders.customer_id"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.orders", column_id="example-project-id.demo_ecommerce.orders.total_amount"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.order_items", column_id="example-project-id.demo_ecommerce.order_items.order_item_id"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.order_items", column_id="example-project-id.demo_ecommerce.order_items.order_id"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.order_items", column_id="example-project-id.demo_ecommerce.order_items.product_id"),
+        HasColumn(table_id="example-project-id.demo_ecommerce.order_items", column_id="example-project-id.demo_ecommerce.order_items.quantity"),
+    ]
+    references_relationships = [
+        References(source_column_id="example-project-id.demo_ecommerce.orders.order_id", target_column_id="example-project-id.demo_ecommerce.order_items.order_id", criteria="o.order_id = oi.order_id"),
+        References(source_column_id="example-project-id.demo_ecommerce.order_items.product_id", target_column_id="example-project-id.demo_ecommerce.products.product_id", criteria="oi.product_id = p.product_id"),
+    ]
     t._node_cache["database_nodes"] = database_nodes
     t._node_cache["schema_nodes"] = schema_nodes
     t._node_cache["table_nodes"] = table_nodes
@@ -187,4 +222,5 @@ def query_log_transformer_with_cache() -> QueryLogTransformer:
     t._relationships_cache["has_table_relationships"] = has_table_relationships
     t._relationships_cache["has_column_relationships"] = has_column_relationships
     t._relationships_cache["references_relationships"] = references_relationships
+
     return t
