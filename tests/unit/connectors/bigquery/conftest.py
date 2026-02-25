@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 import pandas as pd
 from connectors.bigquery.extract import BigQueryExtractor
 from connectors.bigquery.transform import BigQueryTransformer
