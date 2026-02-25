@@ -3,7 +3,7 @@
 from google.cloud import dataplex_v1
 import pandas as pd
 from typing import Optional
-from connectors.dataplex.models import BigQueryMetadataInfoResponse, GlossaryInfoResponse, DataplexExtractorCache
+from .models import BigQueryMetadataInfoResponse, GlossaryInfoResponse, DataplexExtractorCache
 
 
 class DataplexExtractor:

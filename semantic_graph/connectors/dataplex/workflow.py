@@ -5,9 +5,9 @@ from typing import Optional
 from google.cloud import dataplex_v1
 from neo4j import Driver
 
-from connectors.dataplex.extract import DataplexExtractor
-from connectors.dataplex.transform import DataplexTransformer
-from connectors.load import Neo4jLoader
+from .extract import DataplexExtractor
+from .transform import DataplexTransformer
+from ..load import Neo4jLoader
 
 class DataplexWorkflow:
     """
@@ -76,7 +76,7 @@ class DataplexWorkflow:
             self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info, cache=True)
             self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
             self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
-        
+
         if self.include_glossary:
             self.transformer.transform_to_glossary_nodes(self.extractor.glossary_info, cache=True)
             self.transformer.transform_to_category_nodes(self.extractor.category_info, cache=True)
@@ -84,7 +84,7 @@ class DataplexWorkflow:
 
             self.transformer.transform_to_has_category_relationships(self.extractor.category_info, cache=True)
             self.transformer.transform_to_has_business_term_relationships(self.extractor.business_term_info, cache=True)
-
+        
     def load_metadata(self) -> None:
         """
         Load Dataplex metadata into Neo4j. `transform_metadata` must be called before this method.
@@ -93,7 +93,7 @@ class DataplexWorkflow:
             print(self.loader.load_database_nodes(self.transformer.database_nodes))
             print(self.loader.load_schema_nodes(self.transformer.schema_nodes))
             print(self.loader.load_table_nodes(self.transformer.table_nodes))
-            print(self.loader.load_column_nodes(self.transformer.column_nodes))
+            print(self.loader.load_column_nodes(self.transformer.column_nodes, properties_list=["name", "description", "type"]))
 
             print(self.loader.load_has_schema_relationships(self.transformer.has_schema_relationships))
             print(self.loader.load_has_table_relationships(self.transformer.has_table_relationships))

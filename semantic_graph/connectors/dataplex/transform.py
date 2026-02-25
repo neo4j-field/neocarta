@@ -1,7 +1,7 @@
 """Transform Dataplex metadata into graph nodes and relationships."""
 
 import pandas as pd
-from data_model.core import (
+from ...data_model.core import (
     Database,
     Schema,
     Table,
@@ -10,14 +10,14 @@ from data_model.core import (
     HasTable,
     HasColumn,
 )
-from data_model.expanded import (
+from ...data_model.expanded import (
     Glossary,
     Category,
     BusinessTerm,
     HasCategory,
     HasBusinessTerm,
 )
-from connectors.models import NodesCache, RelationshipsCache
+from ..models import NodesCache, RelationshipsCache
 
 class DataplexTransformer:
     """

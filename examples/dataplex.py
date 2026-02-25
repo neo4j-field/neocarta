@@ -22,7 +22,7 @@ async def main(
         uri=os.getenv("NEO4J_URI"),
         auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
     )
-    neo4j_database = "dataplex-class-test"
+    neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
     catalog_client = dataplex_v1.CatalogServiceClient()
     glossary_client = dataplex_v1.BusinessGlossaryServiceClient()
