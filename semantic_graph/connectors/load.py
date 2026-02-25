@@ -493,7 +493,7 @@ class Neo4jLoader:
         self,
         query_nodes: list[Query],
         overwrite_existing: bool = False,
-        properties_list: list[str] = ["content", "description"]
+        properties_list: list[str] = ["content"]
     ) -> dict:
         _validate_properties_list(Query, properties_list)
 

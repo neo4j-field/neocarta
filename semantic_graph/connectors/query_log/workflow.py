@@ -75,10 +75,10 @@ class QueryLogWorkflow:
         """
         
         # load nodes
-        print(self.loader.load_database_nodes(self.transformer.database_nodes))
-        print(self.loader.load_schema_nodes(self.transformer.schema_nodes))
-        print(self.loader.load_table_nodes(self.transformer.table_nodes))
-        print(self.loader.load_column_nodes(self.transformer.column_nodes))
+        print(self.loader.load_database_nodes(self.transformer.database_nodes, properties_list=["name", "service", "platform"]))
+        print(self.loader.load_schema_nodes(self.transformer.schema_nodes, properties_list=["name"]))
+        print(self.loader.load_table_nodes(self.transformer.table_nodes, properties_list=["name"]))
+        print(self.loader.load_column_nodes(self.transformer.column_nodes, properties_list=["name"]))
         print(self.loader.load_query_nodes(self.transformer.query_nodes))
 
         # load relationships
