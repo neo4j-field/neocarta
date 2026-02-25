@@ -4,6 +4,7 @@ The core components of the RDBMS metadata graph data model.
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from typing import Optional
+from pandas import isna
 
 
 class Database(BaseModel):
@@ -26,6 +27,19 @@ class Database(BaseModel):
         Validate that the string is in uppercase.
         """
         return v.upper() if v is not None else None
+    
+    @field_validator("description", "platform", "service", mode="before")
+    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is string type or None. 
+        This will cast NaN values to None.
+        """
+        if isinstance(v, str):
+            return v
+        elif v is None or isna(v):
+            return None
+        
+        return v
 
 
 class Schema(BaseModel):
@@ -40,6 +54,19 @@ class Schema(BaseModel):
         default=None, description="The embedding of the schema description"
     )
 
+    @field_validator("description", mode="before")
+    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is string type or None. 
+        This will cast NaN values to None.
+        """
+        if isinstance(v, str):
+            return v
+        elif v is None or isna(v):
+            return None
+        
+        return v
+
 
 class Table(BaseModel):
     """A Table node"""
@@ -52,6 +79,19 @@ class Table(BaseModel):
     embedding: Optional[list[float]] = Field(
         default=None, description="The embedding of the table description"
     )
+
+    @field_validator("description", mode="before")
+    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is string type or None. 
+        This will cast NaN values to None.
+        """
+        if isinstance(v, str):
+            return v
+        elif v is None or isna(v):
+            return None
+        
+        return v
 
 
 class Column(BaseModel):
@@ -82,6 +122,19 @@ class Column(BaseModel):
         """
         if v and info.data["is_primary_key"]:
             raise ValueError("Column cannot be both a primary key and a foreign key")
+        return v
+    
+    @field_validator("description", "type", mode="before")
+    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is string type or None. 
+        This will cast NaN values to None.
+        """
+        if isinstance(v, str):
+            return v
+        elif v is None or isna(v):
+            return None
+        
         return v
 
 
