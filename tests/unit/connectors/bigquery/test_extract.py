@@ -1,4 +1,4 @@
-from connectors.bigquery.extract import BigQueryExtractor
+from semantic_graph.connectors.bigquery import BigQueryExtractor
 
 
 def test_get_database_info(bigquery_extractor_with_cache: BigQueryExtractor):

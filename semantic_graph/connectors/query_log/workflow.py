@@ -1,8 +1,8 @@
 from neo4j import Driver
 
-from connectors.query_log.extract import QueryLogExtractor
-from connectors.query_log.transform import QueryLogTransformer
-from connectors.load import Neo4jLoader
+from .extract import QueryLogExtractor
+from .transform import QueryLogTransformer
+from ..load import Neo4jLoader
 
 class QueryLogWorkflow:
     """

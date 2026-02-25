@@ -1,7 +1,7 @@
 """Common ingest functions for Neo4j."""
 
 from neo4j import Driver, RoutingControl
-from data_model.core import (
+from ..data_model.core import (
     Database,
     Schema,
     Table,
@@ -11,7 +11,7 @@ from data_model.core import (
     HasColumn,
     References,
 )
-from data_model.expanded import (
+from ..data_model.expanded import (
     Value,
     HasValue,
     Glossary,

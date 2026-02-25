@@ -2618,6 +2618,115 @@ wheels = [
 ]
 
 [[package]]
+name = "semantic-graph"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "google-cloud-bigquery", extra = ["pandas"] },
+    { name = "google-cloud-dataplex" },
+    { name = "neo4j" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "sqlglot" },
+]
+
+[package.dev-dependencies]
+agent = [
+    { name = "fastmcp" },
+    { name = "google-cloud-bigquery" },
+    { name = "langchain" },
+    { name = "langchain-mcp-adapters" },
+    { name = "langchain-openai" },
+    { name = "langgraph" },
+    { name = "mcp" },
+    { name = "neo4j" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+]
+dev = [
+    { name = "ipykernel" },
+    { name = "pytest" },
+]
+mcp-server = [
+    { name = "fastmcp" },
+    { name = "mcp" },
+    { name = "neo4j" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+]
+metadata-graph = [
+    { name = "google-cloud-bigquery", extra = ["pandas"] },
+    { name = "google-cloud-dataplex" },
+    { name = "neo4j" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "sqlglot" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
+    { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
+    { name = "sqlglot", specifier = ">=28.10.1" },
+]
+
+[package.metadata.requires-dev]
+agent = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "google-cloud-bigquery", specifier = ">=3.40.0" },
+    { name = "langchain", specifier = ">=1.2.7" },
+    { name = "langchain-mcp-adapters", specifier = ">=0.2.1" },
+    { name = "langchain-openai", specifier = ">=1.1.7" },
+    { name = "langgraph", specifier = ">=1.0.7" },
+    { name = "mcp", specifier = ">=1.26.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pydantic-settings", specifier = ">=2.12.0" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
+]
+dev = [
+    { name = "ipykernel", specifier = ">=7.1.0" },
+    { name = "pytest", specifier = ">=9.0.2" },
+]
+mcp-server = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "mcp", specifier = ">=1.26.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pydantic-settings", specifier = ">=2.12.0" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
+]
+metadata-graph = [
+    { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
+    { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
+    { name = "sqlglot", specifier = ">=28.10.1" },
+]
+
+[[package]]
 name = "setuptools"
 version = "80.10.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2718,95 +2827,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0a/d4/2b0cd0fe285e14b36db076e78c93766ff1d529d70408bd1d2a5a84f1d929/tenacity-9.1.2.tar.gz", hash = "sha256:1169d376c297e7de388d18b4481760d478b0e99a777cad3a9c86e556f4b697cb", size = 48036 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/30/643397144bfbfec6f6ef821f36f33e57d35946c44a2352d3c9f0ae847619/tenacity-9.1.2-py3-none-any.whl", hash = "sha256:f77bf36710d8b73a50b2dd155c97b870017ad21afe6ab300326b0371b3b05138", size = 28248 },
-]
-
-[[package]]
-name = "text2sql-template"
-version = "0.1.0"
-source = { virtual = "." }
-
-[package.dev-dependencies]
-agent = [
-    { name = "fastmcp" },
-    { name = "google-cloud-bigquery" },
-    { name = "langchain" },
-    { name = "langchain-mcp-adapters" },
-    { name = "langchain-openai" },
-    { name = "langgraph" },
-    { name = "mcp" },
-    { name = "neo4j" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-dotenv" },
-]
-dev = [
-    { name = "ipykernel" },
-    { name = "pytest" },
-]
-mcp-server = [
-    { name = "fastmcp" },
-    { name = "mcp" },
-    { name = "neo4j" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-dotenv" },
-]
-metadata-graph = [
-    { name = "google-cloud-bigquery", extra = ["pandas"] },
-    { name = "google-cloud-dataplex" },
-    { name = "neo4j" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "sqlglot" },
-]
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-agent = [
-    { name = "fastmcp", specifier = ">=2.14.4" },
-    { name = "google-cloud-bigquery", specifier = ">=3.40.0" },
-    { name = "langchain", specifier = ">=1.2.7" },
-    { name = "langchain-mcp-adapters", specifier = ">=0.2.1" },
-    { name = "langchain-openai", specifier = ">=1.1.7" },
-    { name = "langgraph", specifier = ">=1.0.7" },
-    { name = "mcp", specifier = ">=1.26.0" },
-    { name = "neo4j", specifier = ">=6.1.0" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "pydantic-settings", specifier = ">=2.12.0" },
-    { name = "python-dotenv", specifier = ">=1.2.1" },
-]
-dev = [
-    { name = "ipykernel", specifier = ">=7.1.0" },
-    { name = "pytest", specifier = ">=9.0.2" },
-]
-mcp-server = [
-    { name = "fastmcp", specifier = ">=2.14.4" },
-    { name = "mcp", specifier = ">=1.26.0" },
-    { name = "neo4j", specifier = ">=6.1.0" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "pydantic-settings", specifier = ">=2.12.0" },
-    { name = "python-dotenv", specifier = ">=1.2.1" },
-]
-metadata-graph = [
-    { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
-    { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
-    { name = "neo4j", specifier = ">=6.1.0" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "python-dotenv", specifier = ">=1.2.1" },
-    { name = "sqlglot", specifier = ">=28.10.1" },
 ]
 
 [[package]]

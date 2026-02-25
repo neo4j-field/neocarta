@@ -1,7 +1,6 @@
 import pandas as pd
-from typing import Optional
-from connectors.query_log.models import QueryLogExtractorCache
-from connectors.query_log.utils import parse_bigquery_query_log_json, parse_sql_query
+from .models import QueryLogExtractorCache
+from .utils import parse_bigquery_query_log_json, parse_sql_query
 
 class QueryLogExtractor:
     """

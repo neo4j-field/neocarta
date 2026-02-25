@@ -1,8 +1,7 @@
 """global models for connectors."""
 
 from typing import TypedDict, Optional
-import pandas as pd
-from data_model.core import (
+from ..data_model.core import (
     Database,
     Schema,
     Table,
@@ -12,8 +11,8 @@ from data_model.core import (
     HasColumn,
     References,
 )
-from data_model.expanded import Value, HasValue, Glossary, Category, BusinessTerm, HasCategory, HasBusinessTerm
-from data_model.expanded import Query, UsesTable, UsesColumn
+from ..data_model.expanded import Value, HasValue, Glossary, Category, BusinessTerm, HasCategory, HasBusinessTerm
+from ..data_model.expanded import Query, UsesTable, UsesColumn
 
 class NodesCache(TypedDict):
     """Cache dictionary used to store transformed metadata nodes."""

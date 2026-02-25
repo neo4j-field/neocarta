@@ -1,10 +1,9 @@
 import pytest
-from connectors.query_log.transform import QueryLogTransformer
-from connectors.query_log.extract import QueryLogExtractor
-from connectors.query_log.utils import parse_bigquery_query_log_json
+from semantic_graph.connectors.query_log import QueryLogTransformer, QueryLogExtractor
+from semantic_graph.connectors.query_log.utils import parse_bigquery_query_log_json
 import pandas as pd
-from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
-from data_model.expanded import Query, UsesTable, UsesColumn
+from semantic_graph.data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
+from semantic_graph.data_model.expanded import Query, UsesTable, UsesColumn
 
 @pytest.fixture(scope="function")
 def query_log_extractor() -> QueryLogExtractor:

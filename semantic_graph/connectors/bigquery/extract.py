@@ -2,7 +2,7 @@ from google.cloud import bigquery
 import pandas as pd
 import hashlib
 from typing import Optional
-from connectors.bigquery.models import InfoTablesCache
+from .models import InfoTablesCache
 
 
 class BigQueryExtractor:

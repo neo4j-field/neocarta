@@ -1,5 +1,4 @@
-from connectors.bigquery.transform import BigQueryTransformer
-from connectors.bigquery.extract import BigQueryExtractor
+from semantic_graph.connectors.bigquery import BigQueryTransformer, BigQueryExtractor
 
 
 def test_transform_to_database_nodes(bigquery_transformer: BigQueryTransformer, bigquery_extractor_with_cache: BigQueryExtractor):

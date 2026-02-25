@@ -2,9 +2,9 @@ from neo4j import Driver
 from google.cloud import bigquery
 from typing import Optional
 
-from connectors.bigquery.extract import BigQueryExtractor
-from connectors.bigquery.transform import BigQueryTransformer
-from connectors.load import Neo4jLoader
+from .extract import BigQueryExtractor
+from .transform import BigQueryTransformer
+from ..load import Neo4jLoader
 
 class BigQueryWorkflow:
     """

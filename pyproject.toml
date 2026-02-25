@@ -1,10 +1,19 @@
 [project]
-name = "text2sql-template"
+name = "semantic-graph"
 version = "0.1.0"
-description = "rdbms metadata knowledge graph for text2sql"
+description = "Library that facilitates the creation of semantic layer metadata graph in Neo4j."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "google-cloud-bigquery[pandas]>=3.40.0",
+    "openai>=2.15.0",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
+    "neo4j>=6.1.0",
+    "pandas>=3.0.0",
+    "google-cloud-dataplex>=2.16.0",
+    "sqlglot>=28.10.1",
+]
 
 
 [dependency-groups]

@@ -1,6 +1,6 @@
-from connectors.models import NodesCache, RelationshipsCache
-from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
-from data_model.expanded import Query, UsesTable, UsesColumn
+from ..models import NodesCache, RelationshipsCache
+from ...data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
+from ...data_model.expanded import Query, UsesTable, UsesColumn
 
 import pandas as pd
 

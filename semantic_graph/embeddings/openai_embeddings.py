@@ -4,13 +4,13 @@ Workflow for creating OpenAI embeddings.
 
 from openai import AsyncOpenAI
 import pandas as pd
-from embeddings.utils import (
+from .utils import (
     create_embeddings_in_batches,
     get_nodes_to_embed,
     write_embeddings_to_graph,
 )
 from neo4j import Driver
-from data_model.indexes import create_vector_index
+from ..data_model.indexes import create_vector_index
 from typing import Optional
 
 

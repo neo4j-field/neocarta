@@ -1,4 +1,4 @@
-from connectors.query_log.extract import QueryLogExtractor
+from semantic_graph.connectors.query_log import QueryLogExtractor
 
 
 def test_extract_info_from_query_log_json_bigquery(query_log_extractor: QueryLogExtractor):

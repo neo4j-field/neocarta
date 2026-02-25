@@ -1,4 +1,4 @@
-from data_model.core import (
+from ...data_model.core import (
     Database,
     Schema,
     Table,
@@ -9,8 +9,8 @@ from data_model.core import (
     References,
 )
 import pandas as pd
-from data_model.expanded import Value, HasValue
-from connectors.models import NodesCache, RelationshipsCache
+from ...data_model.expanded import Value, HasValue
+from ..models import NodesCache, RelationshipsCache
 
 class BigQueryTransformer:
     """

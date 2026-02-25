@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import Mock
 import pandas as pd
-from connectors.bigquery.extract import BigQueryExtractor
-from connectors.bigquery.transform import BigQueryTransformer
-from data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
-from data_model.expanded import Value, HasValue
+from semantic_graph.connectors.bigquery.extract import BigQueryExtractor
+from semantic_graph.connectors.bigquery.transform import BigQueryTransformer
+from semantic_graph.data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
+from semantic_graph.data_model.expanded import Value, HasValue
 
 
 @pytest.fixture(scope="function")
