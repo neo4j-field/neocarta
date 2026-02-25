@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
 from google.cloud import dataplex_v1
-from embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
-from connectors.dataplex.workflow import DataplexWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.connectors.dataplex import DataplexWorkflow
 
 
 async def main(

@@ -23,10 +23,10 @@ agent:
 	uv run run_agent.py
 
 create-graph:
-	uv run run_create_graph.py
+	uv run examples/bigquery.py
 
 create-graph-no-embeddings:
-	uv run run_create_graph.py --skip-embeddings
+	uv run examples/bigquery.py --skip-embeddings
 
 load-ecommerce-dataset:
 	uv run datasets/ecommerce_bigquery.py

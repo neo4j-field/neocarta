@@ -2620,7 +2620,7 @@ wheels = [
 [[package]]
 name = "semantic-graph"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "google-cloud-bigquery", extra = ["pandas"] },
     { name = "google-cloud-dataplex" },

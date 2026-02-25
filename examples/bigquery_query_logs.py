@@ -2,7 +2,7 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from connectors.query_log.workflow import QueryLogWorkflow
+from semantic_graph.connectors.query_log import QueryLogWorkflow
 
 async def main():
     load_dotenv()

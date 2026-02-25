@@ -58,6 +58,10 @@ agent = [
     "langgraph>=1.0.7",
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.pytest.ini_options]
 pythonpath = "."
 testpaths = ["tests"]

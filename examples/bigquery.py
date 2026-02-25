@@ -4,9 +4,9 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
 from google.cloud import bigquery
-from connectors.bigquery.workflow import BigQueryWorkflow
+from semantic_graph.connectors.bigquery import BigQueryWorkflow
 
 
 async def main(with_embeddings: bool = True):
