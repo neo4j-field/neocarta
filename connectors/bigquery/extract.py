@@ -149,6 +149,10 @@ WHERE schema_name = '{dataset_id}'
     AND option_name = 'description'
 """).to_dataframe()
 
+        if df.empty:
+            data = [{"project_id": self.project_id, "dataset_id": dataset_id, "description": None}]
+            df=pd.DataFrame(data)
+
         if cache:
             self._cache["schema_info"] = df
 
@@ -308,12 +312,13 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 
 
     def extract_column_unique_values_for_table(
-        self, 
+        self,
         table_name: str,
         column_names: list[str],
         dataset_id: Optional[str] = None,
         limit: int = 10,
         cache: bool = False,
+        column_info: Optional[pd.DataFrame] = None,
     ) -> pd.DataFrame:
         """
         Extract BigQuery column unique values to be used as reference values.
@@ -330,7 +335,10 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             The number of unique values to extract per column.
         cache: bool = False
             Whether to cache the extract. If True, will cache the column unique values in the instance.
-            
+        column_info: Optional[pd.DataFrame] = None
+            The column information. If not provided, will use cached column information.
+            Used to determine column data types to skip array columns.
+
         Returns
         -------
         pd.DataFrame
@@ -340,12 +348,30 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 
         dataset_id = self._get_dataset_id(dataset_id)
 
-        # Build ARRAY_AGG aggregation for each column
+        # Get column_info to check data types
+        column_info = column_info or self._cache.get("column_info", None)
+
+        # Build ARRAY_AGG aggregation for each column, skipping array columns
         select_clauses = []
         for col in column_names:
+            # Check if this column is an array type
+            if column_info is not None:
+                col_data_type = column_info[
+                    (column_info["table_name"] == table_name) &
+                    (column_info["column_name"] == col)
+                ]["data_type"]
+
+                # Skip array columns as ARRAY_AGG cannot be applied to array types
+                if not col_data_type.empty and col_data_type.iloc[0].startswith("ARRAY"):
+                    continue
+
             select_clauses.append(
                 f"ARRAY_AGG(DISTINCT `{col}` IGNORE NULLS LIMIT {limit}) as `{col}`"
             )
+
+        # If all columns are arrays, return an empty DataFrame with expected structure
+        if not select_clauses:
+            return pd.DataFrame(columns=["column_name", "unique_value", "column_id", "value_id"])
 
         query = f"""
         SELECT {", ".join(select_clauses)}
