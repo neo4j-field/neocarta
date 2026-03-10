@@ -205,7 +205,7 @@ class DataplexExtractor:
         )
         entry = self.catalog_client.lookup_entry(request=request)
 
-        # Parse FQN: "bigquery:ai-field-alex-g.demo_ecommerce.customers"
+        # Parse FQN: "bigquery:project.demo_ecommerce.customers"
         fqn = entry.fully_qualified_name
 
         # Entry source metadata

@@ -24,3 +24,57 @@ def test_parse_sql_query_bigquery():
     assert len(parsed["table_info"]) == 3
     assert len(parsed["column_info"]) == 9
     assert len(parsed["references_info"]) == 2
+
+
+def test_parse_sql_query_filters_invalid_references_with_unnest():
+    """Test that queries with UNNEST that create malformed references are filtered out"""
+    query = """
+    SELECT
+      child.name,
+      child.id AS child_id,
+      child.author_name AS child_author,
+      parent_hash AS parent_id_hash,
+      parent.author_name AS parent_author
+    FROM `example-project.example_dataset.commits` child,
+      UNNEST(child.parent_ids) AS parent_hash
+    JOIN `example-project.example_dataset.commits` parent
+      ON parent_hash = parent.id
+      AND child.name = parent.name
+    WHERE child.name = 'example-name'
+    ORDER BY child.created_date DESC
+    LIMIT 15
+    """
+    query_id = "test123"
+    parsed = parse_sql_query(query, query_id, "bigquery")
+
+    # Should not fail with NoneType error
+    assert parsed is not None
+
+    # Check that references_info only contains valid references (with both column IDs)
+    for ref in parsed["references_info"]:
+        assert ref["left_column_id"] is not None, "left_column_id should not be None"
+        assert ref["right_column_id"] is not None, "right_column_id should not be None"
+        assert ref["left_column_id"] != "", "left_column_id should not be empty string"
+        assert ref["right_column_id"] != "", "right_column_id should not be empty string"
+
+
+def test_parse_sql_query_only_returns_complete_references():
+    """Test that only references with both column IDs are returned"""
+    # This query has a simple join that should parse correctly
+    query = """
+    SELECT a.id, b.id
+    FROM `project.dataset.table_a` AS a
+    JOIN `project.dataset.table_b` AS b ON a.id = b.id
+    """
+    query_id = "test456"
+    parsed = parse_sql_query(query, query_id, "bigquery")
+
+    # Should have 1 valid reference
+    assert len(parsed["references_info"]) == 1
+
+    # Verify the reference has both IDs
+    ref = parsed["references_info"][0]
+    assert ref["left_column_id"] is not None
+    assert ref["right_column_id"] is not None
+    assert ref["left_column_id"] != ""
+    assert ref["right_column_id"] != ""
