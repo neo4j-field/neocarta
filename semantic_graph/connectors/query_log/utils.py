@@ -148,25 +148,48 @@ def parse_sql_query(query: str, query_id: str, read: str = "bigquery") -> dict[s
             join_condition = j.args.get("on") if "on" in j.args else None
 
             if join_condition:
-                right_table_alias = join_condition.this.table
-                right_table_name = alias_to_table_name.get(right_table_alias, "?")
+                right_table_alias = getattr(join_condition.this, 'table', None) if hasattr(join_condition, 'this') else None
+                right_table_name = alias_to_table_name.get(right_table_alias, "?") if right_table_alias else None
             else:
                 right_table_name = None
                 right_table_alias = None
-            
-            references_info.append({
-                "left_table_name": left_table_name, 
+
+            # Extract column information from join condition if available
+            left_column_name = None
+            left_column_id = None
+            right_column_name = None
+            right_column_id = None
+
+            if join_condition:
+                # Try to extract left column (expression side)
+                if hasattr(join_condition, 'expression') and join_condition.expression:
+                    left_column_name = getattr(join_condition.expression, 'name', None)
+                    if left_column_name and left_table_alias:
+                        left_column_id = f"{alias_to_table_id.get(left_table_alias, left_table_alias)}.{getattr(join_condition.expression, 'this', left_column_name)}"
+
+                # Try to extract right column (this side)
+                if hasattr(join_condition, 'this') and join_condition.this:
+                    right_column_name = getattr(join_condition.this, 'name', None)
+                    if right_column_name and right_table_alias:
+                        right_column_id = f"{alias_to_table_id.get(right_table_alias, right_table_alias)}.{getattr(join_condition.this, 'this', right_column_name)}"
+
+            to_add = {
+                "left_table_name": left_table_name,
                 "left_table_id": alias_to_table_id.get(left_table_alias, left_table_alias),
                 "left_table_alias": left_table_alias,
-                "left_column_name": join_condition.expression.name,
-                "left_column_id": f"{alias_to_table_id.get(left_table_alias, left_table_alias)}.{join_condition.expression.this}",
-                "right_table_name": right_table_name, 
+                "left_column_name": left_column_name,
+                "left_column_id": left_column_id,
+                "right_table_name": right_table_name,
                 "right_table_id": alias_to_table_id.get(right_table_alias, right_table_alias),
                 "right_table_alias": right_table_alias,
-                "right_column_name": join_condition.this.name,
-                "right_column_id": f"{alias_to_table_id.get(right_table_alias, right_table_alias)}.{join_condition.this.this}",
-                "criteria": str(join_condition)
-                })
+                "right_column_name": right_column_name,
+                "right_column_id": right_column_id,
+                "criteria": str(join_condition) if join_condition else None
+                }
+            
+            # only add valid references. we know a reference is valid if both left and right column ids are known
+            if to_add.get("left_column_id") is not None and to_add.get("right_column_id") is not None:
+                references_info.append(to_add)
 
         return {
             "table_info": table_info,

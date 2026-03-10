@@ -119,7 +119,7 @@ def link_column_to_glossary_term(
 
 
 # ---------------------------------------------------------------------------
-# Example usage for ai-field-alex-g
+# Example usage
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import os
