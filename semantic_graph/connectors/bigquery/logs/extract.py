@@ -161,6 +161,7 @@ FROM
   UNNEST(job.referenced_tables) AS ref
 WHERE
   ref.dataset_id = '{dataset_id}'
+  AND ref.table_id NOT LIKE 'INFORMATION_SCHEMA.%'
   AND job.creation_time >= {start_condition}
   AND job.creation_time < {end_condition}
 ORDER BY
