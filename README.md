@@ -161,9 +161,17 @@ class Workflow:
 
 ### Connectors
 
-#### **BigQuery**
+#### **BigQuery Schema Connector**
 
-Connector for reading BigQuery Information Schema tables and ingesting metadata into Neo4j. Primary and foreign keys must be defined in the Information Schema tables in order for column level relationships to be created in the Neo4j graph.
+Connector for reading BigQuery Information Schema tables and ingesting **schema metadata** into Neo4j. Primary and foreign keys must be defined in the Information Schema tables in order for column level relationships to be created in the Neo4j graph.
+
+**What it extracts:**
+* Database (GCP project)
+* Schemas (datasets)
+* Tables with descriptions
+* Columns with types, constraints, descriptions
+* Column references (foreign keys)
+* Column unique values (sample data)
 
 This workflow requires the following variables to be set in the `.env` file:
 * NEO4J_USERNAME=neo4j-username
@@ -172,6 +180,32 @@ This workflow requires the following variables to be set in the `.env` file:
 * NEO4J_DATABASE=neo4j-database
 * GCP_PROJECT_ID=project-id
 * BIGQUERY_DATASET_ID=dataset-id
+
+#### **BigQuery Logs Connector**
+
+Connector for extracting **query logs** from BigQuery `INFORMATION_SCHEMA.JOBS_BY_PROJECT`, parsing SQL queries to understand table and column usage, and loading query patterns into Neo4j.
+
+**What it extracts:**
+* SQL Queries
+* Tables and columns referenced in queries (discovered via SQL parsing)
+* Join relationships between tables (from SQL JOINs)
+* Query-to-table and query-to-column usage relationships
+
+**Graph schema additions:**
+* `Query` nodes with properties:
+  - `query` - The SQL text
+  - `query_id` - Hash of query text
+* `(:Query)-[:USES_TABLE]->(:Table)` relationships
+* `(:Query)-[:USES_COLUMN]->(:Column)` relationships
+
+This workflow requires the following variables to be set in the `.env` file:
+* NEO4J_USERNAME=neo4j-username
+* NEO4J_PASSWORD=neo4j-password
+* NEO4J_URI=neo4j-uri
+* NEO4J_DATABASE=neo4j-database
+* GCP_PROJECT_ID=project-id
+* BIGQUERY_DATASET_ID=dataset-id
+* BIGQUERY_REGION=region-us (optional, defaults to region-us)
 
 
 ##### Workflow Architecture
@@ -205,13 +239,13 @@ graph LR
     PM -->|Ingest Data| NEO
 ```
 
-##### Code Example
+##### Code Example - Schema Connector
 
 ```python
 import os
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from connectors.bigquery.workflow import BigQueryWorkflow
+from semantic_graph.connectors.bigquery import BigQuerySchemaWorkflow
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -222,7 +256,7 @@ neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
 # Create workflow instance
-workflow = BigQueryWorkflow(
+workflow = BigQuerySchemaWorkflow(
     client=bigquery_client,
     project_id=os.getenv("GCP_PROJECT_ID"),
     dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
@@ -230,9 +264,60 @@ workflow = BigQueryWorkflow(
     database_name=neo4j_database,
 )
 
-# Run the workflow to extract, transform, and load BigQuery metadata into Neo4j
+# Run the workflow to extract, transform, and load BigQuery schema metadata into Neo4j
 workflow.run()
 ```
+
+##### Code Example - Logs Connector
+
+```python
+import os
+from neo4j import GraphDatabase
+from google.cloud import bigquery
+from semantic_graph.connectors.bigquery import BigQueryLogsWorkflow
+
+# Initialize clients
+neo4j_driver = GraphDatabase.driver(
+    uri=os.getenv("NEO4J_URI"),
+    auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
+)
+neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
+
+# Create workflow instance
+workflow = BigQueryLogsWorkflow(
+    client=bigquery_client,
+    project_id=os.getenv("GCP_PROJECT_ID"),
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database,
+)
+
+# Run the workflow to extract query logs, parse SQL, and load into Neo4j
+workflow.run(
+    dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
+    region="region-us",
+    start_timestamp="2024-01-01 00:00:00",  # Optional
+    end_timestamp="2024-01-31 23:59:59",    # Optional
+    limit=100,                               # Optional, default 100
+    drop_failed_queries=True,                # Optional, default True
+)
+```
+
+##### Combined Usage
+
+For the most complete picture, run both connectors:
+
+```python
+# 1. Extract schema metadata
+schema_workflow = BigQuerySchemaWorkflow(...)
+schema_workflow.run()
+
+# 2. Extract query logs
+logs_workflow = BigQueryLogsWorkflow(...)
+logs_workflow.run(dataset_id=os.getenv("BIGQUERY_DATASET_ID"))
+```
+
+This allows you to compare declared schema vs. actual usage patterns.
 
 #### **GCP Dataplex Universal Catalog**
 
