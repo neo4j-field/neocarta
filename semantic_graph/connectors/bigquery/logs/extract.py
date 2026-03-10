@@ -155,7 +155,7 @@ class BigQueryLogsExtractor:
 
         query = f"""SELECT
   job.error_result,
-  job.query,
+  job.query
 FROM
   `{self.project_id}.{region}.INFORMATION_SCHEMA.JOBS_BY_PROJECT` AS job,
   UNNEST(job.referenced_tables) AS ref
