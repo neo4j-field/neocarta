@@ -8,8 +8,8 @@ This connector allows query log files to be parsed into the metadata graph schem
 Query log parsing allows relationships between columns and tables to be discovered based on how users query the system, 
 instead of relying on explicit documentation such as foreign key constraints.
 
-Currently the Query Log Workflow only supports query logs from **BigQuery in JSON file format**. 
-More databases and log retrieval methods are planned for future versions.
+The [`QueryLogWorkflow`](./workflow.py) only supports query logs from **BigQuery in JSON file format**. 
+BigQuery query logs may be retrieved directly from the database via the [`BigQueryLogsWorkflow`](../bigquery/logs/workflow.py).
 
 ## Data Models
 
