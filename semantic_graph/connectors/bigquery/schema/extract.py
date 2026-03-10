@@ -354,16 +354,18 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         # Build ARRAY_AGG aggregation for each column, skipping array columns
         select_clauses = []
         for col in column_names:
-            # Check if this column is an array type
+            # Check if this column is an array or struct type
             if column_info is not None:
                 col_data_type = column_info[
                     (column_info["table_name"] == table_name) &
                     (column_info["column_name"] == col)
                 ]["data_type"]
 
-                # Skip array columns as ARRAY_AGG cannot be applied to array types
-                if not col_data_type.empty and col_data_type.iloc[0].startswith("ARRAY"):
-                    continue
+                # Skip array and struct columns as ARRAY_AGG(DISTINCT) cannot be applied to these types
+                if not col_data_type.empty:
+                    data_type = col_data_type.iloc[0]
+                    if data_type.startswith("ARRAY") or data_type.startswith("STRUCT"):
+                        continue
 
             select_clauses.append(
                 f"ARRAY_AGG(DISTINCT `{col}` IGNORE NULLS LIMIT {limit}) as `{col}`"
