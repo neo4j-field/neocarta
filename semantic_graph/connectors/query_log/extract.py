@@ -110,10 +110,13 @@ class QueryLogExtractor:
         for _, row in query_info_df.iterrows():
             query = row["query"]
             query_id = row["query_id"]
+
             parsed_dict = parse_sql_query(query, query_id, "bigquery")
-            table_info.extend(parsed_dict["table_info"])
-            column_info.extend(parsed_dict["column_info"])
-            references_info.extend(parsed_dict["references_info"])
+            
+            if parsed_dict:
+                table_info.extend(parsed_dict["table_info"])
+                column_info.extend(parsed_dict["column_info"])
+                references_info.extend(parsed_dict["references_info"])
 
         table_info_df = pd.DataFrame(table_info)
         column_info_df = pd.DataFrame(column_info)

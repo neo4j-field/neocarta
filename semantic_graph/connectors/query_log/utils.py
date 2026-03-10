@@ -4,6 +4,12 @@ import sqlglot
 from sqlglot.expressions import Column, Table, Insert, Update, Join
 import hashlib
 
+def create_query_id(query: str) -> str:
+    """
+    Create a query ID from a query string.
+    """
+    return hashlib.sha256(query.encode()).hexdigest()
+
 def parse_bigquery_query_log_json(query_log_file: str) -> pd.DataFrame:
     """
     Parse a BigQuery query log JSON file into a Pandas DataFrame.
@@ -26,7 +32,7 @@ def parse_bigquery_query_log_json(query_log_file: str) -> pd.DataFrame:
         query_metadata.append({
             "project_id": project_id,
             "query": query,
-            "query_id": hashlib.sha256(query.encode()).hexdigest(),
+            "query_id": create_query_id(query),
         })
         # format as table id
         for ref_table in ref_tables:

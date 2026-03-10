@@ -3,13 +3,13 @@ import pandas as pd
 import hashlib
 from typing import Optional
 from .models import LogsExtractorCache
-from ...query_log.utils import parse_sql_query
+from ...query_log.utils import parse_sql_query, create_query_id
 
 
 class BigQueryLogsExtractor:
     """
     Extractor class for BigQuery query logs.
-    Extracts and parses query logs from BigQuery JOBS_BY_PROJECT.
+    Extracts and parses query logs from BigQuery INFORMATION_SCHEMA.JOBS_BY_PROJECT.
     """
     
     def __init__(self, client: bigquery.Client, project_id: Optional[str] = None):
@@ -154,14 +154,6 @@ class BigQueryLogsExtractor:
         end_condition = f"TIMESTAMP('{end_timestamp}')" if end_timestamp else "CURRENT_TIMESTAMP()"
 
         query = f"""SELECT
-  job.creation_time,
-  job.end_time,
-  TIMESTAMP_DIFF(job.end_time, job.creation_time, SECOND) AS duration_seconds,
-  job.job_id,
-  job.state,
-  job.statement_type,
-  job.total_bytes_processed,
-  job.total_slot_ms,
   job.error_result,
   job.query,
 FROM
@@ -183,7 +175,7 @@ LIMIT {limit};
 
         # Add query_id as hash of the query text
         query_info_df["query_id"] = query_info_df["query"].apply(
-            lambda q: hashlib.sha256(str(q).encode()).hexdigest()
+            lambda q: create_query_id(q)
         )
 
         # Parse queries to extract table and column information
