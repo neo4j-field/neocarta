@@ -1,8 +1,7 @@
 import pytest
 from unittest.mock import Mock
 import pandas as pd
-from semantic_graph.connectors.bigquery.extract import BigQueryExtractor
-from semantic_graph.connectors.bigquery.transform import BigQueryTransformer
+from semantic_graph.connectors.bigquery.schema import BigQuerySchemaExtractor, BigQuerySchemaTransformer
 from semantic_graph.data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
 from semantic_graph.data_model.expanded import Value, HasValue
 
@@ -17,14 +16,14 @@ def mock_bigquery_client():
 
 @pytest.fixture(scope="function")
 def bigquery_extractor(mock_bigquery_client):
-    """Create a BigQueryExtractor with a mocked client."""
-    return BigQueryExtractor(client=mock_bigquery_client, dataset_id="test_dataset")
+    """Create a BigQuerySchemaExtractor with a mocked client."""
+    return BigQuerySchemaExtractor(client=mock_bigquery_client, dataset_id="test_dataset")
 
 
 @pytest.fixture(scope="function")
 def bigquery_extractor_with_cache(mock_bigquery_client):
-    """Create a BigQueryExtractor with pre-populated cache."""
-    extractor = BigQueryExtractor(client=mock_bigquery_client, dataset_id="test_dataset")
+    """Create a BigQuerySchemaExtractor with pre-populated cache."""
+    extractor = BigQuerySchemaExtractor(client=mock_bigquery_client, dataset_id="test_dataset")
 
     # Database info cache
     database_info = pd.DataFrame([
@@ -157,14 +156,14 @@ def bigquery_extractor_with_cache(mock_bigquery_client):
 
 @pytest.fixture(scope="function")
 def bigquery_transformer():
-    """Create a BigQueryTransformer."""
-    return BigQueryTransformer()
+    """Create a BigQuerySchemaTransformer."""
+    return BigQuerySchemaTransformer()
 
 
 @pytest.fixture(scope="function")
 def bigquery_transformer_with_cache():
-    """Create a BigQueryTransformer with pre-populated cache."""
-    transformer = BigQueryTransformer()
+    """Create a BigQuerySchemaTransformer with pre-populated cache."""
+    transformer = BigQuerySchemaTransformer()
 
     # Database nodes
     database_nodes = [

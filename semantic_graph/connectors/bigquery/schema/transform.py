@@ -1,4 +1,4 @@
-from ...data_model.core import (
+from ....data_model.core import (
     Database,
     Schema,
     Table,
@@ -9,10 +9,10 @@ from ...data_model.core import (
     References,
 )
 import pandas as pd
-from ...data_model.expanded import Value, HasValue
-from ..models import NodesCache, RelationshipsCache
+from ....data_model.expanded import Value, HasValue
+from ...models import NodesCache, RelationshipsCache
 
-class BigQueryTransformer:
+class BigQuerySchemaTransformer:
     """
     Transformer class for BigQuery. 
     Transforms metadata from BigQuery Information Tables into data model nodes and relationships.

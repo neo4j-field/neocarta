@@ -2,11 +2,11 @@ from neo4j import Driver
 from google.cloud import bigquery
 from typing import Optional
 
-from .extract import BigQueryExtractor
-from .transform import BigQueryTransformer
-from ..load import Neo4jLoader
+from .extract import BigQuerySchemaExtractor
+from .transform import BigQuerySchemaTransformer
+from ...load import Neo4jLoader
 
-class BigQueryWorkflow:
+class BigQuerySchemaWorkflow:
     """
     A workflow for extracting, transforming, and loading BigQuery data into Neo4j.
     """
@@ -26,8 +26,8 @@ class BigQueryWorkflow:
         self.neo4j_driver = neo4j_driver
         self.database_name = database_name
 
-        self.extractor = BigQueryExtractor(client, project_id, dataset_id)
-        self.transformer = BigQueryTransformer()
+        self.extractor = BigQuerySchemaExtractor(client, project_id, dataset_id)
+        self.transformer = BigQuerySchemaTransformer()
         self.loader = Neo4jLoader(neo4j_driver, database_name)
 
     def extract_metadata(self, dataset_id: Optional[str] = None) -> None:

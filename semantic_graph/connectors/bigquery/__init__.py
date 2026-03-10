@@ -1,7 +1,13 @@
 """BigQuery connector."""
 
-from .extract import BigQueryExtractor
-from .transform import BigQueryTransformer
-from .workflow import BigQueryWorkflow
+from .schema import BigQuerySchemaExtractor, BigQuerySchemaWorkflow
+from .logs import BigQueryLogsExtractor, BigQueryLogsWorkflow
+from .schema import BigQuerySchemaTransformer
 
-__all__ = ["BigQueryExtractor", "BigQueryTransformer", "BigQueryWorkflow"]
+__all__ = [
+    "BigQuerySchemaExtractor",
+    "BigQuerySchemaWorkflow",
+    "BigQueryLogsExtractor",
+    "BigQueryLogsWorkflow",
+    "BigQuerySchemaTransformer",
+]

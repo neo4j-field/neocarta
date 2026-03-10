@@ -2,17 +2,17 @@ from google.cloud import bigquery
 import pandas as pd
 import hashlib
 from typing import Optional
-from .models import InfoTablesCache
+from .models import SchemaExtractorCache
 
 
-class BigQueryExtractor:
+class BigQuerySchemaExtractor:
     """
-    Extractor class for BigQuery. 
-    Extracts metadata from BigQuery Information Tables.
+    Extractor class for BigQuery schema metadata.
+    Extracts metadata from BigQuery Information Schema tables.
     """
     def __init__(self, client: bigquery.Client, project_id: Optional[str] = None, dataset_id: Optional[str] = None):
         """
-        Initialize the BigQuery extractor.
+        Initialize the BigQuery schema extractor.
 
         Parameters
         ----------
@@ -31,8 +31,8 @@ class BigQueryExtractor:
             raise ValueError("Project ID is required as argument in constructor or as attribute in BigQueryclient.")
 
         self.dataset_id = dataset_id
-        self._cache: InfoTablesCache = InfoTablesCache()
-    
+        self._cache: SchemaExtractorCache = SchemaExtractorCache()
+
     @property
     def database_info(self) -> pd.DataFrame:
         """
@@ -83,7 +83,7 @@ class BigQueryExtractor:
         ----------
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
-            
+
         Returns
         -------
         str
@@ -181,7 +181,7 @@ WHERE schema_name = '{dataset_id}'
         dataset_id = self._get_dataset_id(dataset_id)
 
         df = self.client.query(f"""
-SELECT 
+SELECT
     tables.table_catalog,
     tables.table_schema,
     tables.table_name,
@@ -216,7 +216,7 @@ ORDER BY table_name
             The dataset ID. If not provided, will use default instance `dataset_id`.
         cache: bool = False
             Whether to cache the extract. If True, will cache the column information in the instance.
-            
+
         Returns
         -------
         pd.DataFrame
@@ -235,7 +235,7 @@ ORDER BY table_name
         dataset_id = self._get_dataset_id(dataset_id)
 
         df = self.client.query(f"""
-SELECT 
+SELECT
     columns.table_catalog,
     columns.table_schema,
     columns.table_name,
@@ -278,7 +278,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
             The dataset ID. If not provided, will use default instance `dataset_id`.
         cache: bool = False
             Whether to cache the extract. If True, will cache the column references information in the instance.
-            
+
         Returns
         -------
         pd.DataFrame
@@ -287,7 +287,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
         dataset_id = self._get_dataset_id(dataset_id)
 
         df = self.client.query(f"""
-SELECT 
+SELECT
     tc.constraint_catalog,
     tc.constraint_schema,
     tc.constraint_name,
@@ -398,7 +398,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             + hashlib.md5(row["unique_value"].encode()).hexdigest(),
             axis=1,
         )
-        
+
         # TODO: Handle caching duplicate column information if method run multiple times for same table and columns.
         if cache:
             self._cache["column_unique_values"] = pd.concat([self._cache.get("column_unique_values", pd.DataFrame()), result], ignore_index=True)
@@ -406,9 +406,9 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         return result
 
     def extract_column_unique_values_for_all_tables(
-        self, dataset_id: Optional[str] = None, 
-        table_info: Optional[pd.DataFrame] = None, 
-        column_info: Optional[pd.DataFrame] = None, 
+        self, dataset_id: Optional[str] = None,
+        table_info: Optional[pd.DataFrame] = None,
+        column_info: Optional[pd.DataFrame] = None,
         cache: bool = False
     ) -> pd.DataFrame:
         """
