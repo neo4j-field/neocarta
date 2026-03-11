@@ -572,6 +572,22 @@ pandas = [
 ]
 
 [[package]]
+name = "google-cloud-bigquery-storage"
+version = "2.36.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "grpcio" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e0/fa/877e0059349369be38a64586b135c59ceadb87d0386084043d8c440ef929/google_cloud_bigquery_storage-2.36.2.tar.gz", hash = "sha256:ad49d8c09ad6cd82da4efe596fcfcdbc1458bf05b93915e3c5c00f1e700ae128", size = 308672 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/07/62dbe78ef773569be0a1d2c1b845e9214889b404e506126519b4d33ee999/google_cloud_bigquery_storage-2.36.2-py3-none-any.whl", hash = "sha256:823a73db0c4564e8ad3eedcfd5049f3d5aa41775267863b5627211ec36be2dbf", size = 304398 },
+]
+
+[[package]]
 name = "google-cloud-core"
 version = "2.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2623,6 +2639,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "google-cloud-bigquery", extra = ["pandas"] },
+    { name = "google-cloud-bigquery-storage" },
     { name = "google-cloud-dataplex" },
     { name = "neo4j" },
     { name = "openai" },
@@ -2676,6 +2693,7 @@ metadata-graph = [
 [package.metadata]
 requires-dist = [
     { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
+    { name = "google-cloud-bigquery-storage", specifier = ">=2.36.2" },
     { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
     { name = "neo4j", specifier = ">=6.1.0" },
     { name = "openai", specifier = ">=2.15.0" },
