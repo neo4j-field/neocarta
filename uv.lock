@@ -2681,6 +2681,7 @@ mcp-server = [
 ]
 metadata-graph = [
     { name = "google-cloud-bigquery", extra = ["pandas"] },
+    { name = "google-cloud-bigquery-storage" },
     { name = "google-cloud-dataplex" },
     { name = "neo4j" },
     { name = "openai" },
@@ -2735,6 +2736,7 @@ mcp-server = [
 ]
 metadata-graph = [
     { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
+    { name = "google-cloud-bigquery-storage", specifier = ">=2.36.2" },
     { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
     { name = "neo4j", specifier = ">=6.1.0" },
     { name = "openai", specifier = ">=2.15.0" },

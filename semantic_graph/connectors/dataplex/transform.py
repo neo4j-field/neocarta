@@ -125,7 +125,7 @@ class DataplexTransformer:
         """
         return self._relationships_cache.get("has_business_term_relationships", [])
 
-    def transform_to_database_nodes(self, database_metadata_info: pd.DataFrame, cache: bool = False) -> list[Database]:
+    def transform_to_database_nodes(self, database_metadata_info: pd.DataFrame, cache: bool = True) -> list[Database]:
         """
         Transform Dataplex database metadata into Database nodes.
 
@@ -134,7 +134,7 @@ class DataplexTransformer:
         database_metadata_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex database metadata.
             Has columns `project_id`, `service`, and `platform`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the database nodes in the instance.
 
         Returns
@@ -159,7 +159,7 @@ class DataplexTransformer:
         return nodes
 
 
-    def transform_to_schema_nodes(self, schema_metadata_info: pd.DataFrame, cache: bool = False) -> list[Schema]:
+    def transform_to_schema_nodes(self, schema_metadata_info: pd.DataFrame, cache: bool = True) -> list[Schema]:
         """
         Transform Dataplex schema metadata into Schema nodes.
 
@@ -168,7 +168,7 @@ class DataplexTransformer:
         schema_metadata_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex schema metadata.
             Has columns `project_id` and `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the schema nodes in the instance.
 
         Returns
@@ -191,7 +191,7 @@ class DataplexTransformer:
         return nodes
 
 
-    def transform_to_table_nodes(self, table_metadata_info: pd.DataFrame, cache: bool = False) -> list[Table]:
+    def transform_to_table_nodes(self, table_metadata_info: pd.DataFrame, cache: bool = True) -> list[Table]:
         """
         Transform Dataplex table metadata into Table nodes.
 
@@ -201,7 +201,7 @@ class DataplexTransformer:
             A Pandas DataFrame containing Dataplex table metadata.
             Has columns `project_id`, `dataset_id`, `table_id`, `table_display_name`,
             and `table_description`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the table nodes in the instance.
 
         Returns
@@ -224,7 +224,7 @@ class DataplexTransformer:
         return nodes
 
 
-    def transform_to_column_nodes(self, column_metadata_info: pd.DataFrame, cache: bool = False) -> list[Column]:
+    def transform_to_column_nodes(self, column_metadata_info: pd.DataFrame, cache: bool = True) -> list[Column]:
         """
         Transform Dataplex BigQuery metadata into column nodes.
 
@@ -234,7 +234,7 @@ class DataplexTransformer:
             A Pandas DataFrame containing Dataplex column metadata.
             Has columns `project_id`, `dataset_id`, `table_id`, `column_name`,
             `column_data_type`, `column_mode`, and `column_description`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the column nodes in the instance.
 
         Returns
@@ -267,7 +267,7 @@ class DataplexTransformer:
         return nodes
 
 
-    def transform_to_glossary_nodes(self, glossary_info: pd.DataFrame, cache: bool = False) -> list[Glossary]:
+    def transform_to_glossary_nodes(self, glossary_info: pd.DataFrame, cache: bool = True) -> list[Glossary]:
         """
         Transform Dataplex glossary information into glossary nodes.
 
@@ -276,7 +276,7 @@ class DataplexTransformer:
         glossary_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex glossary information.
             Has columns `glossary_id` and `glossary_name`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the glossary nodes in the instance.
 
         Returns
@@ -299,7 +299,7 @@ class DataplexTransformer:
         return nodes
 
 
-    def transform_to_category_nodes(self, category_info: pd.DataFrame, cache: bool = False) -> list[Category]:
+    def transform_to_category_nodes(self, category_info: pd.DataFrame, cache: bool = True) -> list[Category]:
         """
         Transform Dataplex glossary category information into Category nodes.
 
@@ -308,7 +308,7 @@ class DataplexTransformer:
         category_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex glossary information.
             Has columns `glossary_id` and `category_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the category nodes in the instance.
 
         Returns
@@ -330,7 +330,7 @@ class DataplexTransformer:
 
         return nodes
 
-    def transform_to_business_term_nodes(self, business_term_info: pd.DataFrame, cache: bool = False) -> list[BusinessTerm]:
+    def transform_to_business_term_nodes(self, business_term_info: pd.DataFrame, cache: bool = True) -> list[BusinessTerm]:
         """
         Transform Dataplex glossary business term information into BusinessTerm nodes.
 
@@ -339,7 +339,7 @@ class DataplexTransformer:
         business_term_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex glossary information.
             Has columns `term_id`, `term_name`, and `term_description`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the business term nodes in the instance.
 
         Returns
@@ -363,7 +363,7 @@ class DataplexTransformer:
 
 
     def transform_to_has_schema_relationships(
-        self, schema_metadata_info: pd.DataFrame, cache: bool = False) -> list[HasSchema]:
+        self, schema_metadata_info: pd.DataFrame, cache: bool = True) -> list[HasSchema]:
         """
         Transform Dataplex schema metadata into has schema relationships.
 
@@ -372,7 +372,7 @@ class DataplexTransformer:
         schema_metadata_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex schema metadata.
             Has columns `project_id` and `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the has schema relationships in the instance.
             
         Returns
@@ -395,7 +395,7 @@ class DataplexTransformer:
 
 
     def transform_to_has_table_relationships(
-        self, table_metadata_info: pd.DataFrame, cache: bool = False) -> list[HasTable]:
+        self, table_metadata_info: pd.DataFrame, cache: bool = True) -> list[HasTable]:
         """
         Transform Dataplex table metadata into has table relationships.
 
@@ -404,7 +404,7 @@ class DataplexTransformer:
         table_metadata_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex table metadata.
             Has columns `project_id`, `dataset_id`, and `table_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the has table relationships in the instance.
         
         Returns
@@ -427,7 +427,7 @@ class DataplexTransformer:
 
 
     def transform_to_has_column_relationships(
-        self, column_metadata_info: pd.DataFrame, cache: bool = False) -> list[HasColumn]:
+        self, column_metadata_info: pd.DataFrame, cache: bool = True) -> list[HasColumn]:
         """
         Transform Dataplex column metadata into has column relationships.
 
@@ -436,7 +436,7 @@ class DataplexTransformer:
         column_metadata_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex column metadata.
             Has columns `project_id`, `dataset_id`, `table_id`, and `column_name`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the has column relationships in the instance.
             
         Returns
@@ -465,7 +465,7 @@ class DataplexTransformer:
 
 
     def transform_to_has_category_relationships(
-        self, category_info: pd.DataFrame, cache: bool = False) -> list[HasCategory]:
+        self, category_info: pd.DataFrame, cache: bool = True) -> list[HasCategory]:
         """
         Transform Dataplex category information into has category relationships.
         (:Glossary)-[:HAS_CATEGORY]->(:Category)
@@ -475,7 +475,7 @@ class DataplexTransformer:
         category_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex glossary information.
             Has columns `glossary_id` and `category_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the has category relationships in the instance.
 
         Returns
@@ -497,7 +497,7 @@ class DataplexTransformer:
         return relationships
 
     def transform_to_has_business_term_relationships(
-        self, business_term_info: pd.DataFrame, cache: bool = False) -> list[HasBusinessTerm]:
+        self, business_term_info: pd.DataFrame, cache: bool = True) -> list[HasBusinessTerm]:
         """
         Transform Dataplex business term information into has business term relationships.
         (:Category)-[:HAS_BUSINESS_TERM]->(:BusinessTerm)
@@ -507,7 +507,7 @@ class DataplexTransformer:
         business_term_info: pd.DataFrame
             A Pandas DataFrame containing Dataplex business term information.
             Has columns `glossary_id` and `term_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the transform. If True, will cache the has business term relationships in the instance.
 
         Returns

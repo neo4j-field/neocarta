@@ -171,7 +171,7 @@ class DataplexExtractor:
         self,
         table_id: str,
         dataset_id: Optional[str] = None,
-        cache: bool = False
+        cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract full table metadata from Dataplex Universal Catalog for a BigQuery table.
@@ -183,7 +183,7 @@ class DataplexExtractor:
             The BigQuery table ID.
         dataset_id: Optional[str] = None
             The BigQuery dataset ID. If not provided, will use default instance `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the table information in the instance.
 
         Returns
@@ -257,7 +257,7 @@ class DataplexExtractor:
     def extract_bigquery_info_for_all_tables(
         self,
         dataset_id: Optional[str] = None,
-        cache: bool = False
+        cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract full table metadata from Dataplex Universal Catalog for all BigQuery tables in a dataset.
@@ -266,7 +266,7 @@ class DataplexExtractor:
         ----------
         dataset_id: Optional[str] = None
             The BigQuery dataset ID. If not provided, will use default instance `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the table information in the instance.
 
         Returns
@@ -300,14 +300,14 @@ class DataplexExtractor:
         
 
     def extract_glossary_info(
-        self, cache: bool = False
+        self, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract all glossary terms from all glossaries in the given location.
 
         Parameters
         ----------
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the glossary information in the instance.
 
         Returns

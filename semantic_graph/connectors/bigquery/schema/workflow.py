@@ -32,7 +32,7 @@ class BigQuerySchemaWorkflow:
 
     def extract_metadata(self, dataset_id: Optional[str] = None) -> None:
         """
-        Extract and cachemetadata from BigQuery.
+        Extract and cache metadata from BigQuery.
 
         Parameters
         ----------
@@ -40,27 +40,27 @@ class BigQuerySchemaWorkflow:
             The dataset ID. If not provided, will use default instance `dataset_id`.
         """
         self.extractor.extract_database_info(cache=True)
-        self.extractor.extract_schema_info(dataset_id=dataset_id, cache=True)
-        self.extractor.extract_table_info(dataset_id=dataset_id, cache=True)
-        self.extractor.extract_column_info(dataset_id=dataset_id, cache=True)
-        self.extractor.extract_column_references_info(dataset_id=dataset_id, cache=True)
-        self.extractor.extract_column_unique_values_for_all_tables(dataset_id=dataset_id, cache=True)
+        self.extractor.extract_schema_info(dataset_id=dataset_id)
+        self.extractor.extract_table_info(dataset_id=dataset_id)
+        self.extractor.extract_column_info(dataset_id=dataset_id)
+        self.extractor.extract_column_references_info(dataset_id=dataset_id)
+        self.extractor.extract_column_unique_values_for_all_tables(dataset_id=dataset_id)
     
     def transform_metadata(self) -> None:
         """
         Transform and cache metadata from BigQuery. `extract_metadata` must be called before this method.
         """
-        self.transformer.transform_to_database_nodes(self.extractor.database_info, cache=True)
-        self.transformer.transform_to_schema_nodes(self.extractor.schema_info, cache=True)
-        self.transformer.transform_to_table_nodes(self.extractor.table_info, cache=True)
-        self.transformer.transform_to_column_nodes(self.extractor.column_info, cache=True)
-        self.transformer.transform_to_value_nodes(self.extractor.column_unique_values, cache=True)
+        self.transformer.transform_to_database_nodes(self.extractor.database_info)
+        self.transformer.transform_to_schema_nodes(self.extractor.schema_info)
+        self.transformer.transform_to_table_nodes(self.extractor.table_info)
+        self.transformer.transform_to_column_nodes(self.extractor.column_info)
+        self.transformer.transform_to_value_nodes(self.extractor.column_unique_values)
 
-        self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info, cache=True)
-        self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
-        self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
-        self.transformer.transform_to_references_relationships(self.extractor.column_references_info, cache=True)
-        self.transformer.transform_to_has_value_relationships(self.extractor.column_unique_values, cache=True)
+        self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info)
+        self.transformer.transform_to_has_table_relationships(self.extractor.table_info)
+        self.transformer.transform_to_has_column_relationships(self.extractor.column_info)
+        self.transformer.transform_to_references_relationships(self.extractor.column_references_info)
+        self.transformer.transform_to_has_value_relationships(self.extractor.column_unique_values)
         
     def load_metadata(self) -> None:
         """

@@ -96,13 +96,13 @@ class BigQuerySchemaExtractor:
         return dataset_id
 
 
-    def extract_database_info(self, cache: bool = False) -> pd.DataFrame:
+    def extract_database_info(self, cache: bool = True) -> pd.DataFrame:
         """
         Extract BigQuery database (project) information.
 
         Parameters
         ----------
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the database information in the instance.
 
         Returns
@@ -119,7 +119,7 @@ class BigQuerySchemaExtractor:
 
 
     def extract_schema_info(
-        self, dataset_id: Optional[str] = None, cache: bool = False
+        self, dataset_id: Optional[str] = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery schema (dataset) information.
@@ -128,7 +128,7 @@ class BigQuerySchemaExtractor:
         ----------
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the schema information in the instance.
 
         Returns
@@ -160,7 +160,7 @@ WHERE schema_name = '{dataset_id}'
 
 
     def extract_table_info(
-        self, dataset_id: Optional[str] = None, cache: bool = False
+        self, dataset_id: Optional[str] = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery table information from the specified dataset.
@@ -169,7 +169,7 @@ WHERE schema_name = '{dataset_id}'
         ----------
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the table information in the instance.
 
         Returns
@@ -205,7 +205,7 @@ ORDER BY table_name
 
 
     def extract_column_info(
-        self, dataset_id: Optional[str] = None, cache: bool = False
+        self, dataset_id: Optional[str] = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery column information.
@@ -214,7 +214,7 @@ ORDER BY table_name
         ----------
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the column information in the instance.
 
         Returns
@@ -267,7 +267,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
 
 
     def extract_column_references_info(
-        self, dataset_id: Optional[str] = None, cache: bool = False
+        self, dataset_id: Optional[str] = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery column references information.
@@ -276,7 +276,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
         ----------
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the column references information in the instance.
 
         Returns
@@ -317,7 +317,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         column_names: list[str],
         dataset_id: Optional[str] = None,
         limit: int = 10,
-        cache: bool = False,
+        cache: bool = True,
         column_info: Optional[pd.DataFrame] = None,
     ) -> pd.DataFrame:
         """
@@ -333,7 +333,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             The dataset ID. If not provided, will use default instance `dataset_id`.
         limit: int
             The number of unique values to extract per column.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the column unique values in the instance.
         column_info: Optional[pd.DataFrame] = None
             The column information. If not provided, will use cached column information.
@@ -411,7 +411,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         self, dataset_id: Optional[str] = None,
         table_info: Optional[pd.DataFrame] = None,
         column_info: Optional[pd.DataFrame] = None,
-        cache: bool = False
+        cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery column unique values for all tables in the dataset.
@@ -424,7 +424,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             The table information. If not provided, will use cached table information.
         column_info: Optional[pd.DataFrame] = None
             The column information. If not provided, will use cached column information.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extract. If True, will cache the column unique values in the instance.
 
         Returns
