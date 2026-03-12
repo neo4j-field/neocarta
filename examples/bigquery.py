@@ -1,15 +1,14 @@
 import argparse
-import asyncio
 import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from openai import AsyncOpenAI
+from openai import OpenAI
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
 from google.cloud import bigquery
 from semantic_graph.connectors.bigquery import BigQuerySchemaWorkflow
 
 
-async def main(with_embeddings: bool = True):
+def main(with_embeddings: bool = True):
     load_dotenv()
     print("Starting workflow...")
     print("Creating drivers and clients...")
@@ -18,7 +17,7 @@ async def main(with_embeddings: bool = True):
         auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
     )
     neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
-    embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    embedding_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
     node_labels = ["Database", "Schema", "Table", "Column"]
@@ -38,13 +37,13 @@ async def main(with_embeddings: bool = True):
         print("Generating embeddings for nodes...")
         # create embeddings for the nodes
         openai_embedding_workflow = OpenAIEmbeddingWorkflow(
-            async_embedding_client=embedding_client,
+            neo4j_driver=neo4j_driver,
+            client=embedding_client,
             embedding_model="text-embedding-3-small",
             dimensions=768,
-            neo4j_driver=neo4j_driver,
             database_name=neo4j_database,
         )
-        await openai_embedding_workflow.arun(node_labels=node_labels)
+        openai_embedding_workflow.run(node_labels=node_labels)
 
     print("Workflow completed successfully!")
 
@@ -60,4 +59,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(main(with_embeddings=not args.skip_embeddings))
+    main(with_embeddings=not args.skip_embeddings)

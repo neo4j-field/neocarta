@@ -56,6 +56,34 @@ RETURN n.id as id,
     return pd.DataFrame(results)
 
 
+def _create_embeddings_for_batch_sync(
+    embedding_fn: Callable[[str], list[float]], batch: pd.DataFrame
+) -> list[tuple[str, list[dict[str, Any]]]]:
+    """
+    Create embeddings for a batch of node descriptions to embed (sync version).
+
+    Parameters
+    ----------
+    embedding_fn: Callable
+        The embedding function to use. Must take in a node description and return a list of floats.
+    batch : pd.DataFrame
+        A Pandas DataFrame where each row represents a node to embed.
+        Has columns `id`, `node_label`, and `description`.
+
+    Returns
+    -------
+    list[tuple[str, list[dict[str, Any]]]]
+        A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
+    """
+
+    results = []
+    for _, row in batch.iterrows():
+        embedding = embedding_fn(description=row["description"])
+        if embedding is not None:
+            results.append((row["id"], embedding))
+    return results
+
+
 async def _create_embeddings_for_batch(
     embedding_fn: Callable[[str], list[float]], batch: pd.DataFrame
 ) -> list[tuple[str, list[dict[str, Any]]]]:
@@ -91,6 +119,49 @@ async def _create_embeddings_for_batch(
         for id, embedding in zip(batch["id"], embedding_results)
         if embedding is not None
     ]
+
+
+def create_embeddings_in_batches_sync(
+    embedding_fn: Callable[[str], list[float]],
+    nodes_dataframe: pd.DataFrame,
+    batch_size: int,
+) -> list[tuple[str, list[Any]]]:
+    """
+    Create embeddings for a Pandas DataFrame of text chunks in batches (sync version).
+
+    Parameters
+    ----------
+    embedding_fn: Callable[[str], list[float]]
+        The embedding function to use. Must take in a node description and return a list of floats.
+    nodes_dataframe : pd.DataFrame
+        A Pandas DataFrame where each row represents a node.
+        Has columns `id`, `node_label`, and `description`.
+    batch_size : int
+        The number of nodes to process in each batch.
+
+    Returns
+    -------
+    list[tuple[str, list[Any]]]
+        A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
+    """
+
+    results = list()
+
+    for batch_idx, i in enumerate(range(0, len(nodes_dataframe), batch_size)):
+        print(
+            f"Processing batch {batch_idx + 1} of {ceil(len(nodes_dataframe) / (batch_size))}  \n",
+            end="\r",
+        )
+        if i + batch_size >= len(nodes_dataframe):
+            batch = nodes_dataframe.iloc[i:]
+        else:
+            batch = nodes_dataframe.iloc[i : i + batch_size]
+        batch_results = _create_embeddings_for_batch_sync(embedding_fn, batch)
+
+        # Add extracted records to the results list
+        results.extend(batch_results)
+
+    return results
 
 
 async def create_embeddings_in_batches(

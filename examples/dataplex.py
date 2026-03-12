@@ -1,15 +1,14 @@
 import argparse
-import asyncio
 import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from openai import AsyncOpenAI
+from openai import OpenAI
 from google.cloud import dataplex_v1
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
 from semantic_graph.connectors.dataplex import DataplexWorkflow
 
 
-async def main(
+def main(
     with_embeddings: bool = True,
     include_schema: bool = True,
     include_glossary: bool = True,
@@ -27,7 +26,7 @@ async def main(
     catalog_client = dataplex_v1.CatalogServiceClient()
     glossary_client = dataplex_v1.BusinessGlossaryServiceClient()
 
-    
+
 
     # Node labels to embed — filtered to what was actually ingested
     node_labels = []
@@ -52,16 +51,16 @@ async def main(
     workflow.run()
 
     if with_embeddings and node_labels:
-        embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        embedding_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         print("Generating embeddings for nodes...")
         embeddings = OpenAIEmbeddingWorkflow(
-            embedding_client,
-            "text-embedding-3-small",
-            768,
-            neo4j_driver,
-            neo4j_database,
+            neo4j_driver=neo4j_driver,
+            client=embedding_client,
+            embedding_model="text-embedding-3-small",
+            dimensions=768,
+            database_name=neo4j_database,
         )
-        await embeddings.arun(node_labels=node_labels)
+        embeddings.run(node_labels=node_labels)
 
     print("Workflow completed successfully!")
 
@@ -87,10 +86,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(
-        main(
-            with_embeddings=not args.skip_embeddings,
-            include_schema=not args.skip_schema,
-            include_glossary=not args.skip_glossary,
-        )
+    main(
+        with_embeddings=not args.skip_embeddings,
+        include_schema=not args.skip_schema,
+        include_glossary=not args.skip_glossary,
     )

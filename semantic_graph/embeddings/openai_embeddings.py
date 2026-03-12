@@ -2,10 +2,11 @@
 Workflow for creating OpenAI embeddings.
 """
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 import pandas as pd
 from .utils import (
     create_embeddings_in_batches,
+    create_embeddings_in_batches_sync,
     get_nodes_to_embed,
     write_embeddings_to_graph,
 )
@@ -19,30 +20,65 @@ class OpenAIEmbeddingWorkflow:
     Workflow for creating OpenAI embeddings.
     """
 
-    def __init__(self, async_embedding_client: AsyncOpenAI, embedding_model: str, dimensions: int, neo4j_driver: Driver, database_name: str = "neo4j"):
+    def __init__(self, neo4j_driver: Driver, client: Optional[OpenAI] = None, async_client: Optional[AsyncOpenAI] = None, embedding_model: str = "text-embedding-3-small", dimensions: int = 768, database_name: str = "neo4j"):
         """
         Initialize the OpenAI Embedding Workflow.
-        
+
         Parameters
         ----------
-        async_embedding_client: AsyncOpenAI
+        neo4j_driver: Driver
+            The Neo4j driver to use.
+        client: Optional[OpenAI]
+            The sync embedding client to use.
+        async_client: Optional[AsyncOpenAI]
             The async embedding client to use.
         embedding_model: str
             The embedding model to use.
         dimensions: int
             The dimensions of the embeddings.
-        neo4j_driver: Driver
-            The Neo4j driver to use.
         database_name: str
             The name of the Neo4j database to write embeddings to.
         """
-        self.async_embedding_client = async_embedding_client
+        if client is None and async_client is None:
+            raise ValueError("Either client or async_client must be provided")
+        
+        self.client = client
+        self.async_client = async_client
         self.embedding_model = embedding_model
         self.dimensions = dimensions
         self.neo4j_driver = neo4j_driver
         self.database_name = database_name
 
-    async def _create_embedding(self,
+    def _create_embedding_sync(self, description: str) -> Optional[list[float]]:
+        """
+        Create embedding for a single node's description (sync version).
+        If embedding creation fails, return None.
+
+        Parameters
+        ----------
+        description: str
+            The description of the node.
+
+        Returns
+        -------
+        Optional[list[float]]
+            The embedding for the node description.
+            If embedding creation fails, return None.
+        """
+
+        try:
+            response = self.embedding_client.embeddings.create(
+                model=self.embedding_model,
+                input=description,
+                encoding_format="float",
+                dimensions=self.dimensions,
+            )
+            return response.data[0].embedding
+        except Exception as e:
+            print(e)
+            return None
+
+    async def _create_embedding_async(self,
         description: str,
     ) -> Optional[list[float]]:
         """
@@ -62,7 +98,7 @@ class OpenAIEmbeddingWorkflow:
         """
 
         try:
-            response = await self.async_embedding_client.embeddings.create(
+            response = await self.embedding_client.embeddings.create(
                 model=self.embedding_model,
                 input=description,
                 encoding_format="float",
@@ -74,7 +110,36 @@ class OpenAIEmbeddingWorkflow:
             return None
 
 
-    async def create_embeddings(
+    def create_embeddings_sync(
+        self,
+        nodes_to_embed_dataframe: pd.DataFrame,
+        batch_size: int = 100,
+    ) -> pd.DataFrame:
+        """
+        Create embeddings for a Pandas DataFrame of nodes to embed (sync version).
+
+        Parameters
+        ----------
+        nodes_to_embed_dataframe : pd.DataFrame
+            A Pandas DataFrame where each row represents a node to embed.
+            Has columns `id`, `node_label`, and `description`.
+        batch_size : int
+            The number of nodes to process in each batch.
+
+        Returns
+        -------
+        pd.DataFrame
+            A Pandas DataFrame where each row represents a node.
+            Has columns `id`, and `embedding`.
+        """
+
+        results = create_embeddings_in_batches_sync(
+            self._create_embedding_sync, nodes_to_embed_dataframe, batch_size
+        )
+        print(f"Successful Embeddings : {len(results)}")
+        return pd.DataFrame(results, columns=["id", "embedding"])
+
+    async def create_embeddings_async(
         self,
         nodes_to_embed_dataframe: pd.DataFrame,
         batch_size: int = 100,
@@ -98,11 +163,62 @@ class OpenAIEmbeddingWorkflow:
         """
 
         results = await create_embeddings_in_batches(
-            self._create_embedding, nodes_to_embed_dataframe, batch_size
+            self._create_embedding_async, nodes_to_embed_dataframe, batch_size
         )
         print(f"Successful Embeddings : {len(results)}")
         return pd.DataFrame(results, columns=["id", "embedding"])
 
+
+    def run(
+        self,
+        node_labels: list[str] = ["Table", "Column"],
+        batch_size: int = 100,
+    ) -> None:
+        """
+        This sync workflow:
+        * Gathers nodes from the Neo4j database that are missing embeddings
+        * Creates embeddings of the description fields on found nodes
+        * Ingests embeddings into the Neo4j database
+
+        Parameters
+        ----------
+        node_labels: list[str]
+            The labels of the nodes to embed.
+        batch_size: int
+            The number of nodes to process in each batch.
+
+        Raises
+        ------
+        ValueError
+            If a sync client is not provided.
+        """
+
+        if self.client is None:
+            raise ValueError("Sync client is not provided")
+
+        for label in node_labels:
+            print(f"Processing {label} nodes...")
+            print("--------------------------------")
+            # create vector index, if it doesn't exist
+            create_vector_index(self.neo4j_driver, label, self.dimensions, self.database_name)
+            # get nodes to embed
+            nodes_to_embed_dataframe = get_nodes_to_embed(self.neo4j_driver, label, 20, self.database_name)
+            # create embeddings
+            embeddings = self.create_embeddings_sync(
+                nodes_to_embed_dataframe=nodes_to_embed_dataframe,
+                batch_size=batch_size,
+            )
+            if len(embeddings) > 0:
+                # ingest embeddings into the Neo4j database
+                print(
+                    write_embeddings_to_graph(
+                        embeddings, label, self.neo4j_driver, self.database_name
+                    )
+                )
+            else:
+                print(f"No embeddings found for {label} nodes")
+
+        self.neo4j_driver.close()
 
     async def arun(
         self,
@@ -121,7 +237,15 @@ class OpenAIEmbeddingWorkflow:
             The labels of the nodes to embed.
         batch_size: int
             The number of nodes to process in each batch.
-        """
+
+        Raises
+        ------
+        ValueError
+            If an async client is not provided.
+        """ 
+
+        if self.async_client is None:
+            raise ValueError("Async client is not provided")
 
         for label in node_labels:
             print(f"Processing {label} nodes...")
@@ -131,7 +255,7 @@ class OpenAIEmbeddingWorkflow:
             # get nodes to embed
             nodes_to_embed_dataframe = get_nodes_to_embed(self.neo4j_driver, label, 20, self.database_name)
             # create embeddings
-            embeddings = await self.create_embeddings(
+            embeddings = await self.create_embeddings_async(
                 nodes_to_embed_dataframe=nodes_to_embed_dataframe,
                 batch_size=batch_size,
             )
