@@ -47,7 +47,7 @@ class DataplexWorkflow:
 
     def extract_metadata(self, dataset_id: Optional[str] = None) -> None:
         """
-        Extract and cachemetadata from Dataplex.
+        Extract and cache metadata from Dataplex.
 
         Parameters
         ----------
@@ -59,7 +59,7 @@ class DataplexWorkflow:
         None
             The metadata is extracted and cached.
         """
-        self.extractor.extract_bigquery_info_for_all_tables(dataset_id=dataset_id, cache=True)
+        self.extractor.extract_bigquery_info_for_all_tables(dataset_id=dataset_id)
         self.extractor.extract_glossary_info(cache=True)
     
     def transform_metadata(self) -> None:
@@ -68,22 +68,22 @@ class DataplexWorkflow:
         """
 
         if self.include_schema:
-            self.transformer.transform_to_database_nodes(self.extractor.database_info, cache=True)
-            self.transformer.transform_to_schema_nodes(self.extractor.schema_info, cache=True)
-            self.transformer.transform_to_table_nodes(self.extractor.table_info, cache=True)
-            self.transformer.transform_to_column_nodes(self.extractor.column_info, cache=True)
+            self.transformer.transform_to_database_nodes(self.extractor.database_info)
+            self.transformer.transform_to_schema_nodes(self.extractor.schema_info)
+            self.transformer.transform_to_table_nodes(self.extractor.table_info)
+            self.transformer.transform_to_column_nodes(self.extractor.column_info)
 
-            self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info, cache=True)
-            self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
-            self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
+            self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info)
+            self.transformer.transform_to_has_table_relationships(self.extractor.table_info)
+            self.transformer.transform_to_has_column_relationships(self.extractor.column_info)
 
         if self.include_glossary:
-            self.transformer.transform_to_glossary_nodes(self.extractor.glossary_info, cache=True)
-            self.transformer.transform_to_category_nodes(self.extractor.category_info, cache=True)
-            self.transformer.transform_to_business_term_nodes(self.extractor.business_term_info, cache=True)
+            self.transformer.transform_to_glossary_nodes(self.extractor.glossary_info)
+            self.transformer.transform_to_category_nodes(self.extractor.category_info)
+            self.transformer.transform_to_business_term_nodes(self.extractor.business_term_info)
 
-            self.transformer.transform_to_has_category_relationships(self.extractor.category_info, cache=True)
-            self.transformer.transform_to_has_business_term_relationships(self.extractor.business_term_info, cache=True)
+            self.transformer.transform_to_has_category_relationships(self.extractor.category_info)
+            self.transformer.transform_to_has_business_term_relationships(self.extractor.business_term_info)
         
     def load_metadata(self) -> None:
         """

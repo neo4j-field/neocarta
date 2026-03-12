@@ -72,7 +72,7 @@ class QueryLogExtractor:
         """
         return self._cache.get("column_info", pd.DataFrame())[["query_id", "column_id"]].drop_duplicates()
 
-    def extract_info_from_query_log_json(self, query_log_file: str, source: str = "bigquery", cache: bool = False) -> dict[str, pd.DataFrame]:
+    def extract_info_from_query_log_json(self, query_log_file: str, source: str = "bigquery", cache: bool = True) -> dict[str, pd.DataFrame]:
         """
         Extract information from a query log file.
 
@@ -82,7 +82,7 @@ class QueryLogExtractor:
             The path to the query log file.
         source: str = "bigquery"
             The source of the query log file.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extracted information.
 
         Returns

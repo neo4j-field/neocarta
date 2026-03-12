@@ -105,7 +105,7 @@ class QueryLogTransformer:
         """
         return self._relationships_cache.get("uses_column_relationships", [])
 
-    def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = False) -> list[Database]:
+    def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = True) -> list[Database]:
         """
         Transform query log database information into database nodes.
         """
@@ -119,7 +119,7 @@ class QueryLogTransformer:
 
         return database_nodes
     
-    def transform_to_schema_nodes(self, schema_info: pd.DataFrame, cache: bool = False) -> list[Schema]:
+    def transform_to_schema_nodes(self, schema_info: pd.DataFrame, cache: bool = True) -> list[Schema]:
         """
         Transform query log schema information into schema nodes.
         """
@@ -133,7 +133,7 @@ class QueryLogTransformer:
 
         return schema_nodes
     
-    def transform_to_table_nodes(self, table_info: pd.DataFrame, cache: bool = False) -> list[Table]:
+    def transform_to_table_nodes(self, table_info: pd.DataFrame, cache: bool = True) -> list[Table]:
         """
         Transform query log table information into table nodes.
         """
@@ -147,7 +147,7 @@ class QueryLogTransformer:
 
         return table_nodes
     
-    def transform_to_column_nodes(self, column_info: pd.DataFrame, cache: bool = False) -> list[Column]:
+    def transform_to_column_nodes(self, column_info: pd.DataFrame, cache: bool = True) -> list[Column]:
         """
         Transform query log column information into column nodes.
         """
@@ -161,7 +161,7 @@ class QueryLogTransformer:
 
         return column_nodes
     
-    def transform_to_query_nodes(self, query_info: pd.DataFrame, cache: bool = False) -> list[Query]:
+    def transform_to_query_nodes(self, query_info: pd.DataFrame, cache: bool = True) -> list[Query]:
         """
         Transform query log query information into query nodes.
         """
@@ -175,7 +175,7 @@ class QueryLogTransformer:
 
         return query_nodes
     
-    def transform_to_has_schema_relationships(self, schema_info: pd.DataFrame, cache: bool = False) -> list[HasSchema]:
+    def transform_to_has_schema_relationships(self, schema_info: pd.DataFrame, cache: bool = True) -> list[HasSchema]:
         """
         Transform query log schema information into has schema relationships.
         """
@@ -189,7 +189,7 @@ class QueryLogTransformer:
 
         return has_schema_relationships
     
-    def transform_to_has_table_relationships(self, table_info: pd.DataFrame, cache: bool = False) -> list[HasTable]:
+    def transform_to_has_table_relationships(self, table_info: pd.DataFrame, cache: bool = True) -> list[HasTable]:
         """
         Transform query log table information into has table relationships.
         """
@@ -203,7 +203,7 @@ class QueryLogTransformer:
 
         return has_table_relationships
     
-    def transform_to_has_column_relationships(self, column_info: pd.DataFrame, cache: bool = False) -> list[HasColumn]:
+    def transform_to_has_column_relationships(self, column_info: pd.DataFrame, cache: bool = True) -> list[HasColumn]:
         """
         Transform query log column information into has column relationships.
         """
@@ -217,7 +217,7 @@ class QueryLogTransformer:
 
         return has_column_relationships
     
-    def transform_to_references_relationships(self, column_references_info: pd.DataFrame, cache: bool = False) -> list[References]:
+    def transform_to_references_relationships(self, column_references_info: pd.DataFrame, cache: bool = True) -> list[References]:
         """
         Transform query log column references information into references relationships.
         """
@@ -231,7 +231,7 @@ class QueryLogTransformer:
 
         return references_relationships
     
-    def transform_to_uses_table_relationships(self, query_table_info: pd.DataFrame, cache: bool = False) -> list[UsesTable]:
+    def transform_to_uses_table_relationships(self, query_table_info: pd.DataFrame, cache: bool = True) -> list[UsesTable]:
         """
         Transform query log table information into uses table relationships.
         """
@@ -246,7 +246,7 @@ class QueryLogTransformer:
 
         return uses_table_relationships
     
-    def transform_to_uses_column_relationships(self, query_column_info: pd.DataFrame, cache: bool = False) -> list[UsesColumn]:
+    def transform_to_uses_column_relationships(self, query_column_info: pd.DataFrame, cache: bool = True) -> list[UsesColumn]:
         """
         Transform query log column information into uses column relationships.
         """

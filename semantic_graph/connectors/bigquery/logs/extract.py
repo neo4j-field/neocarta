@@ -120,7 +120,7 @@ class BigQueryLogsExtractor:
         end_timestamp: Optional[str] = None,
         limit: int = 100,
         drop_failed_queries: bool = True,
-        cache: bool = False
+        cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery query logs and parse them to extract table/column information.
@@ -141,7 +141,7 @@ class BigQueryLogsExtractor:
             The maximum number of queries to return.
         drop_failed_queries: bool = True
             Whether to exclude failed queries.
-        cache: bool = False
+        cache: bool = True
             Whether to cache the extracted information.
 
         Returns

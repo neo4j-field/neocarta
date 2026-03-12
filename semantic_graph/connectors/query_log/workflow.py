@@ -37,7 +37,7 @@ class QueryLogWorkflow:
         None
             The metadata is extracted and cached.
         """
-        self.extractor.extract_info_from_query_log_json(query_log_file, source, cache=True)
+        self.extractor.extract_info_from_query_log_json(query_log_file, source)
     
     def transform_metadata(self) -> None:
         """
@@ -50,19 +50,19 @@ class QueryLogWorkflow:
         """
 
         # transform nodes
-        self.transformer.transform_to_database_nodes(self.extractor.database_info, cache=True)
-        self.transformer.transform_to_schema_nodes(self.extractor.schema_info, cache=True)
-        self.transformer.transform_to_table_nodes(self.extractor.table_info, cache=True)
-        self.transformer.transform_to_column_nodes(self.extractor.column_info, cache=True)
-        self.transformer.transform_to_query_nodes(self.extractor.query_info, cache=True)
+        self.transformer.transform_to_database_nodes(self.extractor.database_info)
+        self.transformer.transform_to_schema_nodes(self.extractor.schema_info)
+        self.transformer.transform_to_table_nodes(self.extractor.table_info)
+        self.transformer.transform_to_column_nodes(self.extractor.column_info)
+        self.transformer.transform_to_query_nodes(self.extractor.query_info)
 
         # transform relationships
-        self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info, cache=True)
-        self.transformer.transform_to_has_table_relationships(self.extractor.table_info, cache=True)
-        self.transformer.transform_to_has_column_relationships(self.extractor.column_info, cache=True)
-        self.transformer.transform_to_references_relationships(self.extractor.column_references_info, cache=True)
-        self.transformer.transform_to_uses_table_relationships(self.extractor.query_table_info, cache=True)
-        self.transformer.transform_to_uses_column_relationships(self.extractor.query_column_info, cache=True)
+        self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info)
+        self.transformer.transform_to_has_table_relationships(self.extractor.table_info)
+        self.transformer.transform_to_has_column_relationships(self.extractor.column_info)
+        self.transformer.transform_to_references_relationships(self.extractor.column_references_info)
+        self.transformer.transform_to_uses_table_relationships(self.extractor.query_table_info)
+        self.transformer.transform_to_uses_column_relationships(self.extractor.query_column_info)
     
     def load_metadata(self) -> None:
         """
