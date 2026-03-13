@@ -1,4 +1,4 @@
-from semantic_graph.connectors.load import _build_node_ingest_query, _build_relationship_ingest_query, _validate_properties_list
+from semantic_graph.ingest.utils import _build_node_ingest_query, _build_relationship_ingest_query, _validate_properties_list
 from semantic_graph.data_model.core import Database
 import pytest
 

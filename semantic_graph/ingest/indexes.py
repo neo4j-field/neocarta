@@ -1,3 +1,7 @@
+"""
+Universal index functions independent of the source database.
+"""
+
 from neo4j import Driver, RoutingControl
 
 

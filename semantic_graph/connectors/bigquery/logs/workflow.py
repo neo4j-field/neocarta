@@ -4,7 +4,7 @@ from typing import Optional
 
 from .extract import BigQueryLogsExtractor
 from ...query_log.transform import QueryLogTransformer
-from ...load import Neo4jLoader
+from ....ingest.rdbms import Neo4jRDBMSLoader
 
 
 class BigQueryLogsWorkflow:
@@ -37,7 +37,7 @@ class BigQueryLogsWorkflow:
 
         self.extractor = BigQueryLogsExtractor(client, project_id)
         self.transformer = QueryLogTransformer()
-        self.loader = Neo4jLoader(neo4j_driver, database_name)
+        self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
 
     def extract_metadata(
         self,

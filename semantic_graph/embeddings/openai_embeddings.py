@@ -11,7 +11,7 @@ from .utils import (
     write_embeddings_to_graph,
 )
 from neo4j import Driver
-from ..data_model.indexes import create_vector_index
+from ..ingest.indexes import create_vector_index
 from typing import Optional
 
 

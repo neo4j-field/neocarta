@@ -4,7 +4,7 @@ from typing import Optional
 
 from .extract import BigQuerySchemaExtractor
 from .transform import BigQuerySchemaTransformer
-from ...load import Neo4jLoader
+from ....ingest.rdbms import Neo4jRDBMSLoader
 
 class BigQuerySchemaWorkflow:
     """
@@ -28,7 +28,7 @@ class BigQuerySchemaWorkflow:
 
         self.extractor = BigQuerySchemaExtractor(client, project_id, dataset_id)
         self.transformer = BigQuerySchemaTransformer()
-        self.loader = Neo4jLoader(neo4j_driver, database_name)
+        self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
 
     def extract_metadata(self, dataset_id: Optional[str] = None) -> None:
         """
