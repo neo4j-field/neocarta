@@ -1,0 +1,40 @@
+---
+config:
+    layout: elk
+---
+graph LR
+
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR<br/>platform: STRING<br/>service: STRING")
+
+Schema("Schema<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+
+Node("Node<br/>id: STRING | KEY<br/>label: STRING<br/>additionalLabels: LIST&lt;STRING&gt;<br/>description: STRING<br/>embedding: VECTOR")
+
+Relationship("Relationship<br/>id: STRING | KEY<br/>type: STRING<br/>description: STRING<br/>embedding: VECTOR")
+
+Property("Property<br/>id: STRING | KEY<br/>name: STRING<br/>type: STRING<br/>description: STRING<br/>unique: BOOLEAN<br/>nullable: BOOLEAN<br/>indexed: BOOLEAN<br/>existence: BOOLEAN<br/>embedding: VECTOR")
+
+%% Relationships
+Database -->|HAS_SCHEMA| Schema
+Schema -->|HAS_NODE| Node
+Schema -->|HAS_RELATIONSHIP| Relationship
+Relationship -->|HAS_SOURCE_NODE| Node
+Relationship -->|HAS_TARGET_NODE| Node
+Relationship -->|HAS_PROPERTY| Property
+Node -->|HAS_PROPERTY| Property
+
+%% Styling
+classDef db_color fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000,font-size:12px
+class Database db_color
+
+classDef schema_color fill:#fff9c4,stroke:#f57f17,stroke-width:3px,color:#000,font-size:12px
+class Schema schema_color
+
+classDef node_color fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000,font-size:12px
+class Node node_color
+
+classDef rel_color fill:#e1bee7,stroke:#4a148c,stroke-width:3px,color:#000,font-size:12px
+class Relationship rel_color
+
+classDef prop_color fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:12px
+class Property prop_color
