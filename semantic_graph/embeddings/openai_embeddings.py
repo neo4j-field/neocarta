@@ -5,7 +5,7 @@ Workflow for creating OpenAI embeddings.
 from openai import AsyncOpenAI, OpenAI
 import pandas as pd
 from .utils import (
-    create_embeddings_in_batches,
+    create_embeddings_in_batches_async,
     create_embeddings_in_batches_sync,
     get_nodes_to_embed,
     write_embeddings_to_graph,
@@ -162,7 +162,7 @@ class OpenAIEmbeddingWorkflow:
             Has columns `id`, and `embedding`.
         """
 
-        results = await create_embeddings_in_batches(
+        results = await create_embeddings_in_batches_async(
             self._create_embedding_async, nodes_to_embed_dataframe, batch_size
         )
         print(f"Successful Embeddings : {len(results)}")

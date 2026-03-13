@@ -84,7 +84,7 @@ def _create_embeddings_for_batch_sync(
     return results
 
 
-async def _create_embeddings_for_batch(
+async def _create_embeddings_for_batch_async(
     embedding_fn: Callable[[str], list[float]], batch: pd.DataFrame
 ) -> list[tuple[str, list[dict[str, Any]]]]:
     """
@@ -164,7 +164,7 @@ def create_embeddings_in_batches_sync(
     return results
 
 
-async def create_embeddings_in_batches(
+async def create_embeddings_in_batches_async(
     embedding_fn: Callable[[str], list[float]],
     nodes_dataframe: pd.DataFrame,
     batch_size: int,
@@ -199,7 +199,7 @@ async def create_embeddings_in_batches(
             batch = nodes_dataframe.iloc[i:]
         else:
             batch = nodes_dataframe.iloc[i : i + batch_size]
-        batch_results = await _create_embeddings_for_batch(embedding_fn, batch)
+        batch_results = await _create_embeddings_for_batch_async(embedding_fn, batch)
 
         # Add extracted records to the results list
         results.extend(batch_results)
