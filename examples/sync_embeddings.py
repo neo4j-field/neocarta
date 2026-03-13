@@ -34,7 +34,7 @@ from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
 
 
 def main(
-    node_labels: list[str] = ["Database", "Schema", "Table", "Column"],
+    node_labels: list[str] = ["Table", "Column"],
     batch_size: int = 100,
 ):
     load_dotenv()
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--node-labels",
         nargs="+",
-        default=["Database", "Schema", "Table", "Column"],
+        default=["Table", "Column"],
         help="Node labels to generate embeddings for (default: Database Schema Table Column)",
     )
     parser.add_argument(

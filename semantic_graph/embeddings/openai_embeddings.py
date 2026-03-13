@@ -67,7 +67,7 @@ class OpenAIEmbeddingWorkflow:
         """
 
         try:
-            response = self.embedding_client.embeddings.create(
+            response = self.client.embeddings.create(
                 model=self.embedding_model,
                 input=description,
                 encoding_format="float",
@@ -98,7 +98,7 @@ class OpenAIEmbeddingWorkflow:
         """
 
         try:
-            response = await self.embedding_client.embeddings.create(
+            response = await self.async_client.embeddings.create(
                 model=self.embedding_model,
                 input=description,
                 encoding_format="float",
