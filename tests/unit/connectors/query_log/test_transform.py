@@ -1,5 +1,4 @@
 from semantic_graph.connectors.query_log import QueryLogTransformer, QueryLogExtractor
-import pandas as pd
 
 def test_transform_to_database_nodes(query_log_transformer: QueryLogTransformer, query_log_extractor_with_cache: QueryLogExtractor):
     query_log_transformer.transform_to_database_nodes(query_log_extractor_with_cache.database_info, cache=True)

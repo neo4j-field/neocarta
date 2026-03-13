@@ -2,8 +2,7 @@ import pytest
 from unittest.mock import Mock
 import pandas as pd
 from semantic_graph.connectors.bigquery.schema import BigQuerySchemaExtractor, BigQuerySchemaTransformer
-from semantic_graph.data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
-from semantic_graph.data_model.expanded import Value, HasValue
+from semantic_graph.data_model.rdbms import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References, Value, HasValue
 
 
 @pytest.fixture(scope="function")

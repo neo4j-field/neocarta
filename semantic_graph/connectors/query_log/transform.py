@@ -1,6 +1,5 @@
 from ..models import NodesCache, RelationshipsCache
-from ...data_model.core import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References
-from ...data_model.expanded import Query, UsesTable, UsesColumn
+from ...data_model.rdbms import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References, Query, UsesTable, UsesColumn
 
 import pandas as pd
 
