@@ -7,7 +7,7 @@ from neo4j import Driver
 
 from .extract import DataplexExtractor
 from .transform import DataplexTransformer
-from ..load import Neo4jLoader
+from ...ingest.rdbms import Neo4jRDBMSLoader
 
 class DataplexWorkflow:
     """
@@ -43,7 +43,7 @@ class DataplexWorkflow:
 
         self.extractor = DataplexExtractor(catalog_client, glossary_client, project_id, project_number, dataplex_location, dataset_id)
         self.transformer = DataplexTransformer()
-        self.loader = Neo4jLoader(neo4j_driver, database_name)  
+        self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)  
 
     def extract_metadata(self, dataset_id: Optional[str] = None) -> None:
         """

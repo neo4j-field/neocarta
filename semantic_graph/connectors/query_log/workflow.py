@@ -2,7 +2,7 @@ from neo4j import Driver
 
 from .extract import QueryLogExtractor
 from .transform import QueryLogTransformer
-from ..load import Neo4jLoader
+from ...ingest.rdbms import Neo4jRDBMSLoader
 
 class QueryLogWorkflow:
     """
@@ -19,7 +19,7 @@ class QueryLogWorkflow:
 
         self.extractor = QueryLogExtractor()
         self.transformer = QueryLogTransformer()
-        self.loader = Neo4jLoader(neo4j_driver, database_name)
+        self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
 
     def extract_metadata(self, query_log_file: str, source: str = "bigquery") -> None:
         """
