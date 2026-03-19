@@ -45,11 +45,28 @@ class CSVWorkflow:
     and loads them into Neo4j.
     """
 
+    # Default CSV file names
+    DEFAULT_FILE_MAP = {
+        "database": "database_info.csv",
+        "schema": "schema_info.csv",
+        "table": "table_info.csv",
+        "column": "column_info.csv",
+        "value": "value_info.csv",
+        "query": "query_info.csv",
+        "query_table": "query_table_info.csv",
+        "query_column": "query_column_info.csv",
+        "glossary": "glossary_info.csv",
+        "category": "category_info.csv",
+        "business_term": "business_term_info.csv",
+        "column_references": "column_references_info.csv",
+    }
+
     def __init__(
         self,
         csv_directory: str,
         neo4j_driver: Driver,
-        database_name: str = "neo4j"
+        database_name: str = "neo4j",
+        csv_file_map: Optional[dict[str, str]] = None
     ):
         """
         Initialize the CSV workflow.
@@ -62,11 +79,19 @@ class CSVWorkflow:
             Neo4j driver instance
         database_name : str, optional
             Neo4j database name, by default "neo4j"
+        csv_file_map : dict[str, str], optional
+            Custom mapping of entity types to CSV filenames.
+            Merges with DEFAULT_FILE_MAP, allowing partial overrides.
         """
         self.csv_directory = Path(csv_directory)
         self.neo4j_driver = neo4j_driver
         self.database_name = database_name
         self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
+
+        # Merge custom file map with defaults
+        self.csv_file_map = self.DEFAULT_FILE_MAP.copy()
+        if csv_file_map:
+            self.csv_file_map.update(csv_file_map)
 
     def _read_csv_if_exists(self, filename: str) -> Optional[pd.DataFrame]:
         """Read a CSV file if it exists."""
@@ -119,11 +144,19 @@ class CSVWorkflow:
 
         return properties
 
-    def load_database_nodes(self) -> None:
-        """Load database nodes from database_info.csv."""
-        df = self._read_csv_if_exists("database_info.csv")
+    def load_database_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load database nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['database'].
+        """
+        filename = csv_filename or self.csv_file_map["database"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No database_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -146,11 +179,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} database nodes...")
         print(self.loader.load_database_nodes(nodes, properties_list=properties_list))
 
-    def load_schema_nodes(self) -> None:
-        """Load schema nodes from schema_info.csv."""
-        df = self._read_csv_if_exists("schema_info.csv")
+    def load_schema_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load schema nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['schema'].
+        """
+        filename = csv_filename or self.csv_file_map["schema"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No schema_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -171,11 +212,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} schema nodes...")
         print(self.loader.load_schema_nodes(nodes, properties_list=properties_list))
 
-    def load_has_schema_relationships(self) -> None:
-        """Load HAS_SCHEMA relationships from schema_info.csv."""
-        df = self._read_csv_if_exists("schema_info.csv")
+    def load_has_schema_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load HAS_SCHEMA relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['schema'].
+        """
+        filename = csv_filename or self.csv_file_map["schema"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No schema_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -189,11 +238,19 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} HAS_SCHEMA relationships...")
         print(self.loader.load_has_schema_relationships(relationships))
 
-    def load_table_nodes(self) -> None:
-        """Load table nodes from table_info.csv."""
-        df = self._read_csv_if_exists("table_info.csv")
+    def load_table_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load table nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['table'].
+        """
+        filename = csv_filename or self.csv_file_map["table"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No table_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -214,11 +271,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} table nodes...")
         print(self.loader.load_table_nodes(nodes, properties_list=properties_list))
 
-    def load_has_table_relationships(self) -> None:
-        """Load HAS_TABLE relationships from table_info.csv."""
-        df = self._read_csv_if_exists("table_info.csv")
+    def load_has_table_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load HAS_TABLE relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['table'].
+        """
+        filename = csv_filename or self.csv_file_map["table"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No table_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -232,11 +297,19 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} HAS_TABLE relationships...")
         print(self.loader.load_has_table_relationships(relationships))
 
-    def load_column_nodes(self) -> None:
-        """Load column nodes from column_info.csv."""
-        df = self._read_csv_if_exists("column_info.csv")
+    def load_column_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load column nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['column'].
+        """
+        filename = csv_filename or self.csv_file_map["column"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No column_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -270,11 +343,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} column nodes...")
         print(self.loader.load_column_nodes(nodes, properties_list=properties_list))
 
-    def load_has_column_relationships(self) -> None:
-        """Load HAS_COLUMN relationships from column_info.csv."""
-        df = self._read_csv_if_exists("column_info.csv")
+    def load_has_column_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load HAS_COLUMN relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['column'].
+        """
+        filename = csv_filename or self.csv_file_map["column"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No column_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -290,11 +371,19 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} HAS_COLUMN relationships...")
         print(self.loader.load_has_column_relationships(relationships))
 
-    def load_value_nodes(self) -> None:
-        """Load value nodes from value_info.csv."""
-        df = self._read_csv_if_exists("value_info.csv")
+    def load_value_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load value nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['value'].
+        """
+        filename = csv_filename or self.csv_file_map["value"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No value_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -315,11 +404,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} value nodes...")
         print(self.loader.load_value_nodes(nodes, properties_list=properties_list))
 
-    def load_has_value_relationships(self) -> None:
-        """Load HAS_VALUE relationships from value_info.csv."""
-        df = self._read_csv_if_exists("value_info.csv")
+    def load_has_value_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load HAS_VALUE relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['value'].
+        """
+        filename = csv_filename or self.csv_file_map["value"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No value_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -333,11 +430,19 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} HAS_VALUE relationships...")
         print(self.loader.load_has_value_relationships(relationships))
 
-    def load_query_nodes(self) -> None:
-        """Load query nodes from query_info.csv."""
-        df = self._read_csv_if_exists("query_info.csv")
+    def load_query_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load query nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['query'].
+        """
+        filename = csv_filename or self.csv_file_map["query"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No query_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -354,11 +459,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} query nodes...")
         print(self.loader.load_query_nodes(nodes, properties_list=properties_list))
 
-    def load_glossary_nodes(self) -> None:
-        """Load glossary nodes from glossary_info.csv."""
-        df = self._read_csv_if_exists("glossary_info.csv")
+    def load_glossary_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load glossary nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['glossary'].
+        """
+        filename = csv_filename or self.csv_file_map["glossary"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No glossary_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -375,11 +488,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} glossary nodes...")
         print(self.loader.load_glossary_nodes(nodes, properties_list=properties_list))
 
-    def load_category_nodes(self) -> None:
-        """Load category nodes from category_info.csv."""
-        df = self._read_csv_if_exists("category_info.csv")
+    def load_category_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load category nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['category'].
+        """
+        filename = csv_filename or self.csv_file_map["category"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No category_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -396,11 +517,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} category nodes...")
         print(self.loader.load_category_nodes(nodes, properties_list=properties_list))
 
-    def load_has_category_relationships(self) -> None:
-        """Load HAS_CATEGORY relationships from category_info.csv."""
-        df = self._read_csv_if_exists("category_info.csv")
+    def load_has_category_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load HAS_CATEGORY relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['category'].
+        """
+        filename = csv_filename or self.csv_file_map["category"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No category_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -414,11 +543,19 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} HAS_CATEGORY relationships...")
         print(self.loader.load_has_category_relationships(relationships))
 
-    def load_business_term_nodes(self) -> None:
-        """Load business term nodes from business_term_info.csv."""
-        df = self._read_csv_if_exists("business_term_info.csv")
+    def load_business_term_nodes(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load business term nodes from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['business_term'].
+        """
+        filename = csv_filename or self.csv_file_map["business_term"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No business_term_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         nodes = [
@@ -435,11 +572,19 @@ class CSVWorkflow:
         print(f"Loading {len(nodes)} business term nodes...")
         print(self.loader.load_business_term_nodes(nodes, properties_list=properties_list))
 
-    def load_has_business_term_relationships(self) -> None:
-        """Load HAS_BUSINESS_TERM relationships from business_term_info.csv."""
-        df = self._read_csv_if_exists("business_term_info.csv")
+    def load_has_business_term_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load HAS_BUSINESS_TERM relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['business_term'].
+        """
+        filename = csv_filename or self.csv_file_map["business_term"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No business_term_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -453,11 +598,19 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} HAS_BUSINESS_TERM relationships...")
         print(self.loader.load_has_business_term_relationships(relationships))
 
-    def load_references_relationships(self) -> None:
-        """Load REFERENCES relationships from column_references_info.csv."""
-        df = self._read_csv_if_exists("column_references_info.csv")
+    def load_references_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load REFERENCES relationships from CSV file.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename to load from. Defaults to value in csv_file_map['column_references'].
+        """
+        filename = csv_filename or self.csv_file_map["column_references"]
+        df = self._read_csv_if_exists(filename)
         if df is None or df.empty:
-            print("No column_references_info.csv found or file is empty")
+            print(f"No {filename} found or file is empty")
             return
 
         relationships = [
@@ -482,10 +635,26 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} REFERENCES relationships...")
         print(self.loader.load_references_relationships(relationships))
 
-    def load_query_relationships(self) -> None:
-        """Load query relationships from query_table_info.csv and query_column_info.csv."""
+    def load_query_relationships(
+        self,
+        query_table_csv: Optional[str] = None,
+        query_column_csv: Optional[str] = None
+    ) -> None:
+        """
+        Load query relationships from CSV files.
+
+        Parameters
+        ----------
+        query_table_csv : str, optional
+            CSV filename for query-table relationships.
+            Defaults to value in csv_file_map['query_table'].
+        query_column_csv : str, optional
+            CSV filename for query-column relationships.
+            Defaults to value in csv_file_map['query_column'].
+        """
         # Load USES_TABLE relationships
-        df_tables = self._read_csv_if_exists("query_table_info.csv")
+        table_filename = query_table_csv or self.csv_file_map["query_table"]
+        df_tables = self._read_csv_if_exists(table_filename)
         if df_tables is not None and not df_tables.empty:
             relationships = [
                 UsesTable(
@@ -497,10 +666,11 @@ class CSVWorkflow:
             print(f"Loading {len(relationships)} USES_TABLE relationships...")
             print(self.loader.load_uses_table_relationships(relationships))
         else:
-            print("No query_table_info.csv found or file is empty")
+            print(f"No {table_filename} found or file is empty")
 
         # Load USES_COLUMN relationships
-        df_columns = self._read_csv_if_exists("query_column_info.csv")
+        column_filename = query_column_csv or self.csv_file_map["query_column"]
+        df_columns = self._read_csv_if_exists(column_filename)
         if df_columns is not None and not df_columns.empty:
             relationships = [
                 UsesColumn(
@@ -512,46 +682,62 @@ class CSVWorkflow:
             print(f"Loading {len(relationships)} USES_COLUMN relationships...")
             print(self.loader.load_uses_column_relationships(relationships))
         else:
-            print("No query_column_info.csv found or file is empty")
+            print(f"No {column_filename} found or file is empty")
 
-    def run(self) -> None:
+    def run(self, csv_file_map: Optional[dict[str, str]] = None) -> None:
         """
         Run the complete CSV workflow.
 
         Loads CSV files, transforms data, and loads into Neo4j.
         All nodes are loaded first, then all relationships.
+        Files that don't exist are skipped with a warning message.
+
+        Parameters
+        ----------
+        csv_file_map : dict[str, str], optional
+            Runtime override for CSV file mapping. Merges with instance csv_file_map.
+            Allows per-run customization without modifying the instance.
         """
-        print(f"Reading CSV files from {self.csv_directory}...")
+        # Temporarily override file map if provided
+        original_map = self.csv_file_map.copy()
+        if csv_file_map:
+            self.csv_file_map.update(csv_file_map)
 
-        print("\n=== Loading Nodes ===")
-        # Load core nodes (in dependency order)
-        self.load_database_nodes()
-        self.load_schema_nodes()
-        self.load_table_nodes()
-        self.load_column_nodes()
+        try:
+            print(f"Reading CSV files from {self.csv_directory}...")
 
-        # Load extended nodes
-        self.load_value_nodes()
-        self.load_query_nodes()
-        self.load_glossary_nodes()
-        self.load_category_nodes()
-        self.load_business_term_nodes()
+            print("\n=== Loading Nodes ===")
+            # Load core nodes (in dependency order)
+            self.load_database_nodes()
+            self.load_schema_nodes()
+            self.load_table_nodes()
+            self.load_column_nodes()
 
-        print("\n=== Loading Relationships ===")
-        # Load hierarchical relationships
-        self.load_has_schema_relationships()
-        self.load_has_table_relationships()
-        self.load_has_column_relationships()
-        self.load_has_value_relationships()
+            # Load extended nodes
+            self.load_value_nodes()
+            self.load_query_nodes()
+            self.load_glossary_nodes()
+            self.load_category_nodes()
+            self.load_business_term_nodes()
 
-        # Load glossary relationships
-        self.load_has_category_relationships()
-        self.load_has_business_term_relationships()
+            print("\n=== Loading Relationships ===")
+            # Load hierarchical relationships
+            self.load_has_schema_relationships()
+            self.load_has_table_relationships()
+            self.load_has_column_relationships()
+            self.load_has_value_relationships()
 
-        # Load reference relationships
-        self.load_references_relationships()
+            # Load glossary relationships
+            self.load_has_category_relationships()
+            self.load_has_business_term_relationships()
 
-        # Load query relationships
-        self.load_query_relationships()
+            # Load reference relationships
+            self.load_references_relationships()
 
-        print("\nCSV workflow completed successfully!")
+            # Load query relationships
+            self.load_query_relationships()
+
+            print("\nCSV workflow completed successfully!")
+        finally:
+            # Restore original file map
+            self.csv_file_map = original_map
