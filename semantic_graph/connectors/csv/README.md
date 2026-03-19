@@ -145,20 +145,28 @@ my-project,sales,orders,total_amount,FLOAT64,true,false,false,Total order amount
 Creates `(:Column)-[:REFERENCES]->(:Column)` relationships representing foreign key constraints and join conditions discovered from query logs or schema analysis.
 
 **Required columns:**
-- `source_column_id` (string): Source column full ID (foreign key column)
-- `target_column_id` (string): Target column full ID (referenced primary key column)
+- `source_database_id` (string): Source database identifier
+- `source_schema_id` (string): Source schema identifier
+- `source_table_name` (string): Source table name
+- `source_column_name` (string): Source column name (foreign key column)
+- `target_database_id` (string): Target database identifier
+- `target_schema_id` (string): Target schema identifier
+- `target_table_name` (string): Target table name
+- `target_column_name` (string): Target column name (referenced primary key column)
 
 **Optional columns:**
 - `criteria` (string): Join condition or constraint criteria (e.g., `"orders.customer_id = customers.customer_id"`)
 
-**Note:** Column IDs must match the IDs constructed by the connector from `column_info.csv` (format: `database_id.schema_id.table_name.column_name`).
+**Derived by connector:**
+- Source column ID: `source_database_id.source_schema_id.source_table_name.source_column_name`
+- Target column ID: `target_database_id.target_schema_id.target_table_name.target_column_name`
 
 **Example:**
 ```csv
-source_column_id,target_column_id,criteria
-my-project.sales.orders.customer_id,my-project.sales.customers.customer_id,orders.customer_id = customers.customer_id
-my-project.sales.order_items.order_id,my-project.sales.orders.order_id,order_items.order_id = orders.order_id
-my-project.sales.order_items.product_id,my-project.sales.products.product_id,order_items.product_id = products.product_id
+source_database_id,source_schema_id,source_table_name,source_column_name,target_database_id,target_schema_id,target_table_name,target_column_name,criteria
+my-project,sales,orders,customer_id,my-project,sales,customers,customer_id,orders.customer_id = customers.customer_id
+my-project,sales,order_items,order_id,my-project,sales,orders,order_id,order_items.order_id = orders.order_id
+my-project,sales,order_items,product_id,my-project,sales,products,product_id,order_items.product_id = products.product_id
 ```
 
 ---

@@ -69,12 +69,19 @@ class CSVWorkflow:
         self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
 
     def _read_csv_if_exists(self, filename: str) -> Optional[pd.DataFrame]:
-        """Read a CSV file."""
+        """Read a CSV file if it exists."""
         filepath = self.csv_directory / filename
-        
+        if not filepath.exists():
+            return None
         return pd.read_csv(filepath)
 
-    def _get_properties_list(self, df: pd.DataFrame, exclude_columns: list[str]) -> list[str]:
+    def _get_properties_list(
+        self,
+        df: pd.DataFrame,
+        exclude_columns: list[str],
+        column_mapping: dict[str, str] = None,
+        always_include: list[str] = None
+    ) -> list[str]:
         """
         Get list of properties to load based on CSV columns.
 
@@ -84,15 +91,33 @@ class CSVWorkflow:
             The dataframe to extract columns from
         exclude_columns : list[str]
             Columns to exclude (typically ID fields used for node identification)
+        column_mapping : dict[str, str], optional
+            Mapping from CSV column names to model property names
+        always_include : list[str], optional
+            Properties to always include (e.g., 'name' which is always set)
 
         Returns
         -------
         list[str]
-            List of property names to load
+            List of property names to load (using model property names)
         """
         # Always exclude 'id' column plus any additional columns specified
         all_excluded = ["id"] + exclude_columns
-        return [col for col in df.columns if col not in all_excluded]
+        csv_columns = [col for col in df.columns if col not in all_excluded]
+
+        # Map CSV column names to model property names
+        if column_mapping:
+            properties = [column_mapping.get(col, col) for col in csv_columns]
+        else:
+            properties = csv_columns
+
+        # Add properties that should always be included
+        if always_include:
+            for prop in always_include:
+                if prop not in properties:
+                    properties.append(prop)
+
+        return properties
 
     def load_database_nodes(self) -> None:
         """Load database nodes from database_info.csv."""
@@ -112,7 +137,11 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["database_id"])
+        properties_list = self._get_properties_list(
+            df,
+            exclude_columns=["database_id"],
+            always_include=["name"]
+        )
 
         print(f"Loading {len(nodes)} database nodes...")
         print(self.loader.load_database_nodes(nodes, properties_list=properties_list))
@@ -133,7 +162,11 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["database_id", "schema_id"])
+        properties_list = self._get_properties_list(
+            df,
+            exclude_columns=["database_id", "schema_id"],
+            always_include=["name"]
+        )
 
         print(f"Loading {len(nodes)} schema nodes...")
         print(self.loader.load_schema_nodes(nodes, properties_list=properties_list))
@@ -172,7 +205,11 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["database_id", "schema_id", "table_name"])
+        properties_list = self._get_properties_list(
+            df,
+            exclude_columns=["database_id", "schema_id", "table_name"],
+            always_include=["name"]
+        )
 
         print(f"Loading {len(nodes)} table nodes...")
         print(self.loader.load_table_nodes(nodes, properties_list=properties_list))
@@ -217,9 +254,17 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
+        # Map CSV column names to model property names
+        column_mapping = {
+            "data_type": "type",
+            "is_nullable": "nullable"
+        }
+
         properties_list = self._get_properties_list(
             df,
-            exclude_columns=["database_id", "schema_id", "table_name", "column_name"]
+            exclude_columns=["database_id", "schema_id", "table_name", "column_name"],
+            column_mapping=column_mapping,
+            always_include=["name"]
         )
 
         print(f"Loading {len(nodes)} column nodes...")
@@ -260,7 +305,12 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["value_id", "column_id"])
+        # Exclude columns used for ID generation
+        properties_list = self._get_properties_list(
+            df,
+            exclude_columns=["database_id", "schema_id", "table_name", "column_name"],
+            always_include=["value"]
+        )
 
         print(f"Loading {len(nodes)} value nodes...")
         print(self.loader.load_value_nodes(nodes, properties_list=properties_list))
@@ -274,8 +324,8 @@ class CSVWorkflow:
 
         relationships = [
             HasValue(
-                column_id=row.column_id,
-                value_id=row.value_id,
+                column_id=generate_column_id(row.database_id, row.schema_id, row.table_name, row.column_name),
+                value_id=generate_value_id(row.database_id, row.schema_id, row.table_name, row.column_name, row.value),
             )
             for _, row in df.iterrows()
         ]
@@ -299,7 +349,7 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["query_id"])
+        properties_list = self._get_properties_list(df, exclude_columns=["query_id"], always_include=["content"])
 
         print(f"Loading {len(nodes)} query nodes...")
         print(self.loader.load_query_nodes(nodes, properties_list=properties_list))
@@ -320,7 +370,7 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["glossary_id"])
+        properties_list = self._get_properties_list(df, exclude_columns=["glossary_id"], always_include=["name"])
 
         print(f"Loading {len(nodes)} glossary nodes...")
         print(self.loader.load_glossary_nodes(nodes, properties_list=properties_list))
@@ -341,7 +391,7 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["glossary_id", "category_id"])
+        properties_list = self._get_properties_list(df, exclude_columns=["glossary_id", "category_id"], always_include=["name"])
 
         print(f"Loading {len(nodes)} category nodes...")
         print(self.loader.load_category_nodes(nodes, properties_list=properties_list))
@@ -380,7 +430,7 @@ class CSVWorkflow:
             for _, row in df.iterrows()
         ]
 
-        properties_list = self._get_properties_list(df, exclude_columns=["category_id", "term_id"])
+        properties_list = self._get_properties_list(df, exclude_columns=["category_id", "term_id"], always_include=["name"])
 
         print(f"Loading {len(nodes)} business term nodes...")
         print(self.loader.load_business_term_nodes(nodes, properties_list=properties_list))
@@ -412,8 +462,18 @@ class CSVWorkflow:
 
         relationships = [
             References(
-                source_column_id=row.source_column_id,
-                target_column_id=row.target_column_id,
+                source_column_id=generate_column_id(
+                    row.source_database_id,
+                    row.source_schema_id,
+                    row.source_table_name,
+                    row.source_column_name
+                ),
+                target_column_id=generate_column_id(
+                    row.target_database_id,
+                    row.target_schema_id,
+                    row.target_table_name,
+                    row.target_column_name
+                ),
                 criteria=row.get("criteria"),
             )
             for _, row in df.iterrows()
