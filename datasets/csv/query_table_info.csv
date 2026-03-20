@@ -1,0 +1,8 @@
+query_id,table_id
+q001,demo-ecommerce.demo_ecommerce.customers
+q001,demo-ecommerce.demo_ecommerce.orders
+q002,demo-ecommerce.demo_ecommerce.products
+q002,demo-ecommerce.demo_ecommerce.order_items
+q003,demo-ecommerce.demo_ecommerce.orders
+q004,demo-ecommerce.demo_ecommerce.products
+q004,demo-ecommerce.demo_ecommerce.order_items

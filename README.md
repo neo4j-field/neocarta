@@ -406,6 +406,112 @@ graph LR
     PM -->|Ingest Data| NEO
 ```
 
+#### **CSV Files**
+
+Connector for loading metadata from structured CSV files into Neo4j. This connector is useful for importing metadata from systems that don't have direct API access, or for loading curated metadata that has been manually created or exported from other tools.
+
+The CSV connector supports selective loading - you can choose which node types and relationships to load based on what metadata is available in your CSV files.
+
+**CSV File Structure:**
+
+The connector expects CSV files in a specified directory with the following default naming convention:
+* `database_info.csv` - Database nodes
+* `schema_info.csv` - Schema nodes
+* `table_info.csv` - Table nodes
+* `column_info.csv` - Column nodes
+* `column_references_info.csv` - Foreign key relationships
+* `value_info.csv` - Sample column values
+* `query_info.csv` - Query nodes
+* `query_table_info.csv` - Query-to-table relationships
+* `query_column_info.csv` - Query-to-column relationships
+* `glossary_info.csv` - Glossary nodes
+* `category_info.csv` - Category nodes
+* `business_term_info.csv` - Business term nodes
+
+Custom file names can be specified using the `csv_file_map` parameter.
+
+This workflow requires the following variables to be set in the `.env` file:
+* NEO4J_USERNAME=neo4j-username
+* NEO4J_PASSWORD=neo4j-password
+* NEO4J_URI=neo4j-uri
+* NEO4J_DATABASE=neo4j-database
+
+##### Workflow Architecture
+
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+    subgraph Schema["Graph Schema"]
+        GS(Data Model Definition)
+    end
+
+    subgraph Source["CSV Files"]
+        CSV[(CSV Directory)]
+    end
+
+    subgraph ETL["ETL Processes"]
+        QE(Read CSV Files)
+        PM(Validate + Transform<br>with Pydantic)
+
+        QE -->|Raw Data<br/>DataFrame| PM
+    end
+
+    subgraph Graph["Database"]
+        NEO[(Neo4j Graph)]
+    end
+
+    CSV -->|CSV Files| QE
+    GS -->|Schema Definition| PM
+    PM -->|Ingest Data| NEO
+```
+
+##### Code Example
+
+```python
+import os
+from neo4j import GraphDatabase
+from semantic_graph.connectors.csv import CSVWorkflow
+
+# Initialize clients
+neo4j_driver = GraphDatabase.driver(
+    uri=os.getenv("NEO4J_URI"),
+    auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
+)
+neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+
+# Create workflow instance
+workflow = CSVWorkflow(
+    csv_directory="datasets/csv",
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database,
+)
+
+# Run the workflow to load all CSV files into Neo4j
+workflow.run()
+
+# Alternatively, load specific nodes and relationships
+workflow.run(
+    include_nodes=["database", "schema", "table", "column", "value"],
+    include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
+)
+
+# Or use a custom file mapping
+custom_file_map = {
+    "database": "my_database.csv",
+    "schema": "my_schema.csv",
+    # ... other custom filenames
+}
+workflow.run(csv_file_map=custom_file_map)
+```
+
+##### Sample Dataset
+
+A sample e-commerce dataset is provided in `datasets/csv/` that demonstrates the expected CSV file structure and can be used for testing the CSV connector.
+
+
 ### Embeddings 
 
 Embeddings may be generated for the `description` fields of the following nodes:

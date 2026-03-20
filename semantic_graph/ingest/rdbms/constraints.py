@@ -53,7 +53,14 @@ CREATE CONSTRAINT category_id_constraint IF NOT EXISTS
 FOR (c:Category) REQUIRE c.id IS UNIQUE;
 """
 
-category_id_key_constraint = category_id_unique_constraint.replace("UNIQUE", "NODE KEY")    
+category_id_key_constraint = category_id_unique_constraint.replace("UNIQUE", "NODE KEY")
+
+query_id_unique_constraint = """
+CREATE CONSTRAINT query_id_constraint IF NOT EXISTS
+FOR (q:Query) REQUIRE q.id IS UNIQUE;
+"""
+
+query_id_key_constraint = query_id_unique_constraint.replace("UNIQUE", "NODE KEY")
 
 UNIQUE_CONSTRAINTS_LOOKUP = {
     "Database": database_id_unique_constraint,
@@ -64,6 +71,7 @@ UNIQUE_CONSTRAINTS_LOOKUP = {
     "Glossary": glossary_id_unique_constraint,
     "Category": category_id_unique_constraint,
     "BusinessTerm": business_term_id_unique_constraint,
+    "Query": query_id_unique_constraint,
 }
 
 KEY_CONSTRAINTS_LOOKUP = {
@@ -75,5 +83,6 @@ KEY_CONSTRAINTS_LOOKUP = {
     "Glossary": glossary_id_key_constraint,
     "Category": category_id_key_constraint,
     "BusinessTerm": business_term_id_key_constraint,
+    "Query": query_id_key_constraint,
 }
 
