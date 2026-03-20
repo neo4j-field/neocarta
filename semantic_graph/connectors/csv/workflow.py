@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 from neo4j import Driver
 
-from ...data_model.core import (
+from ...data_model.rdbms.core import (
     Database,
     Schema,
     Table,
@@ -15,7 +15,7 @@ from ...data_model.core import (
     HasColumn,
     References,
 )
-from ...data_model.expanded import (
+from ...data_model.rdbms.expanded import (
     Value,
     HasValue,
     Glossary,

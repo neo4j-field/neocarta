@@ -153,7 +153,7 @@ my-project,sales,customers,name,Bob Johnson
 def sample_query_csv(temp_csv_dir):
     """Create sample query_info.csv file."""
     csv_content = """query_id,content,description
-q001,SELECT * FROM sales.orders WHERE status = 'completed',Get completed orders
+q001,SELECT * FROM sales.orders WHERE order_id = '123',Get order by ID
 q002,SELECT customer_id FROM sales.orders,Get customer IDs
 """
     csv_path = temp_csv_dir / "query_info.csv"
@@ -177,7 +177,7 @@ q002,my-project.sales.orders
 def sample_query_column_csv(temp_csv_dir):
     """Create sample query_column_info.csv file."""
     csv_content = """query_id,column_id
-q001,my-project.sales.orders.status
+q001,my-project.sales.orders.order_id
 q002,my-project.sales.orders.customer_id
 """
     csv_path = temp_csv_dir / "query_column_info.csv"

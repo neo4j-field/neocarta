@@ -186,9 +186,9 @@ def test_include_nodes_queries_only(neo4j_driver, temp_csv_dir, all_sample_csvs)
         database_name="neo4j"
     )
 
-    # Load queries and lineage
+    # Load queries and their target nodes (tables/columns) for lineage relationships
     workflow.run(
-        include_nodes=["query"],
+        include_nodes=["query", "table", "column"],
         include_relationships=["uses_table", "uses_column"]
     )
 
@@ -204,11 +204,18 @@ def test_include_nodes_queries_only(neo4j_driver, temp_csv_dir, all_sample_csvs)
         result = session.run("MATCH ()-[r:USES_COLUMN]->() RETURN count(r) as count")
         assert result.single()["count"] == 2
 
-        # Should NOT have other nodes
+        # Should have table and column nodes (required for lineage)
+        result = session.run("MATCH (t:Table) RETURN count(t) as count")
+        assert result.single()["count"] == 3
+
+        result = session.run("MATCH (c:Column) RETURN count(c) as count")
+        assert result.single()["count"] == 5
+
+        # Should NOT have database or schema nodes
         result = session.run("MATCH (d:Database) RETURN count(d) as count")
         assert result.single()["count"] == 0
 
-        result = session.run("MATCH (t:Table) RETURN count(t) as count")
+        result = session.run("MATCH (s:Schema) RETURN count(s) as count")
         assert result.single()["count"] == 0
 
 
