@@ -635,56 +635,62 @@ class CSVWorkflow:
         print(f"Loading {len(relationships)} REFERENCES relationships...")
         print(self.loader.load_references_relationships(relationships))
 
-    def load_query_relationships(
-        self,
-        query_table_csv: Optional[str] = None,
-        query_column_csv: Optional[str] = None
-    ) -> None:
+    def load_uses_table_relationships(self, csv_filename: Optional[str] = None) -> None:
         """
-        Load query relationships from CSV files.
+        Load USES_TABLE relationships from CSV.
 
         Parameters
         ----------
-        query_table_csv : str, optional
+        csv_filename : str, optional
             CSV filename for query-table relationships.
             Defaults to value in csv_file_map['query_table'].
-        query_column_csv : str, optional
-            CSV filename for query-column relationships.
-            Defaults to value in csv_file_map['query_column'].
         """
-        # Load USES_TABLE relationships
-        table_filename = query_table_csv or self.csv_file_map["query_table"]
-        df_tables = self._read_csv_if_exists(table_filename)
-        if df_tables is not None and not df_tables.empty:
+        filename = csv_filename or self.csv_file_map["query_table"]
+        df = self._read_csv_if_exists(filename)
+        if df is not None and not df.empty:
             relationships = [
                 UsesTable(
                     query_id=row.query_id,
                     table_id=row.table_id,
                 )
-                for _, row in df_tables.iterrows()
+                for _, row in df.iterrows()
             ]
             print(f"Loading {len(relationships)} USES_TABLE relationships...")
             print(self.loader.load_uses_table_relationships(relationships))
         else:
-            print(f"No {table_filename} found or file is empty")
+            print(f"No {filename} found or file is empty")
 
-        # Load USES_COLUMN relationships
-        column_filename = query_column_csv or self.csv_file_map["query_column"]
-        df_columns = self._read_csv_if_exists(column_filename)
-        if df_columns is not None and not df_columns.empty:
+    def load_uses_column_relationships(self, csv_filename: Optional[str] = None) -> None:
+        """
+        Load USES_COLUMN relationships from CSV.
+
+        Parameters
+        ----------
+        csv_filename : str, optional
+            CSV filename for query-column relationships.
+            Defaults to value in csv_file_map['query_column'].
+        """
+        filename = csv_filename or self.csv_file_map["query_column"]
+        df = self._read_csv_if_exists(filename)
+        if df is not None and not df.empty:
             relationships = [
                 UsesColumn(
                     query_id=row.query_id,
                     column_id=row.column_id,
                 )
-                for _, row in df_columns.iterrows()
+                for _, row in df.iterrows()
             ]
             print(f"Loading {len(relationships)} USES_COLUMN relationships...")
             print(self.loader.load_uses_column_relationships(relationships))
         else:
-            print(f"No {column_filename} found or file is empty")
+            print(f"No {filename} found or file is empty")
 
-    def run(self, csv_file_map: Optional[dict[str, str]] = None) -> None:
+    def run(
+        self,
+        csv_file_map: Optional[dict[str, str]] = None,
+        include_nodes: Optional[list[str]] = None,
+        include_relationships: Optional[list[str]] = None
+    ) -> None:
         """
         Run the complete CSV workflow.
 
@@ -697,6 +703,12 @@ class CSVWorkflow:
         csv_file_map : dict[str, str], optional
             Runtime override for CSV file mapping. Merges with instance csv_file_map.
             Allows per-run customization without modifying the instance.
+        include_nodes : list[str], optional
+            Nodes to include in loading. If None, loads all nodes.
+            Allowed values: "database", "schema", "table", "column", "value", "query", "glossary", "category", "business_term".
+        include_relationships : list[str], optional
+            Relationships to include in loading. If None, loads all relationships.
+            Allowed values: "has_schema", "has_table", "has_column", "has_value", "has_category", "has_business_term", "references", "uses_table", "uses_column".
         """
         # Temporarily override file map if provided
         original_map = self.csv_file_map.copy()
@@ -706,36 +718,63 @@ class CSVWorkflow:
         try:
             print(f"Reading CSV files from {self.csv_directory}...")
 
+            # Define all available nodes and relationships
+            all_nodes = ["database", "schema", "table", "column", "value", "query", "glossary", "category", "business_term"]
+            all_relationships = ["has_schema", "has_table", "has_column", "has_value", "has_category", "has_business_term", "references", "uses_table", "uses_column"]
+
+            # Use include lists or default to all
+            nodes_to_load = set(include_nodes) if include_nodes else set(all_nodes)
+            rels_to_load = set(include_relationships) if include_relationships else set(all_relationships)
+
             print("\n=== Loading Nodes ===")
             # Load core nodes (in dependency order)
-            self.load_database_nodes()
-            self.load_schema_nodes()
-            self.load_table_nodes()
-            self.load_column_nodes()
+            if "database" in nodes_to_load:
+                self.load_database_nodes()
+            if "schema" in nodes_to_load:
+                self.load_schema_nodes()
+            if "table" in nodes_to_load:
+                self.load_table_nodes()
+            if "column" in nodes_to_load:
+                self.load_column_nodes()
 
             # Load extended nodes
-            self.load_value_nodes()
-            self.load_query_nodes()
-            self.load_glossary_nodes()
-            self.load_category_nodes()
-            self.load_business_term_nodes()
+            if "value" in nodes_to_load:
+                self.load_value_nodes()
+            if "query" in nodes_to_load:
+                self.load_query_nodes()
+            if "glossary" in nodes_to_load:
+                self.load_glossary_nodes()
+            if "category" in nodes_to_load:
+                self.load_category_nodes()
+            if "business_term" in nodes_to_load:
+                self.load_business_term_nodes()
 
             print("\n=== Loading Relationships ===")
             # Load hierarchical relationships
-            self.load_has_schema_relationships()
-            self.load_has_table_relationships()
-            self.load_has_column_relationships()
-            self.load_has_value_relationships()
+            if "has_schema" in rels_to_load:
+                self.load_has_schema_relationships()
+            if "has_table" in rels_to_load:
+                self.load_has_table_relationships()
+            if "has_column" in rels_to_load:
+                self.load_has_column_relationships()
+            if "has_value" in rels_to_load:
+                self.load_has_value_relationships()
 
             # Load glossary relationships
-            self.load_has_category_relationships()
-            self.load_has_business_term_relationships()
+            if "has_category" in rels_to_load:
+                self.load_has_category_relationships()
+            if "has_business_term" in rels_to_load:
+                self.load_has_business_term_relationships()
 
             # Load reference relationships
-            self.load_references_relationships()
+            if "references" in rels_to_load:
+                self.load_references_relationships()
 
             # Load query relationships
-            self.load_query_relationships()
+            if "uses_table" in rels_to_load:
+                self.load_uses_table_relationships()
+            if "uses_column" in rels_to_load:
+                self.load_uses_column_relationships()
 
             print("\nCSV workflow completed successfully!")
         finally:

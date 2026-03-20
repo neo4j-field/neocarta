@@ -1,0 +1,5 @@
+database_id,schema_id,table_name,column_name,value
+demo-ecommerce,demo_ecommerce,products,category,Electronics
+demo-ecommerce,demo_ecommerce,products,category,Home & Office
+demo-ecommerce,demo_ecommerce,products,category,Clothing
+demo-ecommerce,demo_ecommerce,products,category,Sports

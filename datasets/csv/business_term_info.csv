@@ -1,0 +1,6 @@
+category_id,term_id,name,description
+revenue_metrics,gmv,Gross Merchandise Value,Total sales value of merchandise sold through the platform
+revenue_metrics,aov,Average Order Value,Average dollar amount spent per order
+customer_metrics,cac,Customer Acquisition Cost,Average cost to acquire a new customer
+customer_metrics,ltv,Customer Lifetime Value,Predicted total revenue from a customer over their lifetime
+product_metrics,sell_through_rate,Sell-Through Rate,Percentage of inventory sold within a specific time period
