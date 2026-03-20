@@ -1,4 +1,4 @@
-# LPG Graph Data Model Components
+# Label Property Graph Data Model Components
 
 This module contains the graph data model components for a Labeled Property Graph (LPG) metadata graph.
 
@@ -70,6 +70,53 @@ Relationships
 * `(:Relationship)-[:HAS_PROPERTY]->(:Property)`
     * Defines which properties exist on a relationship type
 
+## Property Values **(Not Implemented)**
+
+Property values represent the distinct values that exist for properties in the graph database.
+This allows for value profiling and understanding the distribution of data.
+
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR<br/>platform: STRING<br/>service: STRING")
+
+Schema("Schema<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+
+Node("Node<br/>id: STRING | KEY<br/>label: STRING<br/>additionalLabels: LIST&lt;STRING&gt;<br/>description: STRING<br/>embedding: VECTOR")
+
+Relationship("Relationship<br/>id: STRING | KEY<br/>type: STRING<br/>description: STRING<br/>embedding: VECTOR")
+
+Property("Property<br/>id: STRING | KEY<br/>name: STRING<br/>type: STRING<br/>description: STRING<br/>unique: BOOLEAN<br/>nullable: BOOLEAN<br/>indexed: BOOLEAN<br/>existence: BOOLEAN<br/>embedding: VECTOR")
+
+Value("Value<br/>id: STRING | KEY<br/>value: ANY<br/>type: STRING<br/>count: INTEGER<br/>embedding: VECTOR")
+
+%% Core Relationships
+Database -->|HAS_SCHEMA| Schema
+Schema -->|HAS_NODE| Node
+Schema -->|HAS_RELATIONSHIP| Relationship
+Relationship -->|HAS_SOURCE_NODE| Node
+Relationship -->|HAS_TARGET_NODE| Node
+Relationship -->|HAS_PROPERTY| Property
+Node -->|HAS_PROPERTY| Property
+
+%% Extended Relationship
+Property -->|HAS_VALUE| Value
+```
+
+Nodes
+* `Value`
+    * Represents a distinct value for a property
+    * Properties: id, value, type, count, embedding
+
+Relationships
+* `(:Property)-[:HAS_VALUE]->(:Value)`
+    * Defines the distinct values that exist for a property
+    * The count property on the Value node indicates how many times this value appears
+
 ## Glossary Data Model **(Not Implemented)**
 
 Data catalogs allow business terms to be defined and linked to nodes, relationships, and properties.
@@ -137,17 +184,17 @@ Relationships
 Cypher queries may be cached in the graph and provided as few-shot examples in the context.
 
 Nodes
-* `CypherQuery`
+* `Query`
 
 Relationships
-* `(:CypherQuery)-[:USES_NODE]->(:Node)`
-* `(:CypherQuery)-[:USES_RELATIONSHIP]->(:Relationship)`
-* `(:CypherQuery)-[:USES_PROPERTY]->(:Property)`
+* `(:Query)-[:USES_NODE]->(:Node)`
+* `(:Query)-[:USES_RELATIONSHIP]->(:Relationship)`
+* `(:Query)-[:USES_PROPERTY]->(:Property)`
 
 ## Metrics + KPIs **(Not Implemented)**
 
 Metrics and KPIs may be stored in the graph and linked to their associated nodes, relationships, and properties.
-They may also be linked to `CypherQuery` nodes, which define how to calculate the metric.
+They may also be linked to `Query` nodes, which define how to calculate the metric.
 `Metric` is the main node label, however they may also have the additional node label `KPI`.
 
 Nodes
@@ -156,4 +203,4 @@ Nodes
     * All `KPI` labels are an additional label on `Metric` nodes
 
 Relationships
-* `(:Metric&KPI)-[:HAS_CYPHER_QUERY]->(:CypherQuery)`
+* `(:Metric&KPI)-[:HAS_QUERY]->(:Query)`
