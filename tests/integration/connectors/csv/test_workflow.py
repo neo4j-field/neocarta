@@ -400,7 +400,7 @@ def test_load_query_nodes(neo4j_driver, temp_csv_dir, sample_query_csv):
 
         assert len(records) == 2
         assert records[0]["id"] == "q001"
-        assert "completed" in records[0]["content"]
+        assert "order_id" in records[0]["content"]
 
 
 def test_query_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
