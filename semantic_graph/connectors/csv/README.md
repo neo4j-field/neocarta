@@ -8,11 +8,10 @@ The CSV connector accepts normalized CSV files representing database metadata en
 
 ## Terminology Note
 
-**Project vs Database, Dataset vs Schema:**
-- The terms "project" and "dataset" originate from BigQuery naming conventions
-- In this connector: **project = database** and **dataset = schema**
-- Column names use BigQuery terminology (`project_id`, `dataset_id`) for consistency with existing tooling
-- The graph data model uses generic terminology (Database, Schema nodes)
+**Database and Schema:**
+- Column names use generic terminology (`database_id`, `schema_id`) for compatibility across different database systems
+- For BigQuery users: **database = GCP project** and **schema = dataset**
+- The graph data model uses generic terminology (Database, Schema nodes) to support multiple database platforms
 
 ## ID Construction
 
@@ -175,22 +174,27 @@ my-project,sales,order_items,product_id,my-project,sales,products,product_id,ord
 
 #### 6. `value_info.csv` (Value nodes)
 
-Creates `:Value` nodes and `(:Column)-[:HAS_VALUE]->(:Value)` relationships representing unique values in columns.
+Creates `:Value` nodes and `(:Column)-[:HAS_VALUE]->(:Value)` relationships representing unique/sample values in columns.
 
 **Required columns:**
-- `column_id` (string): Parent column full ID (must match ID from `column_info.csv`)
-- `value_id` (string): Unique identifier for the value (typically a hash)
+- `database_id` (string): Database identifier
+- `schema_id` (string): Schema identifier
+- `table_name` (string): Table name
+- `column_name` (string): Column name
 - `value` (string): The actual value as a string
 
 **Derived by connector:**
+- Value ID: `{database_id}.{schema_id}.{table_name}.{column_name}.{value_hash}`
 - HAS_VALUE relationship: `(column_id)-[:HAS_VALUE]->(value_id)`
 
 **Example:**
 ```csv
-column_id,value_id,value
-my-project.sales.orders.status,val_pending,pending
-my-project.sales.orders.status,val_completed,completed
-my-project.sales.orders.status,val_cancelled,cancelled
+database_id,schema_id,table_name,column_name,value
+my-project,sales,orders,status,pending
+my-project,sales,orders,status,completed
+my-project,sales,orders,status,cancelled
+my-project,sales,products,category,Electronics
+my-project,sales,products,category,Clothing
 ```
 
 ---
@@ -344,20 +348,123 @@ All other files are optional and can be added to enrich the graph with additiona
    - Relationship CSV files must reference valid entity IDs that match the connector-constructed IDs
 6. **ID Format**: When providing IDs in relationship CSVs, use the fully qualified format: `database_id.schema_id.table_name.column_name`
 
-## Usage Example
+## Workflow Configuration
+
+### Custom File Mapping
+
+You can customize CSV file names by providing a `csv_file_map` parameter:
 
 ```python
-from semantic_graph.connectors.csv import CSVConnector
+custom_file_map = {
+    "database": "my_database.csv",
+    "schema": "my_schemas.csv",
+    "table": "my_tables.csv",
+    # ... other custom filenames
+}
 
-# Initialize connector
-connector = CSVConnector(csv_directory="/path/to/csv/files")
+workflow = CSVWorkflow(
+    csv_directory="datasets/csv",
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database,
+    csv_file_map=custom_file_map
+)
+```
 
-# Extract data from CSV files
-connector.extract()
+Default file names (if not overridden):
+- `database_info.csv`
+- `schema_info.csv`
+- `table_info.csv`
+- `column_info.csv`
+- `column_references_info.csv`
+- `value_info.csv`
+- `query_info.csv`
+- `query_table_info.csv`
+- `query_column_info.csv`
+- `glossary_info.csv`
+- `category_info.csv`
+- `business_term_info.csv`
 
-# Transform to graph data model
-connector.transform()
+### Selective Loading
 
-# Load into Neo4j
-connector.load(neo4j_driver, database_name="neo4j")
+You can choose which nodes and relationships to load:
+
+```python
+# Load only core schema entities
+workflow.run(
+    include_nodes=["database", "schema", "table", "column"],
+    include_relationships=["has_schema", "has_table", "has_column"]
+)
+
+# Load schema + column values
+workflow.run(
+    include_nodes=["database", "schema", "table", "column", "value"],
+    include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
+)
+
+# Load everything including queries and glossary
+workflow.run()  # No filters = load all available CSV files
+```
+
+## Usage Examples
+
+### Basic Usage
+
+```python
+import os
+from neo4j import GraphDatabase
+from semantic_graph.connectors.csv import CSVWorkflow
+
+# Initialize Neo4j driver
+neo4j_driver = GraphDatabase.driver(
+    uri=os.getenv("NEO4J_URI"),
+    auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
+)
+neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
+
+# Create workflow instance
+workflow = CSVWorkflow(
+    csv_directory="datasets/csv",
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database
+)
+
+# Run the complete workflow (loads all available CSV files)
+workflow.run()
+
+# Cleanup
+neo4j_driver.close()
+```
+
+### Advanced Usage with Custom Configuration
+
+```python
+# Custom file mapping and selective loading
+custom_file_map = {
+    "table": "custom_tables.csv",
+    "column": "custom_columns.csv"
+}
+
+workflow = CSVWorkflow(
+    csv_directory="path/to/csv/files",
+    neo4j_driver=neo4j_driver,
+    database_name="neo4j",
+    csv_file_map=custom_file_map
+)
+
+# Load only specific entities
+workflow.run(
+    include_nodes=["database", "schema", "table", "column", "value"],
+    include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
+)
+```
+
+### Runtime File Override
+
+```python
+# Override file mapping at runtime (without modifying instance config)
+workflow.run(
+    csv_file_map={"table": "alternative_tables.csv"},
+    include_nodes=["table"],
+    include_relationships=["has_table"]
+)
 ```
