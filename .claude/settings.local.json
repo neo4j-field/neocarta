@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -m pytest tests/integration/connectors/csv/test_workflow.py -v)"
-    ]
-  }
-}
