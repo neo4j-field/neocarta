@@ -1,0 +1,266 @@
+[
+  {
+    "table_name": "customers",
+    "table_description": "Customer master table containing all registered customers",
+    "database_name": "ai-field-alex-g",
+    "schema_name": "demo_ecommerce",
+    "columns": [
+      {
+        "column_name": "customer_id",
+        "column_description": "Unique identifier for the customer",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "primary",
+        "references": [
+          {
+            "table_name": "orders",
+            "column_name": "customer_id"
+          }
+        ]
+      },
+      {
+        "column_name": "customer_name",
+        "column_description": "Full name of the customer",
+        "data_type": "STRING",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      },
+      {
+        "column_name": "email",
+        "column_description": "Customer's email address",
+        "data_type": "STRING",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      },
+      {
+        "column_name": "created_at",
+        "column_description": "Timestamp when the customer record was created",
+        "data_type": "TIMESTAMP",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      }
+    ],
+    "joins": [
+      {
+        "table_name": "orders",
+        "column_names": [
+          "customer_id"
+        ]
+      }
+    ]
+  },
+  {
+    "table_name": "order_items",
+    "table_description": "Individual line items for each order, links to orders and products via foreign keys",
+    "database_name": "ai-field-alex-g",
+    "schema_name": "demo_ecommerce",
+    "columns": [
+      {
+        "column_name": "order_item_id",
+        "column_description": "Unique identifier for the order line item",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "primary",
+        "references": []
+      },
+      {
+        "column_name": "order_id",
+        "column_description": "Foreign key reference to orders table",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "foreign",
+        "references": [
+          {
+            "table_name": "orders",
+            "column_name": "order_id"
+          }
+        ]
+      },
+      {
+        "column_name": "product_id",
+        "column_description": "Foreign key reference to products table",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "foreign",
+        "references": [
+          {
+            "table_name": "products",
+            "column_name": "product_id"
+          }
+        ]
+      },
+      {
+        "column_name": "quantity",
+        "column_description": "Quantity of the product ordered",
+        "data_type": "INT64",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      },
+      {
+        "column_name": "price",
+        "column_description": "Price per unit at time of order in USD",
+        "data_type": "NUMERIC",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      }
+    ],
+    "joins": [
+      {
+        "table_name": "orders",
+        "column_names": [
+          "order_id"
+        ]
+      },
+      {
+        "table_name": "products",
+        "column_names": [
+          "product_id"
+        ]
+      }
+    ]
+  },
+  {
+    "table_name": "orders",
+    "table_description": "Orders placed by customers, links to customers via customer_id foreign key",
+    "database_name": "ai-field-alex-g",
+    "schema_name": "demo_ecommerce",
+    "columns": [
+      {
+        "column_name": "order_id",
+        "column_description": "Unique identifier for the order",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "primary",
+        "references": [
+          {
+            "table_name": "order_items",
+            "column_name": "order_id"
+          }
+        ]
+      },
+      {
+        "column_name": "customer_id",
+        "column_description": "Foreign key reference to customers table",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "foreign",
+        "references": [
+          {
+            "table_name": "customers",
+            "column_name": "customer_id"
+          }
+        ]
+      },
+      {
+        "column_name": "order_date",
+        "column_description": "Timestamp when the order was placed",
+        "data_type": "TIMESTAMP",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      },
+      {
+        "column_name": "total_amount",
+        "column_description": "Total order amount in USD",
+        "data_type": "NUMERIC",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      }
+    ],
+    "joins": [
+      {
+        "table_name": "order_items",
+        "column_names": [
+          "order_id"
+        ]
+      },
+      {
+        "table_name": "customers",
+        "column_names": [
+          "customer_id"
+        ]
+      }
+    ]
+  },
+  {
+    "table_name": "products",
+    "table_description": "Product catalog containing all available products",
+    "database_name": "ai-field-alex-g",
+    "schema_name": "demo_ecommerce",
+    "columns": [
+      {
+        "column_name": "product_id",
+        "column_description": "Unique identifier for the product",
+        "data_type": "INT64",
+        "nullable": false,
+        "examples": [],
+        "key_type": "primary",
+        "references": [
+          {
+            "table_name": "order_items",
+            "column_name": "product_id"
+          }
+        ]
+      },
+      {
+        "column_name": "product_name",
+        "column_description": "Name of the product",
+        "data_type": "STRING",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      },
+      {
+        "column_name": "category",
+        "column_description": "Product category (e.g., Electronics, Clothing)",
+        "data_type": "STRING",
+        "nullable": true,
+        "examples": [
+          "Electronics",
+          "Home & Office",
+          "Clothing",
+          "Sports"
+        ],
+        "key_type": null,
+        "references": []
+      },
+      {
+        "column_name": "price",
+        "column_description": "Product price in USD",
+        "data_type": "NUMERIC",
+        "nullable": true,
+        "examples": [],
+        "key_type": null,
+        "references": []
+      }
+    ],
+    "joins": [
+      {
+        "table_name": "order_items",
+        "column_names": [
+          "product_id"
+        ]
+      }
+    ]
+  }
+]
