@@ -81,33 +81,60 @@ def score_execution_accuracy(
         }
 
     # Compare results
-    # Sort both dataframes by all columns for consistent comparison
     try:
-        generated_sorted = generated_result.sort_values(
-            by=list(generated_result.columns)
-        ).reset_index(drop=True)
-        gold_sorted = gold_result.sort_values(
-            by=list(gold_result.columns)
-        ).reset_index(drop=True)
+        # First check: exact match (same schema + same data)
+        schema_match = set(generated_result.columns) == set(gold_result.columns)
 
-        # Check if dataframes are equal
-        execution_match = generated_sorted.equals(gold_sorted)
+        if schema_match:
+            # Same columns - check if data matches
+            generated_sorted = generated_result.sort_values(
+                by=list(generated_result.columns)
+            ).reset_index(drop=True)
+            gold_sorted = gold_result.sort_values(
+                by=list(gold_result.columns)
+            ).reset_index(drop=True)
+            execution_match = generated_sorted.equals(gold_sorted)
+        else:
+            # Different columns - check if VALUES match (ignoring column names)
+            # This handles cases like: COUNT(*) as count vs COUNT(*) as total
+            if generated_result.shape == gold_result.shape:
+                # Same dimensions - compare values position by position
+                # Sort by values to ensure consistent ordering
+                gen_values = generated_result.values
+                gold_values = gold_result.values
+
+                # For small results (aggregates), check if values are equal
+                try:
+                    execution_match = pd.DataFrame(gen_values).equals(pd.DataFrame(gold_values))
+                except:
+                    execution_match = False
+            else:
+                execution_match = False
 
         # Calculate row match percentage
-        if len(gold_sorted) == 0:
-            row_match_pct = 1.0 if len(generated_sorted) == 0 else 0.0
+        if len(gold_result) == 0:
+            row_match_pct = 1.0 if len(generated_result) == 0 else 0.0
         else:
-            # Count matching rows
+            # Count matching rows by value (ignore column names)
             matching_rows = 0
-            for idx in range(min(len(generated_sorted), len(gold_sorted))):
-                if generated_sorted.iloc[idx].equals(gold_sorted.iloc[idx]):
-                    matching_rows += 1
-            row_match_pct = matching_rows / len(gold_sorted)
+            for idx in range(min(len(generated_result), len(gold_result))):
+                try:
+                    gen_row = generated_result.iloc[idx].values
+                    gold_row = gold_result.iloc[idx].values
+                    if len(gen_row) == len(gold_row) and all(
+                        (pd.isna(g) and pd.isna(gd)) or g == gd
+                        for g, gd in zip(gen_row, gold_row)
+                    ):
+                        matching_rows += 1
+                except:
+                    pass
+            row_match_pct = matching_rows / len(gold_result)
 
     except Exception as e:
-        # If comparison fails (e.g., different schemas), mark as no match
+        # If comparison fails, mark as no match
         execution_match = False
         row_match_pct = 0.0
+        schema_match = False
 
     return {
         "execution_match": execution_match,
@@ -116,7 +143,8 @@ def score_execution_accuracy(
         "generated_error": None,
         "gold_error": None,
         "row_match_pct": row_match_pct,
-        "schema_match": set(generated_result.columns) == set(gold_result.columns),
+        "schema_match": schema_match,
+        "value_match": execution_match,  # True if values match (regardless of column names)
     }
 
 

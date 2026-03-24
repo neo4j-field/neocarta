@@ -1,0 +1,89 @@
+# Evaluation samples for the ecommerce dataset
+# Each sample tests the semantic layer's ability to retrieve relevant schema
+# and generate correct SQL queries
+#
+# Notes:
+# - question_id: auto-generated from hash of nl_question + ground_truth_sql
+# - required_objects: auto-extracted from ground_truth_sql using sqlglot
+
+samples:
+  # 1. Simple lookup - Single table query
+  - archetype: simple_lookup
+    nl_question: "How many customers do we have?"
+    ground_truth_sql: |
+      SELECT COUNT(*) as customer_count
+      FROM `demo_ecommerce.customers`
+
+  # 2. Simple lookup - Single table with filter
+  - archetype: simple_lookup
+    nl_question: "List all product names in the Electronics category"
+    ground_truth_sql: |
+      SELECT product_name
+      FROM `demo_ecommerce.products`
+      WHERE category = 'Electronics'
+
+  # 3. Implicit join - Two table join
+  - archetype: implicit_join
+    nl_question: "Show me all orders placed by Alice Johnson. Include id, date and total price."
+    ground_truth_sql: |
+      SELECT o.order_id, o.order_date, o.total_amount
+      FROM `demo_ecommerce.orders` o
+      JOIN `demo_ecommerce.customers` c ON o.customer_id = c.customer_id
+      WHERE c.customer_name = 'Alice Johnson'
+
+  # 4. Implicit join - Four table join
+  - archetype: implicit_join
+    nl_question: "What products did customer Bob Smith order?"
+    ground_truth_sql: |
+      SELECT DISTINCT p.product_name
+      FROM `demo_ecommerce.customers` c
+      JOIN `demo_ecommerce.orders` o ON c.customer_id = o.customer_id
+      JOIN `demo_ecommerce.order_items` oi ON o.order_id = oi.order_id
+      JOIN `demo_ecommerce.products` p ON oi.product_id = p.product_id
+      WHERE c.customer_name = 'Bob Smith'
+
+  # 5. Implicit join - Aggregation with join
+  - archetype: implicit_join
+    nl_question: "What is the total revenue by product category?"
+    ground_truth_sql: |
+      SELECT p.category, SUM(oi.quantity * oi.price) as total_revenue
+      FROM `demo_ecommerce.products` p
+      JOIN `demo_ecommerce.order_items` oi ON p.product_id = oi.product_id
+      GROUP BY p.category
+      ORDER BY total_revenue DESC
+
+  # 6. Ambiguous column - Multiple price columns (products.price vs order_items.price)
+  - archetype: ambiguous_column
+    nl_question: "What is the average price of products in our catalog?"
+    ground_truth_sql: |
+      SELECT AVG(price) as avg_price
+      FROM `demo_ecommerce.products`
+
+  # 7. Implicit join - Complex aggregation
+  - archetype: implicit_join
+    nl_question: "How many orders has each customer placed? We need the customer id and name."
+    ground_truth_sql: |
+      SELECT c.customer_id, c.customer_name, COUNT(o.order_id) as order_count
+      FROM `demo_ecommerce.customers` c
+      LEFT JOIN `demo_ecommerce.orders` o ON c.customer_id = o.customer_id
+      GROUP BY c.customer_id, c.customer_name
+      ORDER BY order_count DESC
+
+  # 8. Simple lookup - Temporal query
+  - archetype: simple_lookup
+    nl_question: "How many orders were placed in February 2024?"
+    ground_truth_sql: |
+      SELECT COUNT(*) as order_count
+      FROM `demo_ecommerce.orders`
+      WHERE order_date >= '2024-02-01' AND order_date < '2024-03-01'
+
+  # 9. Implicit join - Most popular products
+  - archetype: implicit_join
+    nl_question: "What are the top 3 most frequently ordered products? Include the product id and name."
+    ground_truth_sql: |
+      SELECT p.product_id, p.product_name, COUNT(oi.order_item_id) as times_ordered
+      FROM `demo_ecommerce.products` p
+      JOIN `demo_ecommerce.order_items` oi ON p.product_id = oi.product_id
+      GROUP BY p.product_id, p.product_name
+      ORDER BY times_ordered DESC
+      LIMIT 3

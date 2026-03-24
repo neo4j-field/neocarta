@@ -1,6 +1,6 @@
 [
   {
-    "question_id": "q001",
+    "question_id": "1c9c8cc217945eb8fc4e153360f8b2f3ca970368912b53646b6edbf69b5f362f",
     "archetype": "simple_lookup",
     "nl_question": "How many customers do we have?",
     "ground_truth_sql": "SELECT COUNT(*) as customer_count\nFROM `demo_ecommerce.customers`",
@@ -11,28 +11,27 @@
         "table_name='orders' table_description='\"Orders placed by customers, links to customers via customer_id foreign key\"' database_name='ai-field-alex-g' schema_name='demo_ecommerce' columns=[ColumnContext(column_name='customer_id', column_description='Foreign key reference to customers table', data_type='INT64', nullable=True, examples=['1', '2', '3', '4', '5'], key_type='foreign', references=[ReferenceContext(table_name='customers', column_name='customer_id')]), ColumnContext(column_name='order_id', column_description='Unique identifier for the order', data_type='INT64', nullable=True, examples=['1006', '1001', '1002', '1027', '1003'], key_type='primary', references=[ReferenceContext(table_name='order_items', column_name='order_id')]), ColumnContext(column_name='total_amount', column_description='Total order amount in USD', data_type='NUMERIC', nullable=True, examples=['649.980000000', '1029.980000000', '79.990000000', '529.980000000', '299.990000000'], key_type=None, references=[])] joins=[JoinContext(table_name='order_items', column_names=['order_id']), JoinContext(table_name='customers', column_names=['customer_id'])]",
         "table_name='products' table_description='\"Product catalog containing all available products\"' database_name='ai-field-alex-g' schema_name='demo_ecommerce' columns=[ColumnContext(column_name='product_id', column_description='Unique identifier for the product', data_type='INT64', nullable=True, examples=['118', '114', '116', '117', '115'], key_type='primary', references=[ReferenceContext(table_name='order_items', column_name='product_id')]), ColumnContext(column_name='price', column_description='Product price in USD', data_type='NUMERIC', nullable=True, examples=['49.990000000', '19.990000000', '89.990000000', '129.990000000', '59.990000000'], key_type=None, references=[])] joins=[JoinContext(table_name='order_items', column_names=['product_id'])]"
       ],
-      "generated_sql": "SELECT COUNT(DISTINCT customer_id) AS total_customers\nFROM demo_ecommerce.customers;",
+      "generated_sql": "SELECT COUNT(*) AS total_customers\nFROM demo_ecommerce.customers;",
       "sql_parse": null,
       "structural": {
         "exact_match": false,
         "table_match": true,
-        "column_match": false,
-        "structural_match": false,
+        "column_match": true,
+        "structural_match": true,
         "missing_tables": [],
         "extra_tables": [],
         "missing_columns": [],
-        "extra_columns": [
-          "customer_id"
-        ]
+        "extra_columns": []
       },
       "execution": {
-        "execution_match": false,
+        "execution_match": true,
         "generated_rows": 1,
         "gold_rows": 1,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 0.0,
-        "schema_match": false
+        "row_match_pct": 1.0,
+        "schema_match": false,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 512,
@@ -45,20 +44,18 @@
       },
       "faithfulness": {
         "table_faithfulness": 1.0,
-        "column_faithfulness": 1.0,
+        "column_faithfulness": 0.0,
         "hallucinated_tables": [],
         "hallucinated_columns": [],
         "used_objects": {
           "tables": [
             "demo_ecommerce.customers"
           ],
-          "columns": [
-            "customer_id"
-          ]
+          "columns": []
         },
         "executable": true
       },
-      "latency_ms": 1961.5228329785168
+      "latency_ms": 2349.195167014841
     },
     "full_schema": {
       "generated_sql": "SELECT COUNT(*) AS total_customers\nFROM demo_ecommerce.customers;",
@@ -74,13 +71,14 @@
         "extra_columns": []
       },
       "execution": {
-        "execution_match": false,
+        "execution_match": true,
         "generated_rows": 1,
         "gold_rows": 1,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 0.0,
-        "schema_match": false
+        "row_match_pct": 1.0,
+        "schema_match": false,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -91,14 +89,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 696.8701250152662
+      "latency_ms": 813.7479579891078
     },
-    "context_precision": 0.11764705882352941,
+    "context_precision": 0.058823529411764705,
     "context_recall": 1.0,
     "object_recall": 1.0
   },
   {
-    "question_id": "q002",
+    "question_id": "43b88296a37d5e840d3150ec8a53a77cd3cefc26b979f59fc14bd53e98c90d93",
     "archetype": "simple_lookup",
     "nl_question": "List all products in the Electronics category",
     "ground_truth_sql": "SELECT product_name\nFROM `demo_ecommerce.products`\nWHERE category = 'Electronics'",
@@ -131,7 +129,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 0.0,
-        "schema_match": false
+        "schema_match": false,
+        "value_match": false
       },
       "tokens": {
         "mcp_schema_tokens": 452,
@@ -152,15 +151,15 @@
             "demo_ecommerce.products"
           ],
           "columns": [
-            "price",
+            "product_name",
             "category",
             "product_id",
-            "product_name"
+            "price"
           ]
         },
         "executable": true
       },
-      "latency_ms": 1506.2166249845177
+      "latency_ms": 1265.4750830261037
     },
     "full_schema": {
       "generated_sql": "SELECT \n  product_id, \n  product_name, \n  category, \n  price\nFROM \n  demo_ecommerce.products\nWHERE \n  category = 'Electronics';",
@@ -185,7 +184,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 0.0,
-        "schema_match": false
+        "schema_match": false,
+        "value_match": false
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -196,14 +196,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 1154.5058750198223
+      "latency_ms": 1140.837625018321
     },
-    "context_precision": 0.23529411764705882,
+    "context_precision": 0.17647058823529413,
     "context_recall": 1.0,
     "object_recall": 1.0
   },
   {
-    "question_id": "q003",
+    "question_id": "614fc205b108ab57f24f694bd0e963f73b96dc4a751f8e3652a28361b7e673b6",
     "archetype": "implicit_join",
     "nl_question": "Show me all orders placed by Alice Johnson",
     "ground_truth_sql": "SELECT o.order_id, o.order_date, o.total_amount\nFROM `demo_ecommerce.orders` o\nJOIN `demo_ecommerce.customers` c ON o.customer_id = c.customer_id\nWHERE c.customer_name = 'Alice Johnson'",
@@ -213,7 +213,7 @@
         "table_name='order_items' table_description='\"Individual line items for each order, links to orders and products via foreign keys\"' database_name='ai-field-alex-g' schema_name='demo_ecommerce' columns=[ColumnContext(column_name='order_id', column_description='Foreign key reference to orders table', data_type='INT64', nullable=True, examples=['1022', '1001', '1026', '1002', '1013'], key_type='foreign', references=[ReferenceContext(table_name='orders', column_name='order_id')]), ColumnContext(column_name='quantity', column_description='Quantity of the product ordered', data_type='INT64', nullable=True, examples=['1', '2', '3', '5', '4'], key_type=None, references=[]), ColumnContext(column_name='price', column_description='Price per unit at time of order in USD', data_type='NUMERIC', nullable=True, examples=['999.990000000', '29.990000000', '79.990000000', '299.990000000', '89.990000000'], key_type=None, references=[]), ColumnContext(column_name='order_item_id', column_description='Unique identifier for the order line item', data_type='INT64', nullable=True, examples=['10037', '10001', '10002', '10038', '10046'], key_type='primary', references=[])] joins=[JoinContext(table_name='orders', column_names=['order_id']), JoinContext(table_name='products', column_names=['product_id'])]",
         "table_name='orders' table_description='\"Orders placed by customers, links to customers via customer_id foreign key\"' database_name='ai-field-alex-g' schema_name='demo_ecommerce' columns=[ColumnContext(column_name='order_date', column_description='Timestamp when the order was placed', data_type='TIMESTAMP', nullable=True, examples=['2024-02-02T16:20:00.000000', '2024-01-20T11:00:00.000000', '2024-01-21T15:30:00.000000', '2024-03-28T10:30:00.000000', '2024-01-23T10:15:00.000000'], key_type=None, references=[]), ColumnContext(column_name='total_amount', column_description='Total order amount in USD', data_type='NUMERIC', nullable=True, examples=['649.980000000', '1029.980000000', '79.990000000', '529.980000000', '299.990000000'], key_type=None, references=[]), ColumnContext(column_name='order_id', column_description='Unique identifier for the order', data_type='INT64', nullable=True, examples=['1006', '1001', '1002', '1027', '1003'], key_type='primary', references=[ReferenceContext(table_name='order_items', column_name='order_id')]), ColumnContext(column_name='customer_id', column_description='Foreign key reference to customers table', data_type='INT64', nullable=True, examples=['1', '2', '3', '4', '5'], key_type='foreign', references=[ReferenceContext(table_name='customers', column_name='customer_id')])] joins=[JoinContext(table_name='order_items', column_names=['order_id']), JoinContext(table_name='customers', column_names=['customer_id'])]"
       ],
-      "generated_sql": "SELECT \n  o.order_id,\n  o.order_date,\n  o.total_amount\nFROM \n  demo_ecommerce.orders o\nJOIN \n  demo_ecommerce.customers c ON o.customer_id = c.customer_id\nWHERE \n  c.customer_name = 'Alice Johnson';",
+      "generated_sql": "SELECT \n    orders.order_id,\n    orders.order_date,\n    orders.total_amount\nFROM \n    demo_ecommerce.orders\nJOIN \n    demo_ecommerce.customers ON orders.customer_id = customers.customer_id\nWHERE \n    customers.customer_name = 'Alice Johnson';",
       "sql_parse": null,
       "structural": {
         "exact_match": false,
@@ -232,7 +232,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 1.0,
-        "schema_match": true
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 489,
@@ -255,15 +256,15 @@
           ],
           "columns": [
             "total_amount",
-            "order_date",
-            "customer_name",
             "customer_id",
+            "customer_name",
+            "order_date",
             "order_id"
           ]
         },
         "executable": true
       },
-      "latency_ms": 2044.2370420205407
+      "latency_ms": 1537.8336659632623
     },
     "full_schema": {
       "generated_sql": "SELECT \n  o.order_id,\n  o.order_date,\n  o.total_amount\nFROM \n  demo_ecommerce.orders o\nJOIN \n  demo_ecommerce.customers c ON o.customer_id = c.customer_id\nWHERE \n  c.customer_name = 'Alice Johnson';",
@@ -285,7 +286,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 1.0,
-        "schema_match": true
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -296,14 +298,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 1258.82416596869
+      "latency_ms": 991.0001670359634
     },
-    "context_precision": 0.6,
+    "context_precision": 0.4666666666666667,
     "context_recall": 1.0,
     "object_recall": 1.0
   },
   {
-    "question_id": "q004",
+    "question_id": "6dd10f57e25e700c1b882488decd2b0aa3500a3cffaaa1274fa727469454959f",
     "archetype": "implicit_join",
     "nl_question": "What products did customer Bob Smith order?",
     "ground_truth_sql": "SELECT DISTINCT p.product_name\nFROM `demo_ecommerce.customers` c\nJOIN `demo_ecommerce.orders` o ON c.customer_id = o.customer_id\nJOIN `demo_ecommerce.order_items` oi ON o.order_id = oi.order_id\nJOIN `demo_ecommerce.products` p ON oi.product_id = p.product_id\nWHERE c.customer_name = 'Bob Smith'",
@@ -333,7 +335,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 1.0,
-        "schema_match": true
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 452,
@@ -351,37 +354,35 @@
         "hallucinated_columns": [],
         "used_objects": {
           "tables": [
-            "demo_ecommerce.products",
             "demo_ecommerce.customers",
             "demo_ecommerce.orders",
-            "demo_ecommerce.order_items"
+            "demo_ecommerce.order_items",
+            "demo_ecommerce.products"
           ],
           "columns": [
-            "customer_name",
             "product_name",
             "customer_id",
             "product_id",
+            "customer_name",
             "order_id"
           ]
         },
         "executable": true
       },
-      "latency_ms": 1789.3368329969235
+      "latency_ms": 2128.0508339987136
     },
     "full_schema": {
-      "generated_sql": "SELECT DISTINCT p.product_id, p.product_name, p.category\nFROM demo_ecommerce.customers c\nJOIN demo_ecommerce.orders o ON c.customer_id = o.customer_id\nJOIN demo_ecommerce.order_items oi ON o.order_id = oi.order_id\nJOIN demo_ecommerce.products p ON oi.product_id = p.product_id\nWHERE c.customer_name = 'Bob Smith';",
+      "generated_sql": "SELECT DISTINCT p.product_id, p.product_name\nFROM demo_ecommerce.orders o\nJOIN demo_ecommerce.customers c ON o.customer_id = c.customer_id\nJOIN demo_ecommerce.order_items oi ON o.order_id = oi.order_id\nJOIN demo_ecommerce.products p ON oi.product_id = p.product_id\nWHERE c.customer_name = 'Bob Smith';",
       "sql_parse": null,
       "structural": {
         "exact_match": false,
         "table_match": true,
-        "column_match": false,
-        "structural_match": false,
+        "column_match": true,
+        "structural_match": true,
         "missing_tables": [],
         "extra_tables": [],
         "missing_columns": [],
-        "extra_columns": [
-          "category"
-        ]
+        "extra_columns": []
       },
       "execution": {
         "execution_match": false,
@@ -390,7 +391,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 0.0,
-        "schema_match": false
+        "schema_match": false,
+        "value_match": false
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -401,14 +403,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 1764.3697499879636
+      "latency_ms": 1476.006500015501
     },
-    "context_precision": 0.6666666666666666,
-    "context_recall": 0.9230769230769231,
-    "object_recall": 0.9230769230769231
+    "context_precision": 0.4444444444444444,
+    "context_recall": 0.8888888888888888,
+    "object_recall": 0.8888888888888888
   },
   {
-    "question_id": "q005",
+    "question_id": "18f961c2c5e16a9d14a075a2c382c1a3f89c2ac231bbe9aea3333056493044c5",
     "archetype": "implicit_join",
     "nl_question": "What is the total revenue by product category?",
     "ground_truth_sql": "SELECT p.category, SUM(oi.quantity * oi.price) as total_revenue\nFROM `demo_ecommerce.products` p\nJOIN `demo_ecommerce.order_items` oi ON p.product_id = oi.product_id\nGROUP BY p.category\nORDER BY total_revenue DESC",
@@ -438,7 +440,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 1.0,
-        "schema_match": true
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 455,
@@ -462,16 +465,16 @@
             "demo_ecommerce.order_items"
           ],
           "columns": [
+            "quantity",
             "price",
-            "category",
-            "product_id",
             "total_revenue",
-            "quantity"
+            "product_id",
+            "category"
           ]
         },
         "executable": true
       },
-      "latency_ms": 2356.9078749860637
+      "latency_ms": 1678.3305419958197
     },
     "full_schema": {
       "generated_sql": "SELECT \n  p.category,\n  SUM(oi.quantity * oi.price) AS total_revenue\nFROM \n  demo_ecommerce.order_items oi\nJOIN \n  demo_ecommerce.products p ON oi.product_id = p.product_id\nGROUP BY \n  p.category\nORDER BY \n  total_revenue DESC;",
@@ -493,7 +496,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 1.0,
-        "schema_match": true
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -504,14 +508,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 1254.2893329518847
+      "latency_ms": 973.7115830066614
     },
-    "context_precision": 0.5,
-    "context_recall": 1.0,
-    "object_recall": 1.0
+    "context_precision": 0.375,
+    "context_recall": 0.8571428571428571,
+    "object_recall": 0.8571428571428571
   },
   {
-    "question_id": "q006",
+    "question_id": "85a12e766c54ed27fcb980f9f61d6694d128170ca61ed5f10e633f1670875f13",
     "archetype": "ambiguous_column",
     "nl_question": "What is the average price of products in our catalog?",
     "ground_truth_sql": "SELECT AVG(price) as avg_price\nFROM `demo_ecommerce.products`",
@@ -535,13 +539,14 @@
         "extra_columns": []
       },
       "execution": {
-        "execution_match": false,
+        "execution_match": true,
         "generated_rows": 1,
         "gold_rows": 1,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 0.0,
-        "schema_match": false
+        "row_match_pct": 1.0,
+        "schema_match": false,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 455,
@@ -567,7 +572,7 @@
         },
         "executable": true
       },
-      "latency_ms": 944.1056249779649
+      "latency_ms": 1538.2533749798313
     },
     "full_schema": {
       "generated_sql": "SELECT AVG(price) AS average_product_price\nFROM demo_ecommerce.products;",
@@ -583,13 +588,14 @@
         "extra_columns": []
       },
       "execution": {
-        "execution_match": false,
+        "execution_match": true,
         "generated_rows": 1,
         "gold_rows": 1,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 0.0,
-        "schema_match": false
+        "row_match_pct": 1.0,
+        "schema_match": false,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -600,14 +606,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 665.1118329609744
+      "latency_ms": 660.1890840101987
     },
-    "context_precision": 0.1875,
+    "context_precision": 0.125,
     "context_recall": 1.0,
     "object_recall": 1.0
   },
   {
-    "question_id": "q007",
+    "question_id": "3ecface961d6f9ec001df96727296389cbaf9df153acfb3e6724bc477cd3e1a6",
     "archetype": "implicit_join",
     "nl_question": "How many orders has each customer placed?",
     "ground_truth_sql": "SELECT c.customer_id, c.customer_name, COUNT(o.order_id) as order_count\nFROM `demo_ecommerce.customers` c\nLEFT JOIN `demo_ecommerce.orders` o ON c.customer_id = o.customer_id\nGROUP BY c.customer_id, c.customer_name\nORDER BY order_count DESC",
@@ -637,8 +643,9 @@
         "gold_rows": 25,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 1.0,
-        "schema_match": true
+        "row_match_pct": 0.08,
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 485,
@@ -661,13 +668,13 @@
           ],
           "columns": [
             "customer_id",
-            "order_id",
-            "customer_name"
+            "customer_name",
+            "order_id"
           ]
         },
         "executable": true
       },
-      "latency_ms": 1577.304209000431
+      "latency_ms": 1649.6051250142045
     },
     "full_schema": {
       "generated_sql": "SELECT \n  c.customer_id,\n  c.customer_name,\n  COUNT(o.order_id) AS order_count\nFROM \n  demo_ecommerce.customers c\nLEFT JOIN \n  demo_ecommerce.orders o ON c.customer_id = o.customer_id\nGROUP BY \n  c.customer_id, c.customer_name\nORDER BY \n  c.customer_id;",
@@ -690,8 +697,9 @@
         "gold_rows": 25,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 1.0,
-        "schema_match": true
+        "row_match_pct": 0.08,
+        "schema_match": true,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -702,14 +710,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 1477.0725420094095
+      "latency_ms": 1363.879500015173
     },
-    "context_precision": 0.5,
-    "context_recall": 1.0,
-    "object_recall": 1.0
+    "context_precision": 0.35714285714285715,
+    "context_recall": 0.8333333333333334,
+    "object_recall": 0.8333333333333334
   },
   {
-    "question_id": "q008",
+    "question_id": "5e9b0e862ef8dd4ff07623c62cb01822680abab3552096e27e698e469b0b6e14",
     "archetype": "simple_lookup",
     "nl_question": "How many orders were placed in February 2024?",
     "ground_truth_sql": "SELECT COUNT(*) as order_count\nFROM `demo_ecommerce.orders`\nWHERE order_date >= '2024-02-01' AND order_date < '2024-03-01'",
@@ -733,13 +741,14 @@
         "extra_columns": []
       },
       "execution": {
-        "execution_match": false,
+        "execution_match": true,
         "generated_rows": 1,
         "gold_rows": 1,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 0.0,
-        "schema_match": false
+        "row_match_pct": 1.0,
+        "schema_match": false,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 561,
@@ -765,7 +774,7 @@
         },
         "executable": true
       },
-      "latency_ms": 2032.3571659973823
+      "latency_ms": 1437.3610410257243
     },
     "full_schema": {
       "generated_sql": "SELECT COUNT(*) AS number_of_orders\nFROM demo_ecommerce.orders\nWHERE EXTRACT(YEAR FROM order_date) = 2024\n  AND EXTRACT(MONTH FROM order_date) = 2;",
@@ -781,13 +790,14 @@
         "extra_columns": []
       },
       "execution": {
-        "execution_match": false,
+        "execution_match": true,
         "generated_rows": 1,
         "gold_rows": 1,
         "generated_error": null,
         "gold_error": null,
-        "row_match_pct": 0.0,
-        "schema_match": false
+        "row_match_pct": 1.0,
+        "schema_match": false,
+        "value_match": true
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -798,14 +808,14 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 880.9462920180522
+      "latency_ms": 1041.8145830044523
     },
-    "context_precision": 0.1875,
+    "context_precision": 0.125,
     "context_recall": 1.0,
     "object_recall": 1.0
   },
   {
-    "question_id": "q009",
+    "question_id": "b42418671ce7554e44e4f17dbcf1f7e40f3e5e8666a680c7ed24be587be4bfc7",
     "archetype": "implicit_join",
     "nl_question": "What are the top 3 most frequently ordered products?",
     "ground_truth_sql": "SELECT p.product_id, p.product_name, COUNT(oi.order_item_id) as times_ordered\nFROM `demo_ecommerce.products` p\nJOIN `demo_ecommerce.order_items` oi ON p.product_id = oi.product_id\nGROUP BY p.product_id, p.product_name\nORDER BY times_ordered DESC\nLIMIT 3",
@@ -815,7 +825,7 @@
         "table_name='orders' table_description='\"Orders placed by customers, links to customers via customer_id foreign key\"' database_name='ai-field-alex-g' schema_name='demo_ecommerce' columns=[ColumnContext(column_name='total_amount', column_description='Total order amount in USD', data_type='NUMERIC', nullable=True, examples=['649.980000000', '1029.980000000', '79.990000000', '529.980000000', '299.990000000'], key_type=None, references=[]), ColumnContext(column_name='order_id', column_description='Unique identifier for the order', data_type='INT64', nullable=True, examples=['1006', '1001', '1002', '1027', '1003'], key_type='primary', references=[ReferenceContext(table_name='order_items', column_name='order_id')])] joins=[JoinContext(table_name='order_items', column_names=['order_id']), JoinContext(table_name='customers', column_names=['customer_id'])]",
         "table_name='products' table_description='\"Product catalog containing all available products\"' database_name='ai-field-alex-g' schema_name='demo_ecommerce' columns=[ColumnContext(column_name='category', column_description='Product category (e.g., Electronics, Clothing)', data_type='STRING', nullable=True, examples=['Clothing', 'Electronics', 'Home & Office', 'Sports'], key_type=None, references=[]), ColumnContext(column_name='product_name', column_description='Name of the product', data_type='STRING', nullable=True, examples=['Backpack', 'T-Shirt', 'Sneakers', 'Jacket', 'Jeans'], key_type=None, references=[]), ColumnContext(column_name='price', column_description='Product price in USD', data_type='NUMERIC', nullable=True, examples=['49.990000000', '19.990000000', '89.990000000', '129.990000000', '59.990000000'], key_type=None, references=[]), ColumnContext(column_name='product_id', column_description='Unique identifier for the product', data_type='INT64', nullable=True, examples=['118', '114', '116', '117', '115'], key_type='primary', references=[ReferenceContext(table_name='order_items', column_name='product_id')])] joins=[JoinContext(table_name='order_items', column_names=['product_id'])]"
       ],
-      "generated_sql": "SELECT \n  p.product_name,\n  COUNT(oi.order_item_id) AS order_count\nFROM \n  demo_ecommerce.order_items oi\nJOIN \n  demo_ecommerce.products p ON oi.product_id = p.product_id\nGROUP BY \n  p.product_name\nORDER BY \n  order_count DESC\nLIMIT 3",
+      "generated_sql": "SELECT \n  p.product_name,\n  COUNT(oi.product_id) AS order_count\nFROM \n  demo_ecommerce.order_items oi\nJOIN \n  demo_ecommerce.products p ON oi.product_id = p.product_id\nGROUP BY \n  p.product_name\nORDER BY \n  order_count DESC\nLIMIT 3;",
       "sql_parse": null,
       "structural": {
         "exact_match": false,
@@ -825,7 +835,8 @@
         "missing_tables": [],
         "extra_tables": [],
         "missing_columns": [
-          "times_ordered"
+          "times_ordered",
+          "order_item_id"
         ],
         "extra_columns": [
           "order_count"
@@ -838,7 +849,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 0.0,
-        "schema_match": false
+        "schema_match": false,
+        "value_match": false
       },
       "tokens": {
         "mcp_schema_tokens": 451,
@@ -851,7 +863,7 @@
       },
       "faithfulness": {
         "table_faithfulness": 1.0,
-        "column_faithfulness": 0.75,
+        "column_faithfulness": 0.6666666666666666,
         "hallucinated_tables": [],
         "hallucinated_columns": [
           "order_count"
@@ -862,15 +874,14 @@
             "demo_ecommerce.order_items"
           ],
           "columns": [
-            "order_count",
-            "order_item_id",
+            "product_name",
             "product_id",
-            "product_name"
+            "order_count"
           ]
         },
         "executable": true
       },
-      "latency_ms": 1436.19812495308
+      "latency_ms": 1680.4788329754956
     },
     "full_schema": {
       "generated_sql": "SELECT \n  p.product_name,\n  COUNT(oi.product_id) AS order_count\nFROM \n  demo_ecommerce.order_items oi\nJOIN \n  demo_ecommerce.products p ON oi.product_id = p.product_id\nGROUP BY \n  p.product_name\nORDER BY \n  order_count DESC\nLIMIT 3;",
@@ -897,7 +908,8 @@
         "generated_error": null,
         "gold_error": null,
         "row_match_pct": 0.0,
-        "schema_match": false
+        "schema_match": false,
+        "value_match": false
       },
       "tokens": {
         "mcp_schema_tokens": 0,
@@ -908,10 +920,10 @@
         "token_reduction_absolute": 1559,
         "token_reduction_pct": 1.0
       },
-      "latency_ms": 1181.400500005111
+      "latency_ms": 1466.1494999891147
     },
-    "context_precision": 0.5,
-    "context_recall": 1.0,
-    "object_recall": 1.0
+    "context_precision": 0.35714285714285715,
+    "context_recall": 0.8333333333333334,
+    "object_recall": 0.8333333333333334
   }
 ]
