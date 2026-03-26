@@ -31,7 +31,10 @@ class EvalSample:
             "execution": None,           # dict from score_execution_accuracy
             "tokens": None,              # dict from ContextTokenMeasurement
             "faithfulness": None,        # dict from score_schema_faithfulness
-            "latency_ms": None,          # float
+            "latency_ms": None,          # float - total time
+            "mcp_latency_ms": None,      # float - MCP tool call time
+            "llm_latency_ms": None,      # float - LLM inference time
+            "llm": None,                 # str - model used
         },
         "full_schema": {
             "generated_sql": None,
@@ -39,7 +42,9 @@ class EvalSample:
             "structural": None,
             "execution": None,
             "tokens": None,
-            "latency_ms": None,
+            "latency_ms": None,          # float - total time
+            "llm_latency_ms": None,      # float - LLM inference time
+            "llm": None,                 # str - model used
         },
     })
 

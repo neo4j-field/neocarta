@@ -211,5 +211,5 @@ test_dataplex.ipynb
 bigquery_query_logs.json
 test_query_logs.ipynb
 library_test.ipynb
-eval/results/eval_results.json
+eval/results/
 eval/datasets/schemas/

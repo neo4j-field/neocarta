@@ -31,6 +31,21 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "mcp_server" / "src"))
 from models import TableContext
 
+system_prompt = """
+You are a SQL expert. Given a natural language question and database schema context, generate a BigQuery SQL query.
+
+Rules:
+- Return ONLY the SQL query, no explanations
+- Use fully qualified table names (schema.table)
+- Ensure the query is syntactically correct for BigQuery"""
+
+user_prompt = """
+Database Schema:
+{schema_context}
+
+Question: {question}
+
+Generate the SQL query:"""
 
 class EvalRunner:
     """
@@ -46,7 +61,7 @@ class EvalRunner:
         full_schema_retriever: BigQuerySchemaRetriever,
         bq_client: bigquery.Client,
         llm_client: AsyncOpenAI,
-        llm_model: str = "gpt-4o",
+        llm: str = "gpt-4o",
         dialect: str = "bigquery",
     ):
         """
@@ -62,7 +77,7 @@ class EvalRunner:
             BigQuery client for execution scoring
         llm_client : AsyncOpenAI
             OpenAI client for SQL generation
-        llm_model : str
+        llm : str
             LLM model to use
         dialect : str
             SQL dialect
@@ -71,10 +86,10 @@ class EvalRunner:
         self.full_schema_retriever = full_schema_retriever
         self.bq_client = bq_client
         self.llm_client = llm_client
-        self.llm_model = llm_model
+        self.llm = llm
         self.dialect = dialect
 
-        self.token_measurer = ContextTokenMeasurement(model=llm_model)
+        self.token_measurer = ContextTokenMeasurement(model=llm)
 
         # Full schema as string (for token counting and LLM context)
         self.full_schema_str = self.full_schema_retriever.as_string()
@@ -105,10 +120,12 @@ class EvalRunner:
         t0 = time.monotonic()
 
         # Step 1: Agent retrieves relevant schema using MCP tool
+        t_mcp_start = time.monotonic()
         result = await mcp_session.call_tool(
             "get_metadata_schema_by_semantic_similarity",
             arguments={"query": sample.nl_question}
         )
+        mcp_latency_ms = (time.monotonic() - t_mcp_start) * 1000
 
         # Parse retrieved contexts
         retrieved_contexts = []
@@ -125,28 +142,16 @@ class EvalRunner:
         context_str = "\n\n".join(context_strings)
 
         # Step 3: LLM generates SQL
-        system_prompt = """You are a SQL expert. Given a natural language question and database schema context, generate a BigQuery SQL query.
-
-Rules:
-- Return ONLY the SQL query, no explanations
-- Use fully qualified table names (schema.table)
-- Ensure the query is syntactically correct for BigQuery"""
-
-        user_prompt = f"""Database Schema:
-{context_str}
-
-Question: {sample.nl_question}
-
-Generate the SQL query:"""
-
+        t_llm_start = time.monotonic()
         response = await self.llm_client.chat.completions.create(
-            model=self.llm_model,
+            model=self.llm,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
+                {"role": "user", "content": user_prompt.format(schema_context=context_str, question=sample.nl_question)},
             ],
             temperature=0.0,  # Deterministic
         )
+        llm_latency_ms = (time.monotonic() - t_llm_start) * 1000
 
         generated_sql = response.choices[0].message.content.strip()
 
@@ -162,6 +167,9 @@ Generate the SQL query:"""
             "retrieved_contexts": retrieved_contexts,
             "generated_sql": generated_sql,
             "latency_ms": latency_ms,
+            "mcp_latency_ms": mcp_latency_ms,
+            "llm_latency_ms": llm_latency_ms,
+            "llm": self.llm,
             "context_str": context_str,
             "context_strings": context_strings,
         }
@@ -192,28 +200,16 @@ Generate the SQL query:"""
         context_str = "\n\n".join(context_strings)
 
         # LLM generates SQL with full schema
-        system_prompt = """You are a SQL expert. Given a natural language question and database schema context, generate a BigQuery SQL query.
-
-Rules:
-- Return ONLY the SQL query, no explanations
-- Use fully qualified table names (schema.table)
-- Ensure the query is syntactically correct for BigQuery"""
-
-        user_prompt = f"""Database Schema:
-{context_str}
-
-Question: {sample.nl_question}
-
-Generate the SQL query:"""
-
+        t_llm_start = time.monotonic()
         response = await self.llm_client.chat.completions.create(
-            model=self.llm_model,
+            model=self.llm,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
+                {"role": "user", "content": user_prompt.format(schema_context=context_str, question=sample.nl_question)},
             ],
             temperature=0.0,
         )
+        llm_latency_ms = (time.monotonic() - t_llm_start) * 1000
 
         generated_sql = response.choices[0].message.content.strip()
 
@@ -228,6 +224,8 @@ Generate the SQL query:"""
         return {
             "generated_sql": generated_sql,
             "latency_ms": latency_ms,
+            "llm_latency_ms": llm_latency_ms,
+            "llm": self.llm,
             "context_str": context_str,
             "context_strings": context_strings,
         }
@@ -271,8 +269,10 @@ Generate the SQL query:"""
                     print("  Scoring results...")
                     self._score_sample(sample, sem_result, fs_result)
 
-                    print(f"  ✓ Semantic SQL generated in {sem_result['latency_ms']:.0f}ms")
-                    print(f"  ✓ Full schema SQL generated in {fs_result['latency_ms']:.0f}ms")
+                    print(f"  ✓ Semantic SQL generated in {sem_result['latency_ms']:.0f}ms "
+                          f"(MCP: {sem_result['mcp_latency_ms']:.0f}ms, LLM: {sem_result['llm_latency_ms']:.0f}ms)")
+                    print(f"  ✓ Full schema SQL generated in {fs_result['latency_ms']:.0f}ms "
+                          f"(LLM: {fs_result['llm_latency_ms']:.0f}ms)")
 
         return samples
 
@@ -289,6 +289,9 @@ Generate the SQL query:"""
         sem["retrieved_contexts"] = sem_result["retrieved_contexts"]
         sem["generated_sql"] = sem_result["generated_sql"]
         sem["latency_ms"] = sem_result["latency_ms"]
+        sem["mcp_latency_ms"] = sem_result["mcp_latency_ms"]
+        sem["llm_latency_ms"] = sem_result["llm_latency_ms"]
+        sem["llm"] = sem_result["llm"]
 
         # Token metrics
         sem["tokens"] = self.token_measurer.measure(
@@ -330,6 +333,8 @@ Generate the SQL query:"""
         fs = sample.results_by_condition["full_schema"]
         fs["generated_sql"] = fs_result["generated_sql"]
         fs["latency_ms"] = fs_result["latency_ms"]
+        fs["llm_latency_ms"] = fs_result["llm_latency_ms"]
+        fs["llm"] = fs_result["llm"]
 
         fs["tokens"] = self.token_measurer.measure(
             mcp_chunks=[],

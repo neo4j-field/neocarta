@@ -31,7 +31,7 @@ YIELD node as col, score
 WHERE score > 0.5
 
 // Get the columns for each table
-MATCH (col:Column)<-[:HAS_COLUMN]-(table:Table)
+MATCH (col)<-[:HAS_COLUMN]-(table:Table)
 
 // Find all references for this column (both directions)
 OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Table)
@@ -56,17 +56,10 @@ WITH
     column_description: col.description,
     data_type: col.type,
     examples: exampleValues,
-    key_type: CASE 
-      WHEN col.is_primary_key THEN "primary"
-      WHEN col.is_foreign_key THEN "foreign"
-      ELSE null
-    END,
     nullable: col.nullable,
     references: [ref IN refs WHERE ref.table_name IS NOT NULL | ref]
   }) AS columns
 
-// Get all joins for this table by finding all foreign key relationships
-OPTIONAL MATCH (table)-[:HAS_COLUMN]->(fkCol:Column)-[:REFERENCES]-(otherCol:Column)<-[:HAS_COLUMN]-(otherTable:Table)
 
 // Get Schema and Database names for Tables
 MATCH (table)<-[:HAS_TABLE]-(schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
@@ -76,28 +69,20 @@ WITH
   table,
   columns,
   db.name AS database_name,
-  schema.name AS schema_name,
-  otherTable.name AS join_table_name,
-  collect(DISTINCT otherCol.name) AS join_column_names
-WHERE join_table_name IS NOT NULL
+  schema.name AS schema_name
 
 WITH
   table,
   columns,
   database_name,
-  schema_name,
-  collect({
-    table_name: join_table_name,
-    column_names: join_column_names
-  }) AS joins
+  schema_name
 
 RETURN {
   table_name: table.name,
   table_description: table.description,
   database_name: database_name,
   schema_name: schema_name,
-  columns: columns,
-  joins: joins
+  columns: columns
 } AS result
 ORDER BY table.name
 """

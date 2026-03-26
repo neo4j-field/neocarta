@@ -128,7 +128,7 @@ async def persist_graph_schema_from_mcp(
 
             print(f"✓ Persisted graph schema to {output_path}")
             print(f"  Tables: {len(table_contexts)}")
-            print(f"  Columns: {sum(len(t['columns']) for t in table_contexts)}")
+            print(f"  Columns: {sum(len(t.columns) for t in table_contexts)}")
 
 
 if __name__ == "__main__":

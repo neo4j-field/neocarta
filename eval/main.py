@@ -73,7 +73,7 @@ async def main():
         full_schema_retriever=full_schema_retriever,
         bq_client=bq_client,
         llm_client=llm_client,
-        llm_model="gpt-4o",
+        llm="gpt-4o",
         dialect="bigquery",
     )
 
