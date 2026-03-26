@@ -2,6 +2,8 @@
 
 import asyncio
 import os
+import random
+import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 from google.cloud import bigquery
@@ -9,6 +11,7 @@ from openai import AsyncOpenAI
 
 from eval import (
     get_ecommerce_eval_samples,
+    get_github_eval_samples,
     EvalRunner,
     build_delta_report,
     print_report,
@@ -19,6 +22,29 @@ from eval import (
 
 async def main():
     """Run semantic layer evaluation."""
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Run semantic layer evaluation")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="ecommerce",
+        choices=["ecommerce", "github"],
+        help="Dataset to evaluate (default: ecommerce)",
+    )
+    parser.add_argument(
+        "--sample-size",
+        type=int,
+        default=None,
+        help="Number of samples to randomly select (default: all)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for sampling (default: 42)",
+    )
+    args = parser.parse_args()
+
     # Load environment
     load_dotenv()
 
@@ -29,7 +55,16 @@ async def main():
     # Configuration
     PROJECT_ROOT = Path(__file__).parent.parent
     SEMANTIC_MCP_SERVER = str(PROJECT_ROOT / "mcp_server" / "src" / "server.py")
-    FULL_SCHEMA_PATH = PROJECT_ROOT / "eval" / "datasets" / "schemas" / "demo_ecommerce_schema.json"
+
+    # Dataset-specific schema path
+    if args.dataset == "ecommerce":
+        schema_filename = "demo_ecommerce_schema.json"
+    elif args.dataset == "github":
+        schema_filename = "github_schema.json"
+    else:
+        raise ValueError(f"Unknown dataset: {args.dataset}")
+
+    FULL_SCHEMA_PATH = PROJECT_ROOT / "eval" / "datasets" / "schemas" / schema_filename
 
     # Persist schema if it doesn't exist
     if not FULL_SCHEMA_PATH.exists():
@@ -51,10 +86,24 @@ async def main():
     print(f"   Tables: {full_schema_retriever.get_num_tables()}")
     print(f"   Columns: {full_schema_retriever.get_num_columns()}")
 
-    # Load evaluation samples
-    print("\n📋 Loading evaluation samples...")
-    samples = get_ecommerce_eval_samples()
-    print(f"   Total samples: {len(samples)}")
+    # Load evaluation samples based on dataset
+    print(f"\n📋 Loading evaluation samples for dataset: {args.dataset}")
+    if args.dataset == "ecommerce":
+        samples = get_ecommerce_eval_samples()
+    elif args.dataset == "github":
+        samples = get_github_eval_samples()
+    else:
+        raise ValueError(f"Unknown dataset: {args.dataset}")
+
+    print(f"   Total samples available: {len(samples)}")
+
+    # Apply sampling if requested
+    if args.sample_size is not None and args.sample_size < len(samples):
+        random.seed(args.seed)
+        samples = random.sample(samples, args.sample_size)
+        print(f"   Randomly sampled: {len(samples)} (seed={args.seed})")
+
+    print(f"   Samples to evaluate: {len(samples)}")
 
     # Count by archetype
     from collections import Counter
@@ -96,8 +145,13 @@ async def main():
     output_dir = PROJECT_ROOT / "eval" / "results"
     output_dir.mkdir(exist_ok=True)
 
-    results_path = output_dir / "eval_results.json"
+    # Include dataset and sample size in filename
+    suffix = f"_{args.dataset}"
+    if args.sample_size is not None:
+        suffix += f"_n{args.sample_size}"
+    results_path = output_dir / f"eval_results{suffix}.json"
     export_results_to_json(results, str(results_path))
+    print(f"\n💾 Results exported to {results_path}")
 
     # Summary
     summary = report["summary"]

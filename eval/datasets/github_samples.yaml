@@ -1,0 +1,496 @@
+# Evaluation samples for the GitHub dataset
+# Each sample tests the semantic layer's ability to retrieve relevant schema
+# and generate correct SQL queries
+#
+# Notes:
+# - question_id: auto-generated from hash of nl_question + ground_truth_sql
+# - required_objects: auto-extracted from ground_truth_sql using sqlglot
+#
+# Archetype mapping from categories:
+#   - aggregation/filter (single table) -> simple_lookup
+#   - join/multi_join -> implicit_join
+#   - nested_struct -> simple_lookup (with complex column access)
+#   - business_language -> business_term
+
+samples:
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the top 10 programming languages by total bytes of code?
+  ground_truth_sql: SELECT language, SUM(bytes) AS total_bytes FROM `github.languages` GROUP BY language ORDER BY total_bytes
+    DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many distinct programming languages are in the dataset?
+  ground_truth_sql: SELECT COUNT(DISTINCT language) AS language_count FROM `github.languages`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the top 10 most-watched repositories?
+  ground_truth_sql: SELECT repo_name, watch_count FROM `github.sample_repo` ORDER BY watch_count DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many repositories in the sample are forks?
+  ground_truth_sql: SELECT COUNT(*) AS fork_count FROM `github.sample_repo` WHERE fork = TRUE
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many commits are in the sample?
+  ground_truth_sql: SELECT COUNT(*) AS commit_count FROM `github.sample_commits`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the top 10 repositories by number of commits in the sample?
+  ground_truth_sql: SELECT repo_name, COUNT(*) AS commit_count FROM `github.sample_commits` GROUP BY repo_name ORDER BY commit_count
+    DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many distinct repositories are in the sample_repo table?
+  ground_truth_sql: SELECT COUNT(DISTINCT repo_name) AS repo_count FROM `github.sample_repo`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the most common open source license types?
+  ground_truth_sql: SELECT license.name, COUNT(*) AS repo_count FROM `github.licenses` GROUP BY license.name ORDER BY repo_count
+    DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many repos have a wiki enabled?
+  ground_truth_sql: SELECT COUNT(*) AS wiki_count FROM `github.sample_repo` WHERE has_wiki = TRUE
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What is the average number of watchers per repository?
+  ground_truth_sql: SELECT AVG(watch_count) AS avg_watch_count FROM `github.sample_repo`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the most common file names in the sample files?
+  ground_truth_sql: SELECT name, COUNT(*) AS count FROM `github.sample_files` GROUP BY name ORDER BY count DESC LIMIT 20
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many distinct repositories have commits in the sample?
+  ground_truth_sql: SELECT COUNT(DISTINCT repo_name) AS repo_count FROM `github.sample_commits`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find commits where the message contains 'bug fix'
+  ground_truth_sql: SELECT commit, repo_name, SUBSTR(message, 1, 100) AS message_preview FROM `github.sample_commits` WHERE
+    LOWER(message) LIKE '%bug fix%' LIMIT 50
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Which repositories use Python?
+  ground_truth_sql: SELECT DISTINCT repo_name FROM `github.languages` WHERE language = 'Python' LIMIT 100
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many repositories have more than 1000 watchers?
+  ground_truth_sql: SELECT COUNT(*) AS repo_count FROM `github.sample_repo` WHERE watch_count > 1000
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find all repositories with an MIT license
+  ground_truth_sql: SELECT repo_name FROM `github.licenses` WHERE license.key = 'mit' LIMIT 100
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find commits where the subject line starts with 'Merge'
+  ground_truth_sql: SELECT commit, repo_name, subject FROM `github.sample_commits` WHERE subject LIKE 'Merge%' LIMIT 50
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What is the total bytes of JavaScript code across all repositories?
+  ground_truth_sql: SELECT SUM(bytes) AS total_bytes FROM `github.languages` WHERE language = 'JavaScript'
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Which repositories were created after January 1 2015?
+  ground_truth_sql: SELECT repo_name, created_at FROM `github.sample_repo` WHERE created_at > '2015-01-01' ORDER BY created_at
+    LIMIT 100
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: List all distinct programming languages in alphabetical order
+  ground_truth_sql: SELECT DISTINCT language FROM `github.languages` ORDER BY language
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find repositories with an Apache 2.0 license
+  ground_truth_sql: SELECT repo_name FROM `github.licenses` WHERE license.key = 'apache-2.0' LIMIT 100
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find commits where the message mentions 'feature'
+  ground_truth_sql: SELECT commit, repo_name, SUBSTR(message, 1, 100) AS message_preview FROM `github.sample_commits` WHERE
+    LOWER(message) LIKE '%feature%' LIMIT 50
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What is the total bytes of Python code across all repositories?
+  ground_truth_sql: SELECT SUM(bytes) AS total_bytes FROM `github.languages` WHERE language = 'Python'
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find repositories that are not forks
+  ground_truth_sql: SELECT repo_name FROM `github.sample_repo` WHERE fork = FALSE LIMIT 100
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many repos appear in the languages table?
+  ground_truth_sql: SELECT COUNT(DISTINCT repo_name) AS repo_count FROM `github.languages`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find commits where the message contains 'refactor'
+  ground_truth_sql: SELECT commit, repo_name, SUBSTR(message, 1, 100) AS message_preview FROM `github.sample_commits` WHERE
+    LOWER(message) LIKE '%refactor%' LIMIT 50
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the top 5 most common file extensions in the sample?
+  ground_truth_sql: SELECT REGEXP_EXTRACT(name, r'\.([^.]+)$') AS extension, COUNT(*) AS count FROM `github.sample_files`
+    WHERE name LIKE '%.%' GROUP BY extension ORDER BY count DESC LIMIT 5
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many repos have an Apache license?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.licenses` WHERE license.key = 'apache-2.0'
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What is the maximum watch count among all repositories?
+  ground_truth_sql: SELECT MAX(watch_count) AS max_watch_count FROM `github.sample_repo`
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Which programming language has the most bytes of code overall?
+  ground_truth_sql: SELECT language, SUM(bytes) AS total_bytes FROM `github.languages` GROUP BY language ORDER BY total_bytes
+    DESC LIMIT 1
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: How many repositories have a GPL license?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.licenses` WHERE LOWER(license.key) LIKE '%gpl%'
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: What are the top 5 programming languages by number of repositories using them?
+  ground_truth_sql: SELECT language, COUNT(DISTINCT repo_name) AS repo_count FROM `github.languages` GROUP BY language ORDER
+    BY repo_count DESC LIMIT 5
+- archetype: simple_lookup
+  difficulty: easy
+  nl_question: Find commits where the message mentions 'security'
+  ground_truth_sql: SELECT commit, repo_name, SUBSTR(message, 1, 100) AS message_preview FROM `github.sample_commits` WHERE
+    LOWER(message) LIKE '%security%' LIMIT 50
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What programming languages are used in the top 10 most-watched repositories?
+  ground_truth_sql: SELECT s.repo_name, l.language, s.watch_count FROM `github.sample_repo` s JOIN `github.languages` l ON
+    s.repo_name = l.repo_name ORDER BY s.watch_count DESC LIMIT 50
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What license does the most popular repository use?
+  ground_truth_sql: SELECT s.repo_name, l.license.name, s.watch_count FROM `github.sample_repo` s JOIN `github.licenses` l
+    ON s.repo_name = l.repo_name ORDER BY s.watch_count DESC LIMIT 1
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What is the average watch count for repositories that use Rust?
+  ground_truth_sql: SELECT AVG(s.watch_count) AS avg_watch_count FROM `github.sample_repo` s JOIN `github.languages` l ON
+    s.repo_name = l.repo_name WHERE l.language = 'Rust'
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which license type is associated with the highest average watch count?
+  ground_truth_sql: SELECT l.license.name, AVG(s.watch_count) AS avg_watch_count FROM `github.sample_repo` s JOIN `github.licenses`
+    l ON s.repo_name = l.repo_name GROUP BY l.license.name ORDER BY avg_watch_count DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which repository has the most commits in the sample?
+  ground_truth_sql: SELECT c.repo_name, COUNT(*) AS commit_count FROM `github.sample_commits` c GROUP BY c.repo_name ORDER
+    BY commit_count DESC LIMIT 1
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: For each programming language what is the average watch count of repositories using it?
+  ground_truth_sql: SELECT l.language, AVG(s.watch_count) AS avg_watch_count FROM `github.sample_repo` s JOIN `github.languages`
+    l ON s.repo_name = l.repo_name GROUP BY l.language ORDER BY avg_watch_count DESC LIMIT 20
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many MIT-licensed repositories have more than 500 watchers?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.sample_repo` s JOIN `github.licenses` l ON s.repo_name = l.repo_name
+    WHERE l.license.key = 'mit' AND s.watch_count > 500
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What is the commit count for the top 10 most-watched repositories?
+  ground_truth_sql: SELECT s.repo_name, s.watch_count, COUNT(c.commit) AS commit_count FROM `github.sample_repo` s LEFT JOIN
+    `github.sample_commits` c ON s.repo_name = c.repo_name GROUP BY s.repo_name, s.watch_count ORDER BY s.watch_count DESC
+    LIMIT 10
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which repositories with more than 1000 watchers use Go?
+  ground_truth_sql: SELECT s.repo_name, s.watch_count FROM `github.sample_repo` s JOIN `github.languages` l ON s.repo_name
+    = l.repo_name WHERE l.language = 'Go' AND s.watch_count > 1000 ORDER BY s.watch_count DESC
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many repositories use both Python and JavaScript?
+  ground_truth_sql: SELECT COUNT(DISTINCT p.repo_name) AS count FROM `github.languages` p JOIN `github.languages` j ON p.repo_name
+    = j.repo_name WHERE p.language = 'Python' AND j.language = 'JavaScript'
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What are the top 5 repos that use Python sorted by watch count?
+  ground_truth_sql: SELECT s.repo_name, s.watch_count FROM `github.sample_repo` s JOIN `github.languages` l ON s.repo_name
+    = l.repo_name WHERE l.language = 'Python' ORDER BY s.watch_count DESC LIMIT 5
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What license does the torvalds/linux repository use?
+  ground_truth_sql: SELECT license.name, license.key FROM `github.licenses` WHERE repo_name = 'torvalds/linux'
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many Apache-licensed repositories are forks?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.sample_repo` s JOIN `github.licenses` l ON s.repo_name = l.repo_name
+    WHERE l.license.key = 'apache-2.0' AND s.fork = TRUE
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which repositories have more than 100 commits and more than 1000 watchers?
+  ground_truth_sql: SELECT c.repo_name, COUNT(*) AS commit_count, MAX(s.watch_count) AS watch_count FROM `github.sample_commits`
+    c JOIN `github.sample_repo` s ON c.repo_name = s.repo_name GROUP BY c.repo_name HAVING COUNT(*) > 100 AND MAX(s.watch_count)
+    > 1000 ORDER BY watch_count DESC
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What files are in the most popular repository?
+  ground_truth_sql: SELECT sf.path, sf.name FROM `github.sample_files` sf WHERE sf.repo_name = (SELECT repo_name FROM `github.sample_repo`
+    ORDER BY watch_count DESC LIMIT 1) LIMIT 50
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many commits mention 'security' in repos with more than 500 watchers?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.sample_commits` c JOIN `github.sample_repo` s ON c.repo_name = s.repo_name
+    WHERE LOWER(c.message) LIKE '%security%' AND s.watch_count > 500
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What languages are used in MIT-licensed repositories?
+  ground_truth_sql: SELECT DISTINCT l.language FROM `github.languages` l JOIN `github.licenses` li ON l.repo_name = li.repo_name
+    WHERE li.license.key = 'mit' ORDER BY l.language
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What is the total bytes of code in non-fork repositories?
+  ground_truth_sql: SELECT SUM(l.bytes) AS total_bytes FROM `github.languages` l JOIN `github.sample_repo` s ON l.repo_name
+    = s.repo_name WHERE s.fork = FALSE
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many repos appear in both the licenses and sample_repo tables?
+  ground_truth_sql: SELECT COUNT(DISTINCT s.repo_name) AS count FROM `github.sample_repo` s INNER JOIN `github.licenses` l
+    ON s.repo_name = l.repo_name
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which programming languages appear most in MIT-licensed repos?
+  ground_truth_sql: SELECT l.language, COUNT(DISTINCT l.repo_name) AS repo_count FROM `github.languages` l JOIN `github.licenses`
+    li ON l.repo_name = li.repo_name WHERE li.license.key = 'mit' GROUP BY l.language ORDER BY repo_count DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What is the average bytes of Python code in repos with more than 100 watchers?
+  ground_truth_sql: SELECT AVG(l.bytes) AS avg_bytes FROM `github.languages` l JOIN `github.sample_repo` s ON l.repo_name
+    = s.repo_name WHERE l.language = 'Python' AND s.watch_count > 100
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many files are in the repository with the most watchers?
+  ground_truth_sql: SELECT sf.repo_name, COUNT(*) AS file_count FROM `github.sample_files` sf WHERE sf.repo_name = (SELECT
+    repo_name FROM `github.sample_repo` ORDER BY watch_count DESC LIMIT 1) GROUP BY sf.repo_name
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which repos appear in the languages table but not in the licenses table?
+  ground_truth_sql: SELECT DISTINCT l.repo_name FROM `github.languages` l LEFT JOIN `github.licenses` li ON l.repo_name =
+    li.repo_name WHERE li.repo_name IS NULL LIMIT 100
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many repos with a GPL license have more than 200 watchers?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.sample_repo` s JOIN `github.licenses` l ON s.repo_name = l.repo_name
+    WHERE LOWER(l.license.key) LIKE '%gpl%' AND s.watch_count > 200
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What are the most common file types committed to the top 5 repos by watch count?
+  ground_truth_sql: SELECT REGEXP_EXTRACT(sf.name, r'\.([^.]+)$') AS extension, COUNT(*) AS count FROM `github.sample_files`
+    sf JOIN `github.sample_repo` s ON sf.repo_name = s.repo_name WHERE s.repo_name IN (SELECT repo_name FROM `github.sample_repo`
+    ORDER BY watch_count DESC LIMIT 5) GROUP BY extension ORDER BY count DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Show the watch count and license type for the top 20 repos
+  ground_truth_sql: SELECT s.repo_name, s.watch_count, l.license.name FROM `github.sample_repo` s LEFT JOIN `github.licenses`
+    l ON s.repo_name = l.repo_name ORDER BY s.watch_count DESC LIMIT 20
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What is the most popular programming language among high-traffic repos?
+  ground_truth_sql: SELECT l.language, COUNT(DISTINCT l.repo_name) AS repo_count FROM `github.languages` l JOIN `github.sample_repo`
+    s ON l.repo_name = s.repo_name WHERE s.watch_count > 500 GROUP BY l.language ORDER BY repo_count DESC LIMIT 5
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many languages does the most-watched repo use?
+  ground_truth_sql: SELECT COUNT(DISTINCT l.language) AS language_count FROM `github.languages` l WHERE l.repo_name = (SELECT
+    repo_name FROM `github.sample_repo` ORDER BY watch_count DESC LIMIT 1)
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What is the average watch count for repos that have more than 5 programming languages?
+  ground_truth_sql: SELECT AVG(s.watch_count) AS avg_watch_count FROM `github.sample_repo` s WHERE s.repo_name IN (SELECT
+    repo_name FROM `github.languages` GROUP BY repo_name HAVING COUNT(DISTINCT language) > 5)
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which repos have both an MIT license and use TypeScript?
+  ground_truth_sql: SELECT l.repo_name FROM `github.languages` l JOIN `github.licenses` li ON l.repo_name = li.repo_name WHERE
+    l.language = 'TypeScript' AND li.license.key = 'mit'
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: How many repos with Python have a permissive license (MIT or Apache)?
+  ground_truth_sql: SELECT COUNT(DISTINCT l.repo_name) AS count FROM `github.languages` l JOIN `github.licenses` li ON l.repo_name
+    = li.repo_name WHERE l.language = 'Python' AND li.license.key IN ('mit', 'apache-2.0')
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: What percentage of repositories in the sample have a license on record?
+  ground_truth_sql: SELECT ROUND(COUNT(l.repo_name) * 100.0 / COUNT(s.repo_name), 2) AS pct_with_license FROM `github.sample_repo`
+    s LEFT JOIN `github.licenses` l ON s.repo_name = l.repo_name
+- archetype: implicit_join
+  difficulty: medium
+  nl_question: Which repos have commits in the sample but no entry in sample_repo?
+  ground_truth_sql: SELECT DISTINCT c.repo_name FROM `github.sample_commits` c LEFT JOIN `github.sample_repo` s ON c.repo_name
+    = s.repo_name WHERE s.repo_name IS NULL LIMIT 50
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: Who are the top 10 most frequent commit authors by name?
+  ground_truth_sql: SELECT author.name, COUNT(*) AS commit_count FROM `github.sample_commits` GROUP BY author.name ORDER BY
+    commit_count DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: What is the distribution of commits by year?
+  ground_truth_sql: SELECT EXTRACT(YEAR FROM author.date) AS year, COUNT(*) AS commit_count FROM `github.sample_commits` GROUP
+    BY year ORDER BY year
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: Find commits authored by Linus Torvalds
+  ground_truth_sql: SELECT commit, repo_name, subject FROM `github.sample_commits` WHERE author.name = 'Linus Torvalds' LIMIT
+    20
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: What are the most common author email domains?
+  ground_truth_sql: SELECT REGEXP_EXTRACT(author.email, r'@(.+)') AS domain, COUNT(*) AS count FROM `github.sample_commits`
+    GROUP BY domain ORDER BY count DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: How many commits were made in 2020?
+  ground_truth_sql: SELECT COUNT(*) AS commit_count FROM `github.sample_commits` WHERE EXTRACT(YEAR FROM author.date) = 2020
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: What is the license URL for Apache-licensed repos?
+  ground_truth_sql: SELECT repo_name, license.url FROM `github.licenses` WHERE license.key = 'apache-2.0' LIMIT 20
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: Who committed the most in 2019?
+  ground_truth_sql: SELECT author.name, COUNT(*) AS commit_count FROM `github.sample_commits` WHERE EXTRACT(YEAR FROM author.date)
+    = 2019 GROUP BY author.name ORDER BY commit_count DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: What is the monthly commit count distribution?
+  ground_truth_sql: SELECT FORMAT_DATE('%Y-%m', DATE(author.date)) AS month, COUNT(*) AS commit_count FROM `github.sample_commits`
+    GROUP BY month ORDER BY month
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: Find commits where the author and committer are different people
+  ground_truth_sql: SELECT commit, repo_name, author.name AS author, committer.name AS committer FROM `github.sample_commits`
+    WHERE author.name != committer.name LIMIT 50
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: What are the most common license keys in the dataset?
+  ground_truth_sql: SELECT license.key, COUNT(*) AS repo_count FROM `github.licenses` GROUP BY license.key ORDER BY repo_count
+    DESC LIMIT 10
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: How many commits were authored using a gmail.com email address?
+  ground_truth_sql: SELECT COUNT(*) AS count FROM `github.sample_commits` WHERE author.email LIKE '%@gmail.com'
+- archetype: simple_lookup
+  difficulty: hard
+  nl_question: What are the top 10 most active committer email domains?
+  ground_truth_sql: SELECT REGEXP_EXTRACT(committer.email, r'@(.+)') AS domain, COUNT(*) AS count FROM `github.sample_commits`
+    GROUP BY domain ORDER BY count DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: Who are the top committers to the most popular repos?
+  ground_truth_sql: SELECT c.author.name, SUM(s.watch_count) AS total_watch_score FROM `github.sample_commits` c JOIN `github.sample_repo`
+    s ON c.repo_name = s.repo_name GROUP BY c.author.name ORDER BY total_watch_score DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: What license does the repo with the most commits use?
+  ground_truth_sql: SELECT c.repo_name, COUNT(*) AS commit_count, l.license.name FROM `github.sample_commits` c JOIN `github.licenses`
+    l ON c.repo_name = l.repo_name GROUP BY c.repo_name, l.license.name ORDER BY commit_count DESC LIMIT 1
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: Who are the most active contributors to MIT-licensed repos?
+  ground_truth_sql: SELECT c.author.name, COUNT(*) AS commit_count FROM `github.sample_commits` c JOIN `github.licenses` l
+    ON c.repo_name = l.repo_name WHERE l.license.key = 'mit' GROUP BY c.author.name ORDER BY commit_count DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: What languages are used in repos that had commits in 2021?
+  ground_truth_sql: SELECT DISTINCT lang.language FROM `github.languages` lang WHERE lang.repo_name IN (SELECT DISTINCT repo_name
+    FROM `github.sample_commits` WHERE EXTRACT(YEAR FROM author.date) = 2021) ORDER BY lang.language
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: Which repos have Python code and an MIT license and more than 100 watchers?
+  ground_truth_sql: SELECT s.repo_name, s.watch_count FROM `github.sample_repo` s JOIN `github.languages` l ON s.repo_name
+    = l.repo_name JOIN `github.licenses` li ON s.repo_name = li.repo_name WHERE l.language = 'Python' AND li.license.key =
+    'mit' AND s.watch_count > 100 ORDER BY s.watch_count DESC
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: How many files were committed to Apache-licensed repos in 2020?
+  ground_truth_sql: SELECT COUNT(*) AS file_count FROM `github.sample_files` sf JOIN `github.sample_commits` c ON sf.commit
+    = c.commit JOIN `github.licenses` l ON sf.repo_name = l.repo_name WHERE EXTRACT(YEAR FROM c.author.date) = 2020 AND l.license.key
+    = 'apache-2.0'
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: For each license type show the total bytes of code across repos using that license
+  ground_truth_sql: SELECT li.license.name, SUM(l.bytes) AS total_bytes FROM `github.languages` l JOIN `github.licenses` li
+    ON l.repo_name = li.repo_name GROUP BY li.license.name ORDER BY total_bytes DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: Who are the top contributors to JavaScript repos with MIT licenses?
+  ground_truth_sql: SELECT c.author.name, COUNT(*) AS commit_count FROM `github.sample_commits` c JOIN `github.languages`
+    l ON c.repo_name = l.repo_name JOIN `github.licenses` li ON c.repo_name = li.repo_name WHERE l.language = 'JavaScript'
+    AND li.license.key = 'mit' GROUP BY c.author.name ORDER BY commit_count DESC LIMIT 10
+- archetype: implicit_join
+  difficulty: hard
+  nl_question: What is the most common language in repos with more than 500 watchers and an open source license?
+  ground_truth_sql: SELECT l.language, COUNT(DISTINCT l.repo_name) AS repo_count FROM `github.languages` l JOIN `github.sample_repo`
+    s ON l.repo_name = s.repo_name JOIN `github.licenses` li ON l.repo_name = li.repo_name WHERE s.watch_count > 500 GROUP
+    BY l.language ORDER BY repo_count DESC LIMIT 5
+- archetype: business_term
+  difficulty: hard
+  nl_question: Who are the most active contributors across all repos?
+  ground_truth_sql: SELECT author.name, COUNT(*) AS commit_count FROM `github.sample_commits` GROUP BY author.name ORDER BY
+    commit_count DESC LIMIT 20
+- archetype: business_term
+  difficulty: hard
+  nl_question: What are the most popular repos?
+  ground_truth_sql: SELECT repo_name, watch_count FROM `github.sample_repo` ORDER BY watch_count DESC LIMIT 20
+- archetype: business_term
+  difficulty: hard
+  nl_question: Which programming language is most widely adopted?
+  ground_truth_sql: SELECT language, COUNT(DISTINCT repo_name) AS repo_count FROM `github.languages` GROUP BY language ORDER
+    BY repo_count DESC LIMIT 1
+- archetype: business_term
+  difficulty: hard
+  nl_question: What do developers commit most often?
+  ground_truth_sql: SELECT subject, COUNT(*) AS count FROM `github.sample_commits` GROUP BY subject ORDER BY count DESC LIMIT
+    20
+- archetype: business_term
+  difficulty: hard
+  nl_question: Which repos are the most actively developed?
+  ground_truth_sql: SELECT repo_name, COUNT(*) AS commit_count FROM `github.sample_commits` GROUP BY repo_name ORDER BY commit_count
+    DESC LIMIT 20
+- archetype: business_term
+  difficulty: hard
+  nl_question: What is the dominant language in the open source ecosystem?
+  ground_truth_sql: SELECT language, SUM(bytes) AS total_bytes FROM `github.languages` GROUP BY language ORDER BY total_bytes
+    DESC LIMIT 1
+- archetype: business_term
+  difficulty: hard
+  nl_question: Which repos are community-friendly?
+  ground_truth_sql: SELECT repo_name, watch_count FROM `github.sample_repo` WHERE has_wiki = TRUE ORDER BY watch_count DESC
+    LIMIT 20
+- archetype: business_term
+  difficulty: hard
+  nl_question: Who contributes the most to well-known projects?
+  ground_truth_sql: SELECT c.author.name, SUM(s.watch_count) AS total_watches FROM `github.sample_commits` c JOIN `github.sample_repo`
+    s ON c.repo_name = s.repo_name GROUP BY c.author.name ORDER BY total_watches DESC LIMIT 10
+- archetype: business_term
+  difficulty: hard
+  nl_question: What is the health of the open source ecosystem by license type?
+  ground_truth_sql: SELECT l.license.name, COUNT(*) AS repo_count, AVG(s.watch_count) AS avg_watches FROM `github.licenses`
+    l JOIN `github.sample_repo` s ON l.repo_name = s.repo_name GROUP BY l.license.name ORDER BY repo_count DESC
+- archetype: business_term
+  difficulty: hard
+  nl_question: Are Go or Rust repos more popular on average?
+  ground_truth_sql: SELECT l.language, AVG(s.watch_count) AS avg_watch_count FROM `github.languages` l JOIN `github.sample_repo`
+    s ON l.repo_name = s.repo_name WHERE l.language IN ('Go', 'Rust') GROUP BY l.language ORDER BY avg_watch_count DESC
+- archetype: business_term
+  difficulty: hard
+  nl_question: Which projects have the most engaged community?
+  ground_truth_sql: SELECT repo_name, watch_count FROM `github.sample_repo` ORDER BY watch_count DESC LIMIT 20
+- archetype: business_term
+  difficulty: hard
+  nl_question: Show me the open source landscape for machine learning repos
+  ground_truth_sql: SELECT s.repo_name, s.watch_count, l.language, li.license.name FROM `github.sample_repo` s JOIN `github.languages`
+    l ON s.repo_name = l.repo_name LEFT JOIN `github.licenses` li ON s.repo_name = li.repo_name WHERE LOWER(s.repo_name) LIKE
+    '%machine-learning%' OR LOWER(s.repo_name) LIKE '%deep-learning%' OR LOWER(s.repo_name) LIKE '%neural%' OR LOWER(s.repo_name)
+    LIKE '%tensorflow%' OR LOWER(s.repo_name) LIKE '%pytorch%' ORDER BY s.watch_count DESC LIMIT 30
+- archetype: business_term
+  difficulty: hard
+  nl_question: What years were most productive for open source development in this dataset?
+  ground_truth_sql: SELECT EXTRACT(YEAR FROM author.date) AS year, COUNT(*) AS commit_count FROM `github.sample_commits` GROUP
+    BY year ORDER BY commit_count DESC LIMIT 10

@@ -17,23 +17,22 @@ def _generate_question_id(nl_question: str, ground_truth_sql: str) -> str:
     return hashlib.sha256(content.encode()).hexdigest()
 
 
-def get_ecommerce_eval_samples() -> list[EvalSample]:
+def _load_samples_from_yaml(yaml_filename: str) -> list[EvalSample]:
     """
-    Load evaluation samples from YAML configuration.
+    Load evaluation samples from a YAML configuration file.
 
-    Based on the demo_ecommerce dataset with tables:
-    - customers (customer_id, customer_name, email, created_at)
-    - products (product_id, product_name, category, price)
-    - orders (order_id, customer_id, order_date, total_amount)
-    - order_items (order_item_id, order_id, product_id, quantity, price)
+    Parameters
+    ----------
+    yaml_filename : str
+        Name of the YAML file in the datasets directory
 
     Returns
     -------
     list[EvalSample]
-        List of evaluation samples loaded from ecommerce_samples.yaml
+        List of evaluation samples loaded from YAML
     """
     # Load YAML config
-    config_path = Path(__file__).parent / "ecommerce_samples.yaml"
+    config_path = Path(__file__).parent / yaml_filename
     with open(config_path) as f:
         config = yaml.safe_load(f)
 
@@ -59,6 +58,43 @@ def get_ecommerce_eval_samples() -> list[EvalSample]:
         samples.append(sample)
 
     return samples
+
+
+def get_ecommerce_eval_samples() -> list[EvalSample]:
+    """
+    Load evaluation samples from YAML configuration.
+
+    Based on the demo_ecommerce dataset with tables:
+    - customers (customer_id, customer_name, email, created_at)
+    - products (product_id, product_name, category, price)
+    - orders (order_id, customer_id, order_date, total_amount)
+    - order_items (order_item_id, order_id, product_id, quantity, price)
+
+    Returns
+    -------
+    list[EvalSample]
+        List of evaluation samples loaded from ecommerce_samples.yaml
+    """
+    return _load_samples_from_yaml("ecommerce_samples.yaml")
+
+
+def get_github_eval_samples() -> list[EvalSample]:
+    """
+    Load evaluation samples from YAML configuration.
+
+    Based on the GitHub dataset with tables:
+    - sample_repo (repo_name, watch_count, fork, has_wiki, created_at, ...)
+    - languages (repo_name, language, bytes)
+    - licenses (repo_name, license.name, license.key, license.url)
+    - sample_commits (commit, repo_name, subject, message, author.name, author.email, author.date, ...)
+    - sample_files (repo_name, path, name, commit)
+
+    Returns
+    -------
+    list[EvalSample]
+        List of evaluation samples loaded from github_samples.yaml
+    """
+    return _load_samples_from_yaml("github_samples.yaml")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,8 @@ from eval.datasets.models import EvalSample
 # Configuration - adjust per project
 TARGET_TOKEN_REDUCTION = 0.50  # 50% token reduction target
 OBJECT_RECALL_FLOOR = 0.90     # 90% object recall minimum
-MAX_ACCURACY_DELTA = 0.05      # Allow 5% accuracy delta
+MIN_ACCURACY_TOLERANCE = -0.05 # Allow semantic to be up to 5% worse than full schema
+                               # (negative delta means semantic < full_schema)
 
 
 def build_delta_report(samples: list[EvalSample]) -> dict[str, Any]:
@@ -77,7 +78,9 @@ def build_delta_report(samples: list[EvalSample]) -> dict[str, Any]:
     recall_mean = safe_mean(recall_vals)
     precision_mean = safe_mean(precision_vals)
 
-    # Accuracy delta
+    # Accuracy delta (semantic - full_schema)
+    # Positive delta = semantic is better
+    # Negative delta = semantic is worse
     sql_accuracy_delta = None
     if sem_exec_mean is not None and fs_exec_mean is not None:
         sql_accuracy_delta = sem_exec_mean - fs_exec_mean
@@ -85,7 +88,14 @@ def build_delta_report(samples: list[EvalSample]) -> dict[str, Any]:
     # Success gates
     token_reduction_meets_target = (token_reduction_mean or 0) >= TARGET_TOKEN_REDUCTION
     recall_meets_floor = (recall_mean or 0) >= OBJECT_RECALL_FLOOR
-    accuracy_delta_acceptable = abs(sql_accuracy_delta if sql_accuracy_delta is not None else 1.0) <= MAX_ACCURACY_DELTA
+
+    # Semantic must be at least as good as full schema (within tolerance)
+    # Success if: semantic >= full_schema - tolerance
+    # Equivalent to: (semantic - full_schema) >= -tolerance
+    accuracy_meets_baseline = (sql_accuracy_delta if sql_accuracy_delta is not None else -1.0) >= MIN_ACCURACY_TOLERANCE
+
+    # Bonus: semantic outperforms full schema
+    semantic_outperforms = (sql_accuracy_delta if sql_accuracy_delta is not None else -1.0) > 0
 
     summary = {
         "total_samples": len(samples),
@@ -101,16 +111,17 @@ def build_delta_report(samples: list[EvalSample]) -> dict[str, Any]:
         # Success gates
         "token_reduction_meets_target": token_reduction_meets_target,
         "recall_meets_floor": recall_meets_floor,
-        "accuracy_delta_acceptable": accuracy_delta_acceptable,
+        "accuracy_meets_baseline": accuracy_meets_baseline,
+        "semantic_outperforms": semantic_outperforms,
         "all_gates_pass": all([
             token_reduction_meets_target,
             recall_meets_floor,
-            accuracy_delta_acceptable,
+            accuracy_meets_baseline,
         ]),
         # Targets (for reference)
         "target_token_reduction": TARGET_TOKEN_REDUCTION,
         "object_recall_floor": OBJECT_RECALL_FLOOR,
-        "max_accuracy_delta": MAX_ACCURACY_DELTA,
+        "min_accuracy_tolerance": MIN_ACCURACY_TOLERANCE,
     }
 
     # Per-archetype breakdown
@@ -184,7 +195,15 @@ def print_report(report: dict[str, Any]) -> None:
     print(f"\nSQL Accuracy (Execution Match):")
     print(f"  Semantic:     {summary['semantic_execution_match']:.1%}")
     print(f"  Full Schema:  {summary['full_schema_execution_match']:.1%}")
-    print(f"  Delta:        {summary['sql_accuracy_delta']:+.1%}")
+    delta = summary['sql_accuracy_delta']
+    delta_str = f"{delta:+.1%}"
+    if delta > 0:
+        delta_str += " (semantic outperforms ✓)"
+    elif delta < summary['min_accuracy_tolerance']:
+        delta_str += " (below tolerance ✗)"
+    else:
+        delta_str += " (within tolerance)"
+    print(f"  Delta:        {delta_str}")
 
     print(f"\nToken Efficiency:")
     print(f"  Reduction:    {summary['token_reduction_pct']:.1%} (± {summary['token_reduction_stdev']:.1%})")
@@ -202,10 +221,13 @@ def print_report(report: dict[str, Any]) -> None:
     def status(passed):
         return "✓ PASS" if passed else "✗ FAIL"
 
-    print(f"\n  Token Reduction >= {summary['target_token_reduction']:.0%}:  {status(summary['token_reduction_meets_target'])}")
-    print(f"  Object Recall >= {summary['object_recall_floor']:.0%}:      {status(summary['recall_meets_floor'])}")
-    print(f"  Accuracy Delta <= ±{summary['max_accuracy_delta']:.0%}:    {status(summary['accuracy_delta_acceptable'])}")
-    print(f"\n  OVERALL:                           {status(summary['all_gates_pass'])}")
+    tolerance_pct = abs(summary['min_accuracy_tolerance'])
+    print(f"\n  Token Reduction >= {summary['target_token_reduction']:.0%}:        {status(summary['token_reduction_meets_target'])}")
+    print(f"  Object Recall >= {summary['object_recall_floor']:.0%}:            {status(summary['recall_meets_floor'])}")
+    print(f"  Semantic >= Full Schema - {tolerance_pct:.0%}:  {status(summary['accuracy_meets_baseline'])}")
+    if summary['semantic_outperforms']:
+        print(f"  🌟 Semantic Outperforms Full Schema:   ✓ YES")
+    print(f"\n  OVERALL:                                {status(summary['all_gates_pass'])}")
 
     print("\n" + "-"*80)
     print("BY ARCHETYPE")
