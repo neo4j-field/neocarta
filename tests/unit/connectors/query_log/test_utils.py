@@ -78,3 +78,50 @@ def test_parse_sql_query_only_returns_complete_references():
     assert ref["right_column_id"] is not None
     assert ref["left_column_id"] != ""
     assert ref["right_column_id"] != ""
+
+
+def test_parse_sql_query_uses_default_project_id():
+    """Test that default_project_id is used when table references don't include project"""
+    query = """
+    SELECT repo_name, license
+    FROM `github.licenses`
+    JOIN `github.sample_repos` ON licenses.repo_name = sample_repos.repo_name
+    """
+    query_id = "test789"
+    parsed = parse_sql_query(
+        query,
+        query_id,
+        "bigquery",
+        default_project_id="my-gcp-project"
+    )
+
+    assert len(parsed["table_info"]) == 2
+
+    for table in parsed["table_info"]:
+        assert table["project_id"] == "my-gcp-project"
+        assert table["table_id"].startswith("my-gcp-project.")
+        assert not table["table_id"].startswith(".")
+
+    for col in parsed["column_info"]:
+        assert col["column_id"].startswith("my-gcp-project.")
+        assert not col["column_id"].startswith(".")
+
+
+def test_parse_sql_query_explicit_project_overrides_default():
+    """Test that explicit project IDs in queries override the default"""
+    query = """
+    SELECT o.order_id
+    FROM `example-project-id.demo_ecommerce.orders` AS o
+    """
+    query_id = "test101112"
+    parsed = parse_sql_query(
+        query,
+        query_id,
+        "bigquery",
+        default_project_id="different-project"
+    )
+
+    assert len(parsed["table_info"]) == 1
+    table = parsed["table_info"][0]
+    assert table["project_id"] == "example-project-id"
+    assert table["table_id"] == "example-project-id.demo_ecommerce.orders"

@@ -110,8 +110,9 @@ class QueryLogExtractor:
         for _, row in query_info_df.iterrows():
             query = row["query"]
             query_id = row["query_id"]
+            project_id = row.get("project_id")
 
-            parsed_dict = parse_sql_query(query, query_id, "bigquery")
+            parsed_dict = parse_sql_query(query, query_id, "bigquery", default_project_id=project_id)
             
             if parsed_dict:
                 table_info.extend(parsed_dict["table_info"])

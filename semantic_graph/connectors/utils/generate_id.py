@@ -135,3 +135,9 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
     # Generate a short hash of the value (first 32 characters of MD5)
     value_hash = hashlib.md5(value.encode()).hexdigest()[:32]
     return f"{database}.{schema}.{table}.{column}.{value_hash}"
+
+def create_query_id(query: str) -> str:
+    """
+    Create a query ID from a query string.
+    """
+    return hashlib.sha256(query.encode()).hexdigest()

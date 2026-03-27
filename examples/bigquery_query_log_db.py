@@ -56,7 +56,7 @@ async def main(
         auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD")),
     )
     # neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
-    neo4j_database = "bq-query-log-db-1"
+    neo4j_database = "github-eval-1"
     bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
     
     print(f"Extracting query logs from BigQuery...")
