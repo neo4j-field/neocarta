@@ -188,7 +188,7 @@ LIMIT {limit};
             query_text = row["query"]
             query_id = row["query_id"]
             
-            parsed_dict = parse_sql_query(query_text, query_id, "bigquery")
+            parsed_dict = parse_sql_query(query_text, query_id, "bigquery", default_project_id=self.project_id, default_schema_id=dataset_id)
             
             if parsed_dict:
                 table_info.extend(parsed_dict["table_info"])
