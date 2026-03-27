@@ -154,14 +154,8 @@ def parse_sql_query(query: str, query_id: str, read: str = "bigquery", default_p
 
             # if we can't identify the table a column belongs to, we skip it
             if table_id is None:
-                # if only 1 table in query, we assume the column belongs to that table
-                if len(table_info) == 1:
-                    table_id = table_info[0]["table_id"]
-                    table_name = table_info[0]["table_name"]
-                # otherwise we skip the column
-                else:
-                    print(f"Unable to resolve table for column {c.name}. Skipping column.")
-                    continue
+                print(f"Unable to resolve table for column {c.name}. Skipping column.")
+                continue
 
             column_name = c.name
             column_info.append({
