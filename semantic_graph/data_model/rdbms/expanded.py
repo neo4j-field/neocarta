@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, Any
+from pandas import isna
 
 
 class Value(BaseModel):
@@ -7,6 +8,16 @@ class Value(BaseModel):
 
     id: str = Field(..., description="The unique identifier for the value")
     value: str = Field(..., description="The value cast to a string")
+
+    @field_validator("value", mode="before")
+    def cast_to_string(cls, v: Any) -> str:
+        """
+        Cast the value to a string.
+        """
+        # return empty string for NaN values
+        if v is None or isna(v):
+            return ""
+        return str(v)
 
 
 class HasValue(BaseModel):
