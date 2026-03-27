@@ -40,6 +40,9 @@ bigquery_mcp_params = {
     "transport": "http",
     "url": "https://bigquery.googleapis.com/mcp",
     "auth": GoogleAuth(),
+    "headers": {
+        "Content-Type": "application/json",
+    },
 }
 
 client = MultiServerMCPClient(
@@ -88,10 +91,11 @@ async def main():
             latest_message = chunk["messages"][-1]
             if latest_message.content:
                 print(f"Agent: {latest_message.content}")
-            elif latest_message.tool_calls:
+            elif hasattr(latest_message, "tool_calls") and latest_message.tool_calls:
                 print(
                     f"Calling tools: {[tc['name'] for tc in latest_message.tool_calls]}"
                 )
+                print(latest_message.tool_calls)
 
 
 if __name__ == "__main__":
