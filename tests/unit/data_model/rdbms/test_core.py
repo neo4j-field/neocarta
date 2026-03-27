@@ -1,4 +1,5 @@
-from semantic_graph.data_model.rdbms.core import Column
+from semantic_graph.data_model.rdbms.core import Column, References
+import numpy as np
 
 def test_column_valid():
     """Test creating a valid Column node."""
@@ -13,3 +14,9 @@ def test_column_pk_and_fk():
 
     assert column.is_primary_key is True
     assert column.is_foreign_key is True
+
+
+def test_column_references_criteria_nan_cast_to_none():
+    """Test that the criteria field casts NaN values to None."""
+    references = References(source_column_id="col1", target_column_id="col2", criteria=np.nan)
+    assert references.criteria is None
