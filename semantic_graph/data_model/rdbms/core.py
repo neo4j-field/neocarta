@@ -183,3 +183,16 @@ class References(BaseModel):
     criteria: Optional[str] = Field(
         default=None, description="The criteria for the references relationship. This is the join condition for the two columns."
     )
+
+    @field_validator("criteria", mode="before")
+    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that the string is string type or None. 
+        This will cast NaN values to None.
+        """
+        if isinstance(v, str):
+            return v
+        elif v is None or isna(v):
+            return None
+        
+        return v
