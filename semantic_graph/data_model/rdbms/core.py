@@ -113,16 +113,6 @@ class Column(BaseModel):
     is_foreign_key: bool = Field(
         default=False, description="Whether the column is a foreign key"
     )
-
-    @field_validator("is_foreign_key", mode="after")
-    def validate_not_both_pk_and_fk(cls, v: bool, info: ValidationInfo) -> bool:
-        """
-        Validate that a column cannot be both a primary key and a foreign key.
-        We only need to validate `is_foreign_key` since it is defined after `is_primary_key`.
-        """
-        if v and info.data["is_primary_key"]:
-            raise ValueError("Column cannot be both a primary key and a foreign key")
-        return v
     
     @field_validator("description", "type", mode="before")
     def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
