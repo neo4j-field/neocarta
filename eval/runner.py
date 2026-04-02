@@ -29,7 +29,7 @@ from eval.retrievers.bigquery_schema_retriever import BigQuerySchemaRetriever
 import sys
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "mcp_server" / "src"))
-from models import TableContext
+from mcp_server.src.models import TableContext
 
 system_prompt = """
 You are a SQL expert. Given a natural language question and database schema context, generate a BigQuery SQL query.

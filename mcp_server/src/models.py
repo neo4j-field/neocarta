@@ -11,11 +11,11 @@ class JoinContext(BaseModel):
     )
 
 
-class ReferenceContext(BaseModel):
-    """Model representing context for a column referencing a column in a different table"""
+# class ReferenceContext(BaseModel):
+#     """Model representing context for a column referencing a column in a different table"""
 
-    table_name: str = Field(..., description="The name of the table")
-    column_name: str = Field(..., description="The name of the column")
+#     table_name: str = Field(..., description="The name of the table")
+#     column_name: str = Field(..., description="The name of the column")
 
 
 class ColumnContext(BaseModel):
@@ -24,14 +24,14 @@ class ColumnContext(BaseModel):
     column_name: str = Field(..., description="The name of the column")
     column_description: str = Field(..., description="The description of the column")
     data_type: str = Field(..., description="The data type of the column")
-    nullable: bool = Field(..., description="Whether the column can be null")
+    nullable: Optional[bool] = Field(default=None, description="Whether the column can be null")
     examples: Optional[list[str]] = Field(
         default=None, description="Example values for the column"
     )
     key_type: Optional[str] = Field(
         default=None, description="The key type of the column"
     )
-    references: list[ReferenceContext] = Field(
+    references: list[str] = Field(
         default=list(),
         description="The referenced columns from another table of the column",
     )
@@ -50,3 +50,15 @@ class TableContext(BaseModel):
     joins: list[JoinContext] = Field(
         default=list(), description="The relevant join tables of the table"
     )
+
+class ListSchemaRecord(BaseModel):
+    """Model representing a record for a schema in the list_schemas tool"""
+
+    schema_name: str = Field(..., description="The name of the schema")
+    database_name: str = Field(..., description="The name of the database")
+
+class ListTablesBySchemaRecord(BaseModel):
+    """Model representing a record for a table in the list_tables_by_schema tool"""
+
+    schema_name: str = Field(..., description="The name of the schema")
+    table_names: list[str] = Field(..., description="The names of the tables in the schema")
