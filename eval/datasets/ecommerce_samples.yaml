@@ -90,18 +90,15 @@ samples:
     
   - archetype: implicit_join
     nl_question: "For the top customer can you give me the top category on which they are buying?"
-    ground_truth_sql: 
+    ground_truth_sql: |
       SELECT
       p.category,
       SUM(oi.quantity * oi.price) AS total_spent
-    FROM `demo_ecommerce.customers` c
-    JOIN `demo_ecommerce.orders` o
-      ON c.customer_id = o.customer_id
-    JOIN `demo_ecommerce.order_items` oi
-      ON o.order_id = oi.order_id
-    JOIN `demo_ecommerce.products` p
-      ON oi.product_id = p.product_id
-    WHERE c.email = 'alice@example.com'
-    GROUP BY p.category
-    ORDER BY total_spent DESC
-    LIMIT 1;
+      FROM `demo_ecommerce.customers` c
+      JOIN `demo_ecommerce.orders` o ON c.customer_id = o.customer_id
+      JOIN `demo_ecommerce.order_items` oi ON o.order_id = oi.order_id
+      JOIN `demo_ecommerce.products` p ON oi.product_id = p.product_id
+      WHERE c.email = 'alice@example.com'
+      GROUP BY p.category
+      ORDER BY total_spent DESC
+      LIMIT 1;

@@ -28,7 +28,7 @@ async def main():
 
     # Configuration
     PROJECT_ROOT = Path(__file__).parent.parent
-    SEMANTIC_MCP_SERVER = str(PROJECT_ROOT / "mcp_server" / "src" / "server.py")
+    SEMANTIC_MCP_SERVER = "mcp-server"
     FULL_SCHEMA_PATH = PROJECT_ROOT / "eval" / "datasets" / "schemas" / "demo_ecommerce_schema.json"
 
     # Persist schema if it doesn't exist

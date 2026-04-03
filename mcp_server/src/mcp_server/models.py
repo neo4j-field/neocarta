@@ -33,7 +33,7 @@ class ColumnContext(BaseModel):
     )
     references: list[str] = Field(
         default=list(),
-        description="The referenced columns from another table of the column",
+        description="The referenced columns from another table of the column. Have format of 'table_name.column_name'",
     )
 
 

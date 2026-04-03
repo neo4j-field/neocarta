@@ -1,10 +1,10 @@
 from fastmcp import FastMCP
 import asyncio
 from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
-from models import TableContext, ListTablesBySchemaRecord, ListSchemaRecord
+from .models import TableContext, ListTablesBySchemaRecord, ListSchemaRecord
 from dotenv import load_dotenv
-from settings import mcp_server_settings
-from embeddings import create_embedding
+from .settings import mcp_server_settings
+from .embeddings import create_embedding
 from openai import AsyncOpenAI
 
 
@@ -323,6 +323,10 @@ async def main():
     await server.run_stdio_async()
 
 
-if __name__ == "__main__":
+def run():
     load_dotenv()
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

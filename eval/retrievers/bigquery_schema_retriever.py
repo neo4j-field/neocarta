@@ -8,9 +8,7 @@ The JSON format matches what the MCP server returns from get_full_metadata_schem
 import json
 from pathlib import Path
 from typing import Any
-import sys
-sys.path.append('/Users/alexandergilmore/Documents/projects/text2sql-template/mcp_server/src')
-from models import TableContext
+from mcp_server.models import TableContext
 
 
 class BigQuerySchemaRetriever:

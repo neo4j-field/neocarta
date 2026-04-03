@@ -25,11 +25,7 @@ from eval.retrieval_metrics import (
 from eval.inference_metrics import score_execution_accuracy
 from eval.retrievers.bigquery_schema_retriever import BigQuerySchemaRetriever
 
-# Add mcp_server to path
-import sys
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "mcp_server" / "src"))
-from mcp_server.src.models import TableContext
+from mcp_server.models import TableContext
 
 system_prompt = """
 You are a SQL expert. Given a natural language question and database schema context, generate a BigQuery SQL query.
@@ -122,8 +118,8 @@ class EvalRunner:
         # Step 1: Agent retrieves relevant schema using MCP tool
         t_mcp_start = time.monotonic()
         result = await mcp_session.call_tool(
-            "get_metadata_schema_by_semantic_similarity",
-            arguments={"query": sample.nl_question}
+            "get_metadata_schema_by_schema_and_table_semantic_similarity",
+            arguments={"query": sample.nl_question, "max_tables": 2}
         )
         mcp_latency_ms = (time.monotonic() - t_mcp_start) * 1000
 
@@ -247,7 +243,7 @@ class EvalRunner:
         # Start MCP server session
         server_params = StdioServerParameters(
             command="uv",
-            args=["run", "python", self.semantic_mcp_server_path],
+            args=["run", self.semantic_mcp_server_path],
         )
 
         async with stdio_client(server_params) as (read, write):

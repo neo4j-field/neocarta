@@ -1,5 +1,5 @@
 from openai import AsyncOpenAI
-from settings import mcp_server_settings
+from .settings import mcp_server_settings
 
 
 async def create_embedding(embedding_client: AsyncOpenAI, query: str) -> list[float]:

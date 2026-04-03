@@ -1,9 +1,7 @@
 """Retrieval quality metrics for semantic layer evaluation."""
 
 from typing import Any
-import sys
-sys.path.append('/Users/alexandergilmore/Documents/projects/text2sql-template/mcp_server/src')
-from mcp_server.src.models import TableContext
+from mcp_server.models import TableContext
 
 
 def extract_objects_from_table_contexts(table_contexts: list[TableContext]) -> dict[str, set[str]]:
@@ -174,7 +172,7 @@ def serialize_table_contexts(table_contexts: list[TableContext]) -> list[str]:
             # Add references
             if col.references:
                 for ref in col.references:
-                    lines.append(f"    -> references {ref.table_name}.{ref.column_name}")
+                    lines.append(f"    -> references {ref}")
 
         # Add joins
         if ctx.joins:

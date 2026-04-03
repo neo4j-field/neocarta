@@ -13,6 +13,12 @@ resolution-markers = [
     "python_full_version < '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[manifest]
+members = [
+    "mcp-server",
+    "semantic-graph",
+]
+
 [[package]]
 name = "annotated-types"
 version = "0.7.0"
@@ -1363,6 +1369,33 @@ wheels = [
 ]
 
 [[package]]
+name = "mcp-server"
+version = "0.1.0"
+source = { editable = "mcp_server" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "mcp" },
+    { name = "neo4j" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "mcp", specifier = ">=1.26.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pydantic-settings", specifier = ">=2.12.0" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
+]
+
+[[package]]
 name = "mdurl"
 version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2665,19 +2698,12 @@ dependencies = [
 
 [package.dev-dependencies]
 agent = [
-    { name = "fastmcp" },
     { name = "google-cloud-bigquery" },
     { name = "langchain" },
     { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
     { name = "langgraph" },
-    { name = "mcp" },
-    { name = "neo4j" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-dotenv" },
+    { name = "mcp-server" },
 ]
 dev = [
     { name = "ipykernel" },
@@ -2690,14 +2716,7 @@ eval = [
     { name = "tiktoken" },
 ]
 mcp-server = [
-    { name = "fastmcp" },
-    { name = "mcp" },
-    { name = "neo4j" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-dotenv" },
+    { name = "mcp-server" },
 ]
 metadata-graph = [
     { name = "google-cloud-bigquery", extra = ["pandas"] },
@@ -2726,19 +2745,12 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 agent = [
-    { name = "fastmcp", specifier = ">=2.14.4" },
     { name = "google-cloud-bigquery", specifier = ">=3.40.0" },
     { name = "langchain", specifier = ">=1.2.7" },
     { name = "langchain-mcp-adapters", specifier = ">=0.2.1" },
     { name = "langchain-openai", specifier = ">=1.1.7" },
     { name = "langgraph", specifier = ">=1.0.7" },
-    { name = "mcp", specifier = ">=1.26.0" },
-    { name = "neo4j", specifier = ">=6.1.0" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "pydantic-settings", specifier = ">=2.12.0" },
-    { name = "python-dotenv", specifier = ">=1.2.1" },
+    { name = "mcp-server", editable = "mcp_server" },
 ]
 dev = [
     { name = "ipykernel", specifier = ">=7.1.0" },
@@ -2750,16 +2762,7 @@ eval = [
     { name = "mcp", specifier = ">=1.26.0" },
     { name = "tiktoken", specifier = ">=0.12.0" },
 ]
-mcp-server = [
-    { name = "fastmcp", specifier = ">=2.14.4" },
-    { name = "mcp", specifier = ">=1.26.0" },
-    { name = "neo4j", specifier = ">=6.1.0" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "pydantic-settings", specifier = ">=2.12.0" },
-    { name = "python-dotenv", specifier = ">=1.2.1" },
-]
+mcp-server = [{ name = "mcp-server", editable = "mcp_server" }]
 metadata-graph = [
     { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
     { name = "google-cloud-bigquery-storage", specifier = ">=2.36.2" },

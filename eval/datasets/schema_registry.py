@@ -4,9 +4,7 @@ from pathlib import Path
 import json
 import sys
 
-# Add mcp_server to path relative to project root
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "mcp_server" / "src"))
+
 
 
 async def persist_bigquery_schema_from_mcp(
@@ -90,11 +88,11 @@ async def persist_graph_schema_from_mcp(
     """
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
-    from models import TableContext
+    from mcp_server.models import TableContext
 
     server_params = StdioServerParameters(
         command="uv",
-        args=["run", "python", server_script_path],
+        args=["run", server_script_path],
     )
 
     async with stdio_client(server_params) as (read, write):
