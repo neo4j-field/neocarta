@@ -55,6 +55,8 @@ refresh-mermaid-data-model-images:
 	mmdc -i assets/mermaid/data_model/sql-graph-data-model-core.mmd -o assets/images/data_model/sql-graph-data-model-core.png
 	mmdc -i assets/mermaid/data_model/sql-graph-data-model-expanded-1.mmd -o assets/images/data_model/sql-graph-data-model-expanded-1.png
 	mmdc -i assets/mermaid/data_model/lpg-graph-data-model.mmd -o assets/images/data_model/lpg-graph-data-model.png
+	mmdc -i assets/mermaid/data_model/task-query-data-model-1.mmd -o assets/images/data_model/task-query-data-model-1.png
+	mmdc -i assets/mermaid/data_model/query-log-data-model-1.mmd -o assets/images/data_model/query-log-data-model-1.png
 
 refresh-mermaid-architecture-images:
 	mmdc -i assets/mermaid/architecture/bigquery-workflow-architecture.mmd -o assets/images/architecture/bigquery-workflow-architecture.png
@@ -62,7 +64,7 @@ refresh-mermaid-architecture-images:
 	mmdc -i assets/mermaid/architecture/full-workflow-architecture.mmd -o assets/images/architecture/full-workflow-architecture.png
 	mmdc -i assets/mermaid/architecture/agent-architecture.mmd -o assets/images/architecture/agent-architecture.png
 	mmdc -i assets/mermaid/architecture/dataplex-workflow-architecture.mmd -o assets/images/architecture/dataplex-workflow-architecture.png
-
+	
 test-unit:
 	uv run pytest tests/unit
 
