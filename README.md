@@ -113,20 +113,20 @@ Relationships
 
 ## Graph Generation
 
-This project provides workflow classes that organize the ETL process into reusable components:
+This project provides connector classes that organize the ETL process into reusable components:
 * **Extractors** - Connect to source data and read metadata tables
 * **Transformers** - Transform metadata into defined Neo4j schema
 * **Loaders** - Ingest transformed data into Neo4j
-* **Workflows** - Orchestrate the extract, transform, and load process
+* **Connectors** - Orchestrate the extract, transform, and load process
 
-Each workflow is implemented as a class that encapsulates its extractor, transformer, and loader components, providing a clean interface for metadata ingestion.
+Each connector is implemented as a class that encapsulates its extractor, transformer, and loader components, providing a clean interface for metadata ingestion.
 
-### Workflow Class Architecture
+### Connector Class Architecture
 
-All workflows follow a consistent class-based architecture:
+All connectors follow a consistent class-based architecture:
 
 ```python
-class Workflow:
+class Connector:
     def __init__(self, clients, config):
         # Initialize with required clients and configuration
         self.extractor = Extractor(...)
@@ -154,10 +154,10 @@ class Workflow:
 
 **Benefits of the class-based approach:**
 * **Modularity** - Each component (extractor, transformer, loader) is independently testable
-* **Reusability** - Components can be reused across different workflows
+* **Reusability** - Components can be reused across different connectors
 * **Maintainability** - Clear separation of concerns makes the codebase easier to understand and modify
 * **Caching** - Intermediate results are cached as class properties, enabling step-by-step execution
-* **Flexibility** - Individual ETL steps can be run separately for debugging or custom workflows
+* **Flexibility** - Individual ETL steps can be run separately for debugging or custom connectors
 
 ### Connectors
 
@@ -173,7 +173,7 @@ Connector for reading BigQuery Information Schema tables and ingesting **schema 
 * Column references (foreign keys)
 * Column unique values (sample data)
 
-This workflow requires the following variables to be set in the `.env` file:
+This connector requires the following variables to be set in the `.env` file:
 * NEO4J_USERNAME=neo4j-username
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
@@ -198,7 +198,7 @@ Connector for extracting **query logs** from BigQuery `INFORMATION_SCHEMA.JOBS_B
 * `(:Query)-[:USES_TABLE]->(:Table)` relationships
 * `(:Query)-[:USES_COLUMN]->(:Column)` relationships
 
-This workflow requires the following variables to be set in the `.env` file:
+This connector requires the following variables to be set in the `.env` file:
 * NEO4J_USERNAME=neo4j-username
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
@@ -208,7 +208,7 @@ This workflow requires the following variables to be set in the `.env` file:
 * BIGQUERY_REGION=region-us (optional, defaults to region-us)
 
 
-##### Workflow Architecture
+##### Connector Architecture
 ```mermaid
 ---
 config:
@@ -245,7 +245,7 @@ graph LR
 import os
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from semantic_graph.connectors.bigquery import BigQuerySchemaWorkflow
+from semantic_graph.connectors.bigquery import BigQuerySchemaConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -255,8 +255,8 @@ neo4j_driver = GraphDatabase.driver(
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
-# Create workflow instance
-workflow = BigQuerySchemaWorkflow(
+# Create connector instance
+connector = BigQuerySchemaConnector(
     client=bigquery_client,
     project_id=os.getenv("GCP_PROJECT_ID"),
     dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
@@ -264,8 +264,8 @@ workflow = BigQuerySchemaWorkflow(
     database_name=neo4j_database,
 )
 
-# Run the workflow to extract, transform, and load BigQuery schema metadata into Neo4j
-workflow.run()
+# Run the connector to extract, transform, and load BigQuery schema metadata into Neo4j
+connector.run()
 ```
 
 ##### Code Example - Logs Connector
@@ -274,7 +274,7 @@ workflow.run()
 import os
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from semantic_graph.connectors.bigquery import BigQueryLogsWorkflow
+from semantic_graph.connectors.bigquery import BigQueryLogsConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -284,16 +284,16 @@ neo4j_driver = GraphDatabase.driver(
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
-# Create workflow instance
-workflow = BigQueryLogsWorkflow(
+# Create connector instance
+connector = BigQueryLogsConnector(
     client=bigquery_client,
     project_id=os.getenv("GCP_PROJECT_ID"),
     neo4j_driver=neo4j_driver,
     database_name=neo4j_database,
 )
 
-# Run the workflow to extract query logs, parse SQL, and load into Neo4j
-workflow.run(
+# Run the connector to extract query logs, parse SQL, and load into Neo4j
+connector.run(
     dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
     region="region-us",
     start_timestamp="2024-01-01 00:00:00",  # Optional
@@ -309,12 +309,12 @@ For the most complete picture, run both connectors:
 
 ```python
 # 1. Extract schema metadata
-schema_workflow = BigQuerySchemaWorkflow(...)
-schema_workflow.run()
+schema_connector = BigQuerySchemaConnector(...)
+schema_connector.run()
 
 # 2. Extract query logs
-logs_workflow = BigQueryLogsWorkflow(...)
-logs_workflow.run(dataset_id=os.getenv("BIGQUERY_DATASET_ID"))
+logs_connector = BigQueryLogsConnector(...)
+logs_connector.run(dataset_id=os.getenv("BIGQUERY_DATASET_ID"))
 ```
 
 This allows you to compare declared schema vs. actual usage patterns.
@@ -323,7 +323,7 @@ This allows you to compare declared schema vs. actual usage patterns.
 
 Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./connectors/dataplex/README.md) for more information and caveats of using this connector.
 
-##### Workflow Architecture 
+##### Connector Architecture 
 
 ```mermaid
 ---
@@ -368,7 +368,7 @@ graph LR
 
 Connector for parsing query log JSON files into Neo4j. Please see the [Query Logs README](./connectors/query_log/README.md) for more information and caveats of using this connector.
 
-##### Workflow Architecture
+##### Connector Architecture
 
 ```mermaid
 ---
@@ -430,13 +430,13 @@ The connector expects CSV files in a specified directory with the following defa
 
 Custom file names can be specified using the `csv_file_map` parameter.
 
-This workflow requires the following variables to be set in the `.env` file:
+This connector requires the following variables to be set in the `.env` file:
 * NEO4J_USERNAME=neo4j-username
 * NEO4J_PASSWORD=neo4j-password
 * NEO4J_URI=neo4j-uri
 * NEO4J_DATABASE=neo4j-database
 
-##### Workflow Architecture
+##### Connector Architecture
 
 ```mermaid
 ---
@@ -473,7 +473,7 @@ graph LR
 ```python
 import os
 from neo4j import GraphDatabase
-from semantic_graph.connectors.csv import CSVWorkflow
+from semantic_graph.connectors.csv import CSVConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -482,18 +482,18 @@ neo4j_driver = GraphDatabase.driver(
 )
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
-# Create workflow instance
-workflow = CSVWorkflow(
+# Create connector instance
+connector = CSVConnector(
     csv_directory="datasets/csv",
     neo4j_driver=neo4j_driver,
     database_name=neo4j_database,
 )
 
-# Run the workflow to load all CSV files into Neo4j
-workflow.run()
+# Run the connector to load all CSV files into Neo4j
+connector.run()
 
 # Alternatively, load specific nodes and relationships
-workflow.run(
+connector.run(
     include_nodes=["database", "schema", "table", "column", "value"],
     include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
 )
@@ -504,7 +504,7 @@ custom_file_map = {
     "schema": "my_schema.csv",
     # ... other custom filenames
 }
-workflow.run(csv_file_map=custom_file_map)
+connector.run(csv_file_map=custom_file_map)
 ```
 
 ##### Sample Dataset
@@ -524,10 +524,10 @@ Embeddings may be generated for the `description` fields of the following nodes:
 This project currently supports the following embeddings Providers:
 * OpenAI
 
-This workflow requires the following variables to be set in the `.env` file:
+This connector requires the following variables to be set in the `.env` file:
 * OPENAI_API_KEY=sk-...
 
-#### Workflow Architecture
+#### Connector Architecture
 
 ```mermaid
 ---
@@ -548,7 +548,7 @@ graph LR
         NEO[(Neo4j Graph)]
     end
 
-    subgraph EP["Embedding Workflow"]
+    subgraph EP["Embedding Process"]
         C(Create Embeddings) 
     end
     
@@ -567,7 +567,7 @@ import asyncio
 import os
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -577,8 +577,8 @@ neo4j_driver = GraphDatabase.driver(
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 embedding_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Create workflow instance
-workflow = OpenAIEmbeddingWorkflow(
+# Create connector instance
+connector = OpenAIEmbeddingsConnector(
     async_embedding_client=embedding_client,
     embedding_model="text-embedding-3-small",
     dimensions=768,
@@ -589,13 +589,13 @@ workflow = OpenAIEmbeddingWorkflow(
 # The node labels to generate embeddings for
 node_labels = ["Database", "Table", "Column"]
 
-# Run the workflow to create embeddings for the nodes
-await workflow.arun(node_labels=node_labels)
+# Run the connector to create embeddings for the nodes
+await connector.arun(node_labels=node_labels)
 ```
 
 ### Full Pipeline
 
-The full graph generation pipeline will run the BigQuery workflow followed by the embedding generation workflow. 
+The full graph generation pipeline will run the BigQuery connector followed by the embedding generation connector. 
 
 It requires the following variables to be set in the `.env` file:
 * NEO4J_USERNAME=neo4j-username
@@ -608,7 +608,7 @@ It requires the following variables to be set in the `.env` file:
 
 #### Architecture
 
-The combined BigQuery + Embeddings workflow is seen below.
+The combined BigQuery + Embeddings connector pipeline is seen below.
 
 ```mermaid
 flowchart LR
@@ -655,9 +655,9 @@ flowchart LR
     C -->|Embeddings| NEO
 ```
 
-**Running The Full Workflow**
+**Running The Full Connector Pipeline**
 
-To run the full workflow, use the following Make command:
+To run the full connector pipeline, use the following Make command:
 
 ```bash
 make create-graph

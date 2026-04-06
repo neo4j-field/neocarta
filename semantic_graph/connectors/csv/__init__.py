@@ -1,5 +1,5 @@
 """CSV connector for loading metadata from CSV files into Neo4j."""
 
-from .workflow import CSVWorkflow
+from .connector import CSVConnector
 
-__all__ = ["CSVWorkflow"]
+__all__ = ["CSVConnector"]

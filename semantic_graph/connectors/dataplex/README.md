@@ -96,7 +96,7 @@ Information such as primary / foreign keys and data stewardship may be defined a
 
 ## Usage
 
-The Dataplex connector is organized as a workflow class that orchestrates the extraction, transformation, and loading of metadata from Dataplex into Neo4j.
+The Dataplex connector orchestrates the extraction, transformation, and loading of metadata from Dataplex into Neo4j.
 
 ### Code Example
 
@@ -104,7 +104,7 @@ The Dataplex connector is organized as a workflow class that orchestrates the ex
 import os
 from neo4j import GraphDatabase
 from google.cloud import dataplex_v1
-from connectors.dataplex.workflow import DataplexWorkflow
+from connectors.dataplex.connector import DataplexConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -115,8 +115,8 @@ neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 catalog_client = dataplex_v1.CatalogServiceClient()
 glossary_client = dataplex_v1.BusinessGlossaryServiceClient()
 
-# Create workflow instance
-workflow = DataplexWorkflow(
+# Create connector instance
+connector = DataplexConnector(
     catalog_client=catalog_client,
     glossary_client=glossary_client,
     project_id=os.getenv("GCP_PROJECT_ID"),
@@ -129,8 +129,8 @@ workflow = DataplexWorkflow(
     include_glossary=True,     # Include Glossary information
 )
 
-# Run the workflow to extract, transform, and load Dataplex metadata into Neo4j
-workflow.run()
+# Run the connector to extract, transform, and load Dataplex metadata into Neo4j
+connector.run()
 ```
 
 ### Environment Variables
@@ -146,9 +146,9 @@ The following environment variables are required:
 * `DATAPLEX_LOCATION` - Dataplex location (e.g., `us-central1`)
 * `BIGQUERY_DATASET_ID` - BigQuery dataset ID (optional, can be passed to `run()` method)
 
-### Workflow Components
+### Connector Components
 
-The `DataplexWorkflow` class encapsulates three main components:
+The `DataplexConnector` class encapsulates three main components:
 
 * **DataplexExtractor** - Extracts metadata from Dataplex Universal Catalog
 * **DataplexTransformer** - Transforms extracted data to the graph schema

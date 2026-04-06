@@ -31,7 +31,7 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 async def main(
@@ -39,7 +39,7 @@ async def main(
     batch_size: int = 100,
 ):
     load_dotenv()
-    print("Starting async embeddings workflow...")
+    print("Starting async embeddings process...")
     print("Creating drivers and clients...")
 
     neo4j_driver = GraphDatabase.driver(
@@ -53,19 +53,19 @@ async def main(
     print(f"Batch size: {batch_size}")
 
     # Create embeddings for the nodes using async client
-    openai_embedding_workflow = OpenAIEmbeddingWorkflow(
+    openai_embeddings_connector = OpenAIEmbeddingsConnector(
         neo4j_driver=neo4j_driver,
         async_client=embedding_client,
         embedding_model="text-embedding-3-small",
         dimensions=768,
         database_name=neo4j_database,
     )
-    await openai_embedding_workflow.arun(
+    await openai_embeddings_connector.arun(
         node_labels=node_labels,
         batch_size=batch_size,
     )
 
-    print("Async embeddings workflow completed successfully!")
+    print("Async embeddings process completed successfully!")
 
 
 if __name__ == "__main__":

@@ -8,8 +8,8 @@ This connector allows query log files to be parsed into the metadata graph schem
 Query log parsing allows relationships between columns and tables to be discovered based on how users query the system, 
 instead of relying on explicit documentation such as foreign key constraints.
 
-The [`QueryLogWorkflow`](./workflow.py) only supports query logs from **BigQuery in JSON file format**. 
-BigQuery query logs may be retrieved directly from the database via the [`BigQueryLogsWorkflow`](../bigquery/logs/workflow.py).
+The [`QueryLogConnector`](./connector.py) only supports query logs from **BigQuery in JSON file format**. 
+BigQuery query logs may be retrieved directly from the database via the [`BigQueryLogsConnector`](../bigquery/logs/connector.py).
 
 ## Data Models
 
@@ -43,14 +43,14 @@ Query -->|USES_COLUMN| Column
 
 ## Usage
 
-The Query Log connector is organized as a workflow class that orchestrates the extraction, transformation, and loading of query log metadata into Neo4j.
+The Query Log connector orchestrates the extraction, transformation, and loading of query log metadata into Neo4j.
 
 ### Code Example
 
 ```python
 import os
 from neo4j import GraphDatabase
-from connectors.query_log.workflow import QueryLogWorkflow
+from connectors.query_log.connector import QueryLogConnector
 
 # Initialize Neo4j connection
 neo4j_driver = GraphDatabase.driver(
@@ -59,14 +59,14 @@ neo4j_driver = GraphDatabase.driver(
 )
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
-# Create workflow instance
-workflow = QueryLogWorkflow(
+# Create connector instance
+connector = QueryLogConnector(
     neo4j_driver=neo4j_driver,
     database_name=neo4j_database,
 )
 
-# Run the workflow to extract, transform, and load query log metadata into Neo4j
-workflow.run(
+# Run the connector to extract, transform, and load query log metadata into Neo4j
+connector.run(
     query_log_file="path/to/query_log.json",
     source="bigquery"  # Currently only "bigquery" is supported
 )
@@ -81,9 +81,9 @@ The following environment variables are required:
 * `NEO4J_PASSWORD` - Neo4j password
 * `NEO4J_DATABASE` - Neo4j database name (default: `neo4j`)
 
-### Workflow Components
+### Connector Components
 
-The `QueryLogWorkflow` class encapsulates three main components:
+The `QueryLogConnector` class encapsulates three main components:
 
 * **QueryLogExtractor** - Extracts metadata from query log files and parses SQL queries
 * **QueryLogTransformer** - Transforms extracted data to the graph schema

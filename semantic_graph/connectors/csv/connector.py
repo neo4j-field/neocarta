@@ -1,4 +1,4 @@
-"""CSV Connector Workflow for loading metadata from CSV files into Neo4j."""
+"""CSV Connector for loading metadata from CSV files into Neo4j."""
 
 import pandas as pd
 from pathlib import Path
@@ -37,9 +37,9 @@ from ..utils.generate_id import (
 )
 
 
-class CSVWorkflow:
+class CSVConnector:
     """
-    Workflow for loading metadata from CSV files into Neo4j.
+    Connector for loading metadata from CSV files into Neo4j.
 
     Reads CSV files from a directory, validates them, generates IDs,
     and loads them into Neo4j.
@@ -69,7 +69,7 @@ class CSVWorkflow:
         csv_file_map: Optional[dict[str, str]] = None
     ):
         """
-        Initialize the CSV workflow.
+        Initialize the CSV connector.
 
         Parameters
         ----------
@@ -692,7 +692,7 @@ class CSVWorkflow:
         include_relationships: Optional[list[str]] = None
     ) -> None:
         """
-        Run the complete CSV workflow.
+        Run the complete CSV connector.
 
         Loads CSV files, transforms data, and loads into Neo4j.
         All nodes are loaded first, then all relationships.
@@ -776,7 +776,7 @@ class CSVWorkflow:
             if "uses_column" in rels_to_load:
                 self.load_uses_column_relationships()
 
-            print("\nCSV workflow completed successfully!")
+            print("\nCSV connector completed successfully!")
         finally:
             # Restore original file map
             self.csv_file_map = original_map

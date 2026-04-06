@@ -30,7 +30,7 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import OpenAI
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 def main(
@@ -52,14 +52,14 @@ def main(
     print(f"Batch size: {batch_size}")
 
     # Create embeddings for the nodes using sync client
-    openai_embedding_workflow = OpenAIEmbeddingWorkflow(
+    openai_embeddings_connector = OpenAIEmbeddingsConnector(
         neo4j_driver=neo4j_driver,
         client=embedding_client,
         embedding_model="text-embedding-3-small",
         dimensions=768,
         database_name=neo4j_database,
     )
-    openai_embedding_workflow.run(
+    openai_embeddings_connector.run(
         node_labels=node_labels,
         batch_size=batch_size,
     )

@@ -36,7 +36,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from semantic_graph.connectors.bigquery import BigQueryLogsWorkflow
+from semantic_graph.connectors.bigquery import BigQueryLogsConnector
 
 
 async def main(
@@ -47,7 +47,7 @@ async def main(
     drop_failed_queries: bool = True,
 ):
     load_dotenv()
-    print("Starting BigQuery Logs workflow...")
+    print("Starting BigQuery Logs connector...")
     
     # Create clients and drivers
     print("Creating drivers and clients...")
@@ -70,14 +70,14 @@ async def main(
     print(f"  Drop failed queries: {drop_failed_queries}")
 
     # Extract, transform, and load BigQuery query logs into Neo4j
-    bigquery_logs_workflow = BigQueryLogsWorkflow(
+    bigquery_logs_connector = BigQueryLogsConnector(
         client=bigquery_client,
         project_id=os.getenv("GCP_PROJECT_ID"),
         neo4j_driver=neo4j_driver,
         database_name=neo4j_database,
     )
     
-    bigquery_logs_workflow.run(
+    bigquery_logs_connector.run(
         dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
         region=region,
         start_timestamp=start_timestamp,
@@ -87,11 +87,11 @@ async def main(
     )
 
     print(f"\nQuery logs loaded into Neo4j!")
-    print(f"  Queries: {len(bigquery_logs_workflow.extractor.query_info)}")
-    print(f"  Tables referenced: {len(bigquery_logs_workflow.extractor.table_info)}")
-    print(f"  Columns referenced: {len(bigquery_logs_workflow.extractor.column_info)}")
+    print(f"  Queries: {len(bigquery_logs_connector.extractor.query_info)}")
+    print(f"  Tables referenced: {len(bigquery_logs_connector.extractor.table_info)}")
+    print(f"  Columns referenced: {len(bigquery_logs_connector.extractor.column_info)}")
 
-    print("\nWorkflow completed successfully!")
+    print("\nConnector completed successfully!")
     print("\nNext steps:")
     print("  - Query Neo4j to analyze query patterns")
     print("  - Identify frequently used tables and columns")

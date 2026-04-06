@@ -3,14 +3,14 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import OpenAI
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 from google.cloud import bigquery
-from semantic_graph.connectors.bigquery import BigQuerySchemaWorkflow
+from semantic_graph.connectors.bigquery import BigQuerySchemaConnector
 
 
 def main(with_embeddings: bool = True):
     load_dotenv()
-    print("Starting workflow...")
+    print("Starting connector...")
     print("Creating drivers and clients...")
     neo4j_driver = GraphDatabase.driver(
         uri=os.getenv("NEO4J_URI"),
@@ -24,28 +24,28 @@ def main(with_embeddings: bool = True):
 
     print("Extracting, transforming, and loading BigQuery data into Neo4j...")
     # extract, transform, and load BigQuery data into Neo4j
-    bigquery_workflow = BigQuerySchemaWorkflow(
+    bigquery_connector = BigQuerySchemaConnector(
         client=bigquery_client,
         project_id=os.getenv("GCP_PROJECT_ID"),
         dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
         neo4j_driver=neo4j_driver,
         database_name=neo4j_database,
     )
-    bigquery_workflow.run()
+    bigquery_connector.run()
 
     if with_embeddings:
         print("Generating embeddings for nodes...")
         # create embeddings for the nodes
-        openai_embedding_workflow = OpenAIEmbeddingWorkflow(
+        openai_embedding_connector = OpenAIEmbeddingsConnector(
             neo4j_driver=neo4j_driver,
             client=embedding_client,
             embedding_model="text-embedding-3-small",
             dimensions=768,
             database_name=neo4j_database,
         )
-        openai_embedding_workflow.run(node_labels=node_labels)
+        openai_embedding_connector.run(node_labels=node_labels)
 
-    print("Workflow completed successfully!")
+    print("Connector completed successfully!")
 
 
 if __name__ == "__main__":

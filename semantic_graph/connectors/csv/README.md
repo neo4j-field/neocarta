@@ -348,7 +348,7 @@ All other files are optional and can be added to enrich the graph with additiona
    - Relationship CSV files must reference valid entity IDs that match the connector-constructed IDs
 6. **ID Format**: When providing IDs in relationship CSVs, use the fully qualified format: `database_id.schema_id.table_name.column_name`
 
-## Workflow Configuration
+## Connector Configuration
 
 ### Custom File Mapping
 
@@ -362,7 +362,7 @@ custom_file_map = {
     # ... other custom filenames
 }
 
-workflow = CSVWorkflow(
+connector = CSVConnector(
     csv_directory="datasets/csv",
     neo4j_driver=neo4j_driver,
     database_name=neo4j_database,
@@ -390,19 +390,19 @@ You can choose which nodes and relationships to load:
 
 ```python
 # Load only core schema entities
-workflow.run(
+connector.run(
     include_nodes=["database", "schema", "table", "column"],
     include_relationships=["has_schema", "has_table", "has_column"]
 )
 
 # Load schema + column values
-workflow.run(
+connector.run(
     include_nodes=["database", "schema", "table", "column", "value"],
     include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
 )
 
 # Load everything including queries and glossary
-workflow.run()  # No filters = load all available CSV files
+connector.run()  # No filters = load all available CSV files
 ```
 
 ## Usage Examples
@@ -412,7 +412,7 @@ workflow.run()  # No filters = load all available CSV files
 ```python
 import os
 from neo4j import GraphDatabase
-from semantic_graph.connectors.csv import CSVWorkflow
+from semantic_graph.connectors.csv import CSVConnector
 
 # Initialize Neo4j driver
 neo4j_driver = GraphDatabase.driver(
@@ -421,15 +421,15 @@ neo4j_driver = GraphDatabase.driver(
 )
 neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
-# Create workflow instance
-workflow = CSVWorkflow(
+# Create connector instance
+connector = CSVConnector(
     csv_directory="datasets/csv",
     neo4j_driver=neo4j_driver,
     database_name=neo4j_database
 )
 
-# Run the complete workflow (loads all available CSV files)
-workflow.run()
+# Run the complete connector (loads all available CSV files)
+connector.run()
 
 # Cleanup
 neo4j_driver.close()
@@ -444,7 +444,7 @@ custom_file_map = {
     "column": "custom_columns.csv"
 }
 
-workflow = CSVWorkflow(
+connector = CSVConnector(
     csv_directory="path/to/csv/files",
     neo4j_driver=neo4j_driver,
     database_name="neo4j",
@@ -452,7 +452,7 @@ workflow = CSVWorkflow(
 )
 
 # Load only specific entities
-workflow.run(
+connector.run(
     include_nodes=["database", "schema", "table", "column", "value"],
     include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
 )
@@ -462,7 +462,7 @@ workflow.run(
 
 ```python
 # Override file mapping at runtime (without modifying instance config)
-workflow.run(
+connector.run(
     csv_file_map={"table": "alternative_tables.csv"},
     include_nodes=["table"],
     include_relationships=["has_table"]

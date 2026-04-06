@@ -1,12 +1,12 @@
 """Integration tests for CSV connector workflow."""
 
 import pytest
-from semantic_graph.connectors.csv import CSVWorkflow
+from semantic_graph.connectors.csv import CSVConnector
 
 
 def test_load_database_nodes(neo4j_driver, temp_csv_dir, sample_database_csv):
     """Test that database nodes are loaded correctly."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -33,7 +33,7 @@ test-db,Test Database,AWS
     csv_path = temp_csv_dir / "database_info.csv"
     csv_path.write_text(csv_content)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -57,7 +57,7 @@ test-db,Test Database,AWS
 
 def test_load_schema_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv):
     """Test that schema nodes are loaded correctly."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -91,7 +91,7 @@ my-project,sales,Sales
     csv_path = temp_csv_dir / "schema_info.csv"
     csv_path.write_text(csv_content)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -114,7 +114,7 @@ my-project,sales,Sales
 
 def test_load_has_schema_relationships(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv):
     """Test that HAS_SCHEMA relationships are created."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -138,7 +138,7 @@ def test_load_has_schema_relationships(neo4j_driver, temp_csv_dir, sample_databa
 
 def test_load_table_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv, sample_table_csv):
     """Test that table nodes are loaded correctly."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -160,7 +160,7 @@ def test_load_table_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sampl
 
 def test_load_column_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv, sample_table_csv, sample_column_csv):
     """Test that column nodes are loaded correctly."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -209,7 +209,7 @@ my-project,sales,orders,order_id,false,true
     csv_path = temp_csv_dir / "column_info.csv"
     csv_path.write_text(csv_content)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -256,7 +256,7 @@ my-project,sales,orders,order_id,STRING,false,true,false
     (temp_csv_dir / "table_info.csv").write_text(table_csv)
     (temp_csv_dir / "column_info.csv").write_text(column_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -305,7 +305,7 @@ my-project,sales,orders,customer_id,my-project,sales,customers,customer_id,order
     (temp_csv_dir / "column_info.csv").write_text(column_csv)
     (temp_csv_dir / "column_references_info.csv").write_text(references_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -360,7 +360,7 @@ my-project,sales,orders,status,cancelled
     (temp_csv_dir / "column_info.csv").write_text(column_csv)
     (temp_csv_dir / "value_info.csv").write_text(value_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -386,7 +386,7 @@ my-project,sales,orders,status,cancelled
 
 def test_load_query_nodes(neo4j_driver, temp_csv_dir, sample_query_csv):
     """Test that query nodes are loaded correctly."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -412,7 +412,7 @@ q001,SELECT * FROM table
     csv_path = temp_csv_dir / "query_info.csv"
     csv_path.write_text(csv_content)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -448,7 +448,7 @@ metrics,arr,Annual Recurring Revenue,Yearly revenue
     (temp_csv_dir / "category_info.csv").write_text(category_csv)
     (temp_csv_dir / "business_term_info.csv").write_text(term_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -474,7 +474,7 @@ metrics,arr,Annual Recurring Revenue,Yearly revenue
 
 def test_run_complete_workflow(neo4j_driver, temp_csv_dir, all_sample_csvs):
     """Test that the complete workflow runs successfully."""
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -534,7 +534,7 @@ minimal-db,schema1,table1,col1
     (temp_csv_dir / "table_info.csv").write_text(table_csv)
     (temp_csv_dir / "column_info.csv").write_text(column_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
