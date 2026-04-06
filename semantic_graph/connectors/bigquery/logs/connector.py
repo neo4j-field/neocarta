@@ -7,14 +7,14 @@ from ...query_log.transform import QueryLogTransformer
 from ....ingest.rdbms import Neo4jRDBMSLoader
 
 
-class BigQueryLogsWorkflow:
+class BigQueryLogsConnector:
     """
-    A workflow for extracting, transforming, and loading BigQuery query logs into Neo4j.
+    A connector for extracting, transforming, and loading BigQuery query logs into Neo4j.
     """
 
     def __init__(self, client: bigquery.Client, project_id: str, neo4j_driver: Driver, database_name: str = "neo4j"):
         """
-        Initialize the BigQuery logs workflow.
+        Initialize the BigQuery logs connector.
 
         Parameters
         ----------
@@ -126,7 +126,7 @@ class BigQueryLogsWorkflow:
         drop_failed_queries: bool = True
     ) -> None:
         """
-        Run the BigQuery logs workflow.
+        Run the BigQuery logs connector.
 
         Parameters
         ----------
@@ -149,4 +149,4 @@ class BigQueryLogsWorkflow:
         self.transform_metadata()
         print("Loading metadata into Neo4j...")
         self.load_metadata()
-        print("BigQuery logs workflow completed successfully!")
+        print("BigQuery logs connector completed successfully!")

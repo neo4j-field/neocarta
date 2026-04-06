@@ -6,14 +6,14 @@ from .extract import BigQuerySchemaExtractor
 from .transform import BigQuerySchemaTransformer
 from ....ingest.rdbms import Neo4jRDBMSLoader
 
-class BigQuerySchemaWorkflow:
+class BigQuerySchemaConnector:
     """
-    A workflow for extracting, transforming, and loading BigQuery data into Neo4j.
+    A connector for extracting, transforming, and loading BigQuery data into Neo4j.
     """
 
     def __init__(self, client: bigquery.Client, project_id: str, dataset_id: str, neo4j_driver: Driver, database_name: str = "neo4j"):
         """
-        Initialize the BigQuery workflow.
+        Initialize the BigQuery connector.
         """
 
         self.client = client
@@ -80,7 +80,7 @@ class BigQuerySchemaWorkflow:
     
     def run(self, dataset_id: Optional[str] = None) -> None:
         """
-        Run the BigQuery workflow.
+        Run the BigQuery connector.
 
         Parameters
         ----------
@@ -93,4 +93,4 @@ class BigQuerySchemaWorkflow:
         self.transform_metadata()
         print("Loading metadata into Neo4j...")
         self.load_metadata()
-        print("BigQuery workflow completed successfully!")
+        print("BigQuery connector completed successfully!")

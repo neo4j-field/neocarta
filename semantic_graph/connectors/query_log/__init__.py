@@ -2,6 +2,6 @@
 
 from .extract import QueryLogExtractor
 from .transform import QueryLogTransformer
-from .workflow import QueryLogWorkflow
+from .connector import QueryLogConnector
 
-__all__ = ["QueryLogExtractor", "QueryLogTransformer", "QueryLogWorkflow"]
+__all__ = ["QueryLogExtractor", "QueryLogTransformer", "QueryLogConnector"]

@@ -1,7 +1,7 @@
 """
 CSV Connector Example
 
-Load metadata from CSV files into Neo4j using the CSVWorkflow connector.
+Load metadata from CSV files into Neo4j using the CSVConnector.
 
 The example dataset is located in datasets/csv/ and contains a complete
 e-commerce schema with tables, columns, foreign keys, queries, and business glossary.
@@ -10,7 +10,7 @@ e-commerce schema with tables, columns, foreign keys, queries, and business glos
 import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from semantic_graph.connectors.csv import CSVWorkflow
+from semantic_graph.connectors.csv import CSVConnector
 
 
 def main():
@@ -25,14 +25,14 @@ def main():
     )
     neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
-    # Initialize CSV workflow
-    workflow = CSVWorkflow(
+    # Initialize CSV connector
+    connector = CSVConnector(
         csv_directory="datasets/csv",
         neo4j_driver=neo4j_driver,
         database_name=neo4j_database
     )
 
-    # if using non-default CSV file map, pass it to the workflow
+    # if using non-default CSV file map, pass it to the connector
     file_map = {
         "database": "database_info.csv",
         "schema": "schema_info.csv",
@@ -50,8 +50,8 @@ def main():
     # Here we define which nodes and relationships to load
     include_nodes = ["database", "schema", "table", "column", "value"]
     include_relationships = ["has_schema", "has_table", "has_column", "has_value", "references"]
-    # Run the workflow to load all CSV files
-    workflow.run(
+    # Run the connector to load all CSV files
+    connector.run(
         csv_file_map=file_map,
         include_nodes=include_nodes,
         include_relationships=include_relationships
@@ -59,7 +59,7 @@ def main():
 
     # Cleanup
     neo4j_driver.close()
-    print("\nWorkflow completed successfully!")
+    print("\nConnector completed successfully!")
 
 
 if __name__ == "__main__":

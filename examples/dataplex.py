@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import OpenAI
 from google.cloud import dataplex_v1
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
-from semantic_graph.connectors.dataplex import DataplexWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from semantic_graph.connectors.dataplex import DataplexConnector
 
 
 def main(
@@ -14,7 +14,7 @@ def main(
     include_glossary: bool = True,
 ):
     load_dotenv()
-    print("Starting Dataplex workflow...")
+    print("Starting Dataplex connector...")
     print("Creating drivers and clients...")
 
     neo4j_driver = GraphDatabase.driver(
@@ -36,7 +36,7 @@ def main(
         node_labels += ["BusinessTerm"]
 
     print("Extracting, transforming, and loading Dataplex metadata into Neo4j...")
-    workflow = DataplexWorkflow(
+    connector = DataplexConnector(
         catalog_client=catalog_client,
         glossary_client=glossary_client,
         project_id=os.getenv("GCP_PROJECT_ID"),
@@ -48,12 +48,12 @@ def main(
         include_schema=include_schema,
         include_glossary=include_glossary,
     )
-    workflow.run()
+    connector.run()
 
     if with_embeddings and node_labels:
         embedding_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         print("Generating embeddings for nodes...")
-        embeddings = OpenAIEmbeddingWorkflow(
+        embeddings = OpenAIEmbeddingsConnector(
             neo4j_driver=neo4j_driver,
             client=embedding_client,
             embedding_model="text-embedding-3-small",
@@ -62,7 +62,7 @@ def main(
         )
         embeddings.run(node_labels=node_labels)
 
-    print("Workflow completed successfully!")
+    print("Connector completed successfully!")
 
 
 if __name__ == "__main__":

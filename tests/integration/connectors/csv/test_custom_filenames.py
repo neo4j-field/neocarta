@@ -5,7 +5,7 @@ import pytest
 
 def test_custom_filename_in_constructor(neo4j_driver, temp_csv_dir):
     """Test that custom filenames can be specified in constructor."""
-    from semantic_graph.connectors.csv.workflow import CSVWorkflow
+    from semantic_graph.connectors.csv.connector import CSVConnector
 
     # Create CSV with custom name
     db_csv = """database_id,name
@@ -13,7 +13,7 @@ my-db,My Database
 """
     (temp_csv_dir / "custom_databases.csv").write_text(db_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j",
@@ -29,7 +29,7 @@ my-db,My Database
 
 def test_custom_filename_in_method(neo4j_driver, temp_csv_dir):
     """Test that custom filenames can be specified per method call."""
-    from semantic_graph.connectors.csv.workflow import CSVWorkflow
+    from semantic_graph.connectors.csv.connector import CSVConnector
 
     # Create CSVs with custom names
     db_csv = """database_id,name
@@ -41,7 +41,7 @@ my-db,my-schema,My Schema
     (temp_csv_dir / "alt_databases.csv").write_text(db_csv)
     (temp_csv_dir / "alt_schemas.csv").write_text(schema_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"
@@ -61,7 +61,7 @@ my-db,my-schema,My Schema
 
 def test_custom_filename_in_run(neo4j_driver, temp_csv_dir):
     """Test that custom filenames can be specified in run() method."""
-    from semantic_graph.connectors.csv.workflow import CSVWorkflow
+    from semantic_graph.connectors.csv.connector import CSVConnector
 
     # Create minimal CSVs with custom names
     db_csv = """database_id
@@ -73,7 +73,7 @@ test-db,test-schema
     (temp_csv_dir / "prod_databases.csv").write_text(db_csv)
     (temp_csv_dir / "prod_schemas.csv").write_text(schema_csv)
 
-    workflow = CSVWorkflow(
+    workflow = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j"

@@ -2,11 +2,11 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from semantic_graph.connectors.query_log import QueryLogWorkflow
+from semantic_graph.connectors.query_log import QueryLogConnector
 
 async def main():
     load_dotenv()
-    print("Starting workflow...")
+    print("Starting connector...")
     print("Creating drivers and clients...")
 
     neo4j_driver = GraphDatabase.driver(
@@ -16,11 +16,11 @@ async def main():
     neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
     print("Extracting, transforming, and loading query logs into Neo4j...")
-    workflow = QueryLogWorkflow(
+    connector = QueryLogConnector(
         neo4j_driver=neo4j_driver,
         database_name=neo4j_database,
     )
-    workflow.run(query_log_file="datasets/bigquery_query_logs.json", source="bigquery")
+    connector.run(query_log_file="datasets/bigquery_query_logs.json", source="bigquery")
 
 if __name__ == "__main__":
     asyncio.run(main())

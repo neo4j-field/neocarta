@@ -4,14 +4,14 @@ from .extract import QueryLogExtractor
 from .transform import QueryLogTransformer
 from ...ingest.rdbms import Neo4jRDBMSLoader
 
-class QueryLogWorkflow:
+class QueryLogConnector:
     """
-    A workflow for extracting, transforming, and loading query log data into Neo4j.
+    A connector for extracting, transforming, and loading query log data into Neo4j.
     """
 
     def __init__(self, neo4j_driver: Driver, database_name: str = "neo4j"):
         """
-        Initialize the query log workflow.
+        Initialize the query log connector.
         """
 
         self.neo4j_driver = neo4j_driver
@@ -91,7 +91,7 @@ class QueryLogWorkflow:
 
     def run(self, query_log_file: str, source: str = "bigquery") -> None:
         """
-        Run the query log workflow.
+        Run the query log connector.
 
         Parameters
         ----------
@@ -111,4 +111,4 @@ class QueryLogWorkflow:
         self.transform_metadata()
         print("Loading metadata into Neo4j...")
         self.load_metadata()
-        print("Query log workflow completed successfully!")
+        print("Query log connector completed successfully!")

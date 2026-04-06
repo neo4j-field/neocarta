@@ -6,7 +6,7 @@ Generates and stores vector embeddings for nodes in the semantic graph, enabling
 
 The embeddings module embeds the `description` field of graph nodes using OpenAI's embeddings API and writes the resulting vectors back to Neo4j. Vector indexes are created automatically per node label, and only nodes without an existing `embedding` property are processed — making reruns safe and incremental.
 
-## Workflow
+## Process
 
 ```
 Neo4j (nodes missing embeddings)
@@ -33,19 +33,19 @@ Use `OpenAI` (sync client) and call `run()`:
 ```python
 from openai import OpenAI
 from neo4j import GraphDatabase
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-workflow = OpenAIEmbeddingWorkflow(
+connector = OpenAIEmbeddingsConnector(
     neo4j_driver=driver,
     client=client,
     embedding_model="text-embedding-3-small",
     dimensions=768,
     database_name="neo4j",
 )
-workflow.run(node_labels=["Table", "Column"], batch_size=100)
+connector.run(node_labels=["Table", "Column"], batch_size=100)
 ```
 
 ### Async
@@ -55,18 +55,18 @@ Use `AsyncOpenAI` and call `arun()`. Within each batch, all embedding API calls 
 ```python
 from openai import AsyncOpenAI
 from neo4j import GraphDatabase
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingWorkflow
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-workflow = OpenAIEmbeddingWorkflow(
+connector = OpenAIEmbeddingsConnector(
     neo4j_driver=driver,
     async_client=async_client,
     embedding_model="text-embedding-3-small",
     dimensions=768,
 )
-await workflow.arun(node_labels=["Table", "Column"], batch_size=100)
+await connector.arun(node_labels=["Table", "Column"], batch_size=100)
 ```
 
 See [examples/sync_embeddings.py](../../examples/sync_embeddings.py) and [examples/async_embeddings.py](../../examples/async_embeddings.py) for runnable scripts with CLI argument support.
@@ -108,5 +108,5 @@ The index creation is idempotent (`IF NOT EXISTS`), so it is safe to call on eve
 
 | File | Purpose |
 |---|---|
-| `openai_embeddings.py` | `OpenAIEmbeddingWorkflow` class — orchestrates fetch, embed, and write |
+| `openai_embeddings.py` | `OpenAIEmbeddingsConnector` class — orchestrates fetch, embed, and write |
 | `utils.py` | `get_nodes_to_embed`, batch embedding helpers, `write_embeddings_to_graph` |

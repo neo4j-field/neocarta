@@ -1,5 +1,5 @@
 """
-Workflow for creating OpenAI embeddings.
+Connector for creating OpenAI embeddings.
 """
 
 from openai import AsyncOpenAI, OpenAI
@@ -15,14 +15,14 @@ from ..ingest.indexes import create_vector_index
 from typing import Optional
 
 
-class OpenAIEmbeddingWorkflow:
+class OpenAIEmbeddingsConnector:
     """
-    Workflow for creating OpenAI embeddings.
+    Connector for creating OpenAI embeddings.
     """
 
     def __init__(self, neo4j_driver: Driver, client: Optional[OpenAI] = None, async_client: Optional[AsyncOpenAI] = None, embedding_model: str = "text-embedding-3-small", dimensions: int = 768, database_name: str = "neo4j"):
         """
-        Initialize the OpenAI Embedding Workflow.
+        Initialize the OpenAI Embeddings Connector.
 
         Parameters
         ----------

@@ -1,4 +1,4 @@
-"""Dataplex ETL workflow for extracting, transforming, and loading metadata into Neo4j."""
+"""Dataplex connector for extracting, transforming, and loading metadata into Neo4j."""
 
 from typing import Optional
 
@@ -9,9 +9,9 @@ from .extract import DataplexExtractor
 from .transform import DataplexTransformer
 from ...ingest.rdbms import Neo4jRDBMSLoader
 
-class DataplexWorkflow:
+class DataplexConnector:
     """
-    Workflow class for Dataplex.
+    Connector class for Dataplex.
     """
 
     def __init__(self, 
@@ -27,7 +27,7 @@ class DataplexWorkflow:
     include_glossary: bool = True,
 ):
         """
-        Initialize the Dataplex workflow.
+        Initialize the Dataplex connector.
         """
         self.catalog_client = catalog_client
         self.glossary_client = glossary_client
@@ -109,7 +109,7 @@ class DataplexWorkflow:
 
     def run(self, dataset_id: Optional[str] = None) -> None:
         """
-        Run the Dataplex workflow.
+        Run the Dataplex connector.
 
         Parameters
         ----------
@@ -127,4 +127,4 @@ class DataplexWorkflow:
         self.transform_metadata()
         print("Loading metadata into Neo4j...")
         self.load_metadata()
-        print("Dataplex workflow completed successfully!")
+        print("Dataplex connector completed successfully!")
