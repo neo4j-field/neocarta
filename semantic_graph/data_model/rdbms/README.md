@@ -45,6 +45,18 @@ Relationships
 * [`(:Column)-[:HAS_VALUE]->(:Value)`](./expanded.py#L12)
     * Defines a value's parent column
 
+## Queries
+
+Queries may be cached in the graph and provided as few-shot examples in the context.
+They may also be used to shortcut query generation, if they fully address the current task.
+
+Nodes
+* `Query`
+
+Relationships
+* `(:Query)-[:USES_TABLE]->(:Table)`
+* `(:Query)-[:USES_COLUMN]->(:Table)`
+
 ## Glossary Data Model **(Partially Implemented)**
 
 Data catalogs allow business terms to be defined and linked to columns. 
@@ -102,21 +114,10 @@ Relationships
     * Defines which business terms are related to the business rule
     * This relationship may be used to identify columns that are impacted by a business rule 
 
-## SQL Queries **(Not Implemented)**
-
-SQL queries may be cached in the graph and provided as few-shot examples in the context.
-
-Nodes
-* `SQLQuery`
-
-Relationships
-* `(:SQLQuery)-[:USES_TABLE]->(:Table)`
-* `(:SQLQuery)-[:USES_COLUMN]->(:Table)`
-
 ## Metrics + KPIs **(Not Implemented)**
 
 Metrics and KPIs may be stored in the graph and linked to their associated tables and columns. 
-They may also be linked to `SQLQuery` nodes, which define how to calculate the metric.
+They may also be linked to `Query` nodes, which define how to calculate the metric.
 `Metric` is the main node label, however they may also have the additional node label `KPI`.
 
 Nodes
@@ -125,7 +126,7 @@ Nodes
     * All `KPI` labels are an additional label on `Metric` nodes
 
 Relationships
-* `(:Metric&KPI)-[:HAS_SQL_QUERY]->(:SQLQuery)`
+* `(:Metric&KPI)-[:HAS_SQL_QUERY]->(:Query)`
 
 ## Transformations **(Not Implemented)**
 
