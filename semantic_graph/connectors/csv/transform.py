@@ -1,0 +1,534 @@
+"""CSV Transformer for converting DataFrames into data model objects."""
+
+import pandas as pd
+from typing import Optional
+
+from ...data_model.rdbms.core import (
+    Database,
+    Schema,
+    Table,
+    Column,
+    HasSchema,
+    HasTable,
+    HasColumn,
+    References,
+)
+from ...data_model.rdbms.expanded import (
+    Value,
+    HasValue,
+    Glossary,
+    Category,
+    BusinessTerm,
+    HasCategory,
+    HasBusinessTerm,
+    Query,
+    UsesTable,
+    UsesColumn,
+)
+from ..models import NodesCache, RelationshipsCache
+from ..utils.generate_id import (
+    generate_database_id,
+    generate_schema_id,
+    generate_table_id,
+    generate_column_id,
+    generate_value_id,
+)
+
+
+def _available_properties(
+    df: pd.DataFrame,
+    exclude: list[str],
+    column_mapping: Optional[dict[str, str]] = None,
+    always_include: Optional[list[str]] = None,
+) -> list[str]:
+    """
+    Derive the list of model property names to write based on CSV columns present.
+
+    Excludes ID-generating columns and maps CSV names to model names where needed.
+    This controls which properties are written to Neo4j, preventing None from
+    overwriting existing values for columns absent in the CSV.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The source DataFrame.
+    exclude : list[str]
+        CSV column names to exclude (typically the ID-generating columns).
+    column_mapping : dict[str, str], optional
+        Maps CSV column names to model property names (e.g. {"data_type": "type"}).
+    always_include : list[str], optional
+        Model property names that must always appear in the result.
+    """
+    all_excluded = {"id"} | set(exclude)
+    csv_cols = [c for c in df.columns if c not in all_excluded]
+
+    if column_mapping:
+        properties = [column_mapping.get(c, c) for c in csv_cols]
+    else:
+        properties = list(csv_cols)
+
+    if always_include:
+        for prop in always_include:
+            if prop not in properties:
+                properties.append(prop)
+
+    return properties
+
+
+class CSVTransformer:
+    """
+    Transformer for converting extracted CSV DataFrames into data model objects.
+
+    Reads DataFrames from a CSVExtractor's cache and produces typed pydantic
+    nodes and relationships, storing them in internal caches.
+    Each transform method also computes the relevant properties_list so the
+    loader knows which Neo4j properties to write.
+    """
+
+    def __init__(self):
+        self._node_cache: NodesCache = NodesCache()
+        self._relationships_cache: RelationshipsCache = RelationshipsCache()
+        # Stores the properties_list for each node/relationship type
+        self._properties: dict[str, list[str]] = {}
+
+    # ------------------------------------------------------------------
+    # Node cache properties
+    # ------------------------------------------------------------------
+
+    @property
+    def database_nodes(self) -> list[Database]:
+        return self._node_cache.get("database_nodes", [])
+
+    @property
+    def schema_nodes(self) -> list[Schema]:
+        return self._node_cache.get("schema_nodes", [])
+
+    @property
+    def table_nodes(self) -> list[Table]:
+        return self._node_cache.get("table_nodes", [])
+
+    @property
+    def column_nodes(self) -> list[Column]:
+        return self._node_cache.get("column_nodes", [])
+
+    @property
+    def value_nodes(self) -> list[Value]:
+        return self._node_cache.get("value_nodes", [])
+
+    @property
+    def query_nodes(self) -> list[Query]:
+        return self._node_cache.get("query_nodes", [])
+
+    @property
+    def glossary_nodes(self) -> list[Glossary]:
+        return self._node_cache.get("glossary_nodes", [])
+
+    @property
+    def category_nodes(self) -> list[Category]:
+        return self._node_cache.get("category_nodes", [])
+
+    @property
+    def business_term_nodes(self) -> list[BusinessTerm]:
+        return self._node_cache.get("business_term_nodes", [])
+
+    # ------------------------------------------------------------------
+    # Relationship cache properties
+    # ------------------------------------------------------------------
+
+    @property
+    def has_schema_relationships(self) -> list[HasSchema]:
+        return self._relationships_cache.get("has_schema_relationships", [])
+
+    @property
+    def has_table_relationships(self) -> list[HasTable]:
+        return self._relationships_cache.get("has_table_relationships", [])
+
+    @property
+    def has_column_relationships(self) -> list[HasColumn]:
+        return self._relationships_cache.get("has_column_relationships", [])
+
+    @property
+    def has_value_relationships(self) -> list[HasValue]:
+        return self._relationships_cache.get("has_value_relationships", [])
+
+    @property
+    def has_category_relationships(self) -> list[HasCategory]:
+        return self._relationships_cache.get("has_category_relationships", [])
+
+    @property
+    def has_business_term_relationships(self) -> list[HasBusinessTerm]:
+        return self._relationships_cache.get("has_business_term_relationships", [])
+
+    @property
+    def references_relationships(self) -> list[References]:
+        return self._relationships_cache.get("references_relationships", [])
+
+    @property
+    def uses_table_relationships(self) -> list[UsesTable]:
+        return self._relationships_cache.get("uses_table_relationships", [])
+
+    @property
+    def uses_column_relationships(self) -> list[UsesColumn]:
+        return self._relationships_cache.get("uses_column_relationships", [])
+
+    # ------------------------------------------------------------------
+    # Transform methods — nodes
+    # ------------------------------------------------------------------
+
+    def transform_to_database_nodes(self, df: pd.DataFrame) -> list[Database]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Database(
+                id=generate_database_id(row.database_id),
+                name=getattr(row, "name", row.database_id) or row.database_id,
+                platform=getattr(row, "platform", None),
+                service=getattr(row, "service", None),
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["database_nodes"] = nodes
+        self._properties["database_nodes"] = _available_properties(
+            df, exclude=["database_id"], always_include=["name"]
+        )
+        return nodes
+
+    def transform_to_schema_nodes(self, df: pd.DataFrame) -> list[Schema]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Schema(
+                id=generate_schema_id(row.database_id, row.schema_id),
+                name=getattr(row, "name", row.schema_id) or row.schema_id,
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["schema_nodes"] = nodes
+        self._properties["schema_nodes"] = _available_properties(
+            df, exclude=["database_id", "schema_id"], always_include=["name"]
+        )
+        return nodes
+
+    def transform_to_table_nodes(self, df: pd.DataFrame) -> list[Table]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Table(
+                id=generate_table_id(row.database_id, row.schema_id, row.table_name),
+                name=getattr(row, "name", row.table_name) or row.table_name,
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["table_nodes"] = nodes
+        self._properties["table_nodes"] = _available_properties(
+            df, exclude=["database_id", "schema_id", "table_name"], always_include=["name"]
+        )
+        return nodes
+
+    def transform_to_column_nodes(self, df: pd.DataFrame) -> list[Column]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Column(
+                id=generate_column_id(
+                    row.database_id, row.schema_id, row.table_name, row.column_name
+                ),
+                name=getattr(row, "name", row.column_name) or row.column_name,
+                description=getattr(row, "description", None),
+                type=getattr(row, "data_type", None),
+                nullable=getattr(row, "is_nullable", True),
+                is_primary_key=getattr(row, "is_primary_key", False),
+                is_foreign_key=getattr(row, "is_foreign_key", False),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["column_nodes"] = nodes
+        self._properties["column_nodes"] = _available_properties(
+            df,
+            exclude=["database_id", "schema_id", "table_name", "column_name"],
+            column_mapping={"data_type": "type", "is_nullable": "nullable"},
+            always_include=["name"],
+        )
+        return nodes
+
+    def transform_to_value_nodes(self, df: pd.DataFrame) -> list[Value]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Value(
+                id=generate_value_id(
+                    row.database_id, row.schema_id, row.table_name, row.column_name, row.value
+                ),
+                value=row.value,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["value_nodes"] = nodes
+        self._properties["value_nodes"] = _available_properties(
+            df,
+            exclude=["database_id", "schema_id", "table_name", "column_name"],
+            always_include=["value"],
+        )
+        return nodes
+
+    def transform_to_query_nodes(self, df: pd.DataFrame) -> list[Query]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Query(
+                id=row.query_id,
+                content=row.content,
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["query_nodes"] = nodes
+        self._properties["query_nodes"] = _available_properties(
+            df, exclude=["query_id"], always_include=["content"]
+        )
+        return nodes
+
+    def transform_to_glossary_nodes(self, df: pd.DataFrame) -> list[Glossary]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Glossary(
+                id=row.glossary_id,
+                name=getattr(row, "name", row.glossary_id) or row.glossary_id,
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["glossary_nodes"] = nodes
+        self._properties["glossary_nodes"] = _available_properties(
+            df, exclude=["glossary_id"], always_include=["name"]
+        )
+        return nodes
+
+    def transform_to_category_nodes(self, df: pd.DataFrame) -> list[Category]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            Category(
+                id=row.category_id,
+                name=getattr(row, "name", row.category_id) or row.category_id,
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["category_nodes"] = nodes
+        self._properties["category_nodes"] = _available_properties(
+            df, exclude=["glossary_id", "category_id"], always_include=["name"]
+        )
+        return nodes
+
+    def transform_to_business_term_nodes(self, df: pd.DataFrame) -> list[BusinessTerm]:
+        if df is None or df.empty:
+            return []
+
+        nodes = [
+            BusinessTerm(
+                id=row.term_id,
+                name=getattr(row, "name", row.term_id) or row.term_id,
+                description=getattr(row, "description", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._node_cache["business_term_nodes"] = nodes
+        self._properties["business_term_nodes"] = _available_properties(
+            df, exclude=["category_id", "term_id"], always_include=["name"]
+        )
+        return nodes
+
+    # ------------------------------------------------------------------
+    # Transform methods — relationships
+    # ------------------------------------------------------------------
+
+    def transform_to_has_schema_relationships(self, df: pd.DataFrame) -> list[HasSchema]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            HasSchema(
+                database_id=generate_database_id(row.database_id),
+                schema_id=generate_schema_id(row.database_id, row.schema_id),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["has_schema_relationships"] = relationships
+        return relationships
+
+    def transform_to_has_table_relationships(self, df: pd.DataFrame) -> list[HasTable]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            HasTable(
+                schema_id=generate_schema_id(row.database_id, row.schema_id),
+                table_id=generate_table_id(row.database_id, row.schema_id, row.table_name),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["has_table_relationships"] = relationships
+        return relationships
+
+    def transform_to_has_column_relationships(self, df: pd.DataFrame) -> list[HasColumn]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            HasColumn(
+                table_id=generate_table_id(row.database_id, row.schema_id, row.table_name),
+                column_id=generate_column_id(
+                    row.database_id, row.schema_id, row.table_name, row.column_name
+                ),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["has_column_relationships"] = relationships
+        return relationships
+
+    def transform_to_has_value_relationships(self, df: pd.DataFrame) -> list[HasValue]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            HasValue(
+                column_id=generate_column_id(
+                    row.database_id, row.schema_id, row.table_name, row.column_name
+                ),
+                value_id=generate_value_id(
+                    row.database_id, row.schema_id, row.table_name, row.column_name, row.value
+                ),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["has_value_relationships"] = relationships
+        return relationships
+
+    def transform_to_has_category_relationships(self, df: pd.DataFrame) -> list[HasCategory]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            HasCategory(
+                glossary_id=row.glossary_id,
+                category_id=row.category_id,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["has_category_relationships"] = relationships
+        return relationships
+
+    def transform_to_has_business_term_relationships(self, df: pd.DataFrame) -> list[HasBusinessTerm]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            HasBusinessTerm(
+                category_id=row.category_id,
+                business_term_id=row.term_id,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["has_business_term_relationships"] = relationships
+        return relationships
+
+    def transform_to_references_relationships(self, df: pd.DataFrame) -> list[References]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            References(
+                source_column_id=generate_column_id(
+                    row.source_database_id,
+                    row.source_schema_id,
+                    row.source_table_name,
+                    row.source_column_name,
+                ),
+                target_column_id=generate_column_id(
+                    row.target_database_id,
+                    row.target_schema_id,
+                    row.target_table_name,
+                    row.target_column_name,
+                ),
+                criteria=getattr(row, "criteria", None),
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["references_relationships"] = relationships
+        return relationships
+
+    def transform_to_uses_table_relationships(self, df: pd.DataFrame) -> list[UsesTable]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            UsesTable(
+                query_id=row.query_id,
+                table_id=row.table_id,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["uses_table_relationships"] = relationships
+        return relationships
+
+    def transform_to_uses_column_relationships(self, df: pd.DataFrame) -> list[UsesColumn]:
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            UsesColumn(
+                query_id=row.query_id,
+                column_id=row.column_id,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["uses_column_relationships"] = relationships
+        return relationships
+
+    # ------------------------------------------------------------------
+    # Bulk transform
+    # ------------------------------------------------------------------
+
+    def transform_all(self, extractor) -> None:
+        """
+        Transform all DataFrames from a CSVExtractor into data model objects.
+
+        Parameters
+        ----------
+        extractor : CSVExtractor
+            An extractor instance whose extract_all() has already been called.
+        """
+        print("Transforming nodes...")
+        self.transform_to_database_nodes(extractor.database_info)
+        self.transform_to_schema_nodes(extractor.schema_info)
+        self.transform_to_table_nodes(extractor.table_info)
+        self.transform_to_column_nodes(extractor.column_info)
+        self.transform_to_value_nodes(extractor.value_info)
+        self.transform_to_query_nodes(extractor.query_info)
+        self.transform_to_glossary_nodes(extractor.glossary_info)
+        self.transform_to_category_nodes(extractor.category_info)
+        self.transform_to_business_term_nodes(extractor.business_term_info)
+
+        print("Transforming relationships...")
+        self.transform_to_has_schema_relationships(extractor.schema_info)
+        self.transform_to_has_table_relationships(extractor.table_info)
+        self.transform_to_has_column_relationships(extractor.column_info)
+        self.transform_to_has_value_relationships(extractor.value_info)
+        self.transform_to_has_category_relationships(extractor.category_info)
+        self.transform_to_has_business_term_relationships(extractor.business_term_info)
+        self.transform_to_references_relationships(extractor.column_references_info)
+        self.transform_to_uses_table_relationships(extractor.query_table_info)
+        self.transform_to_uses_column_relationships(extractor.query_column_info)

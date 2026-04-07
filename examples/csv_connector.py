@@ -25,13 +25,6 @@ def main():
     )
     neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
-    # Initialize CSV connector
-    connector = CSVConnector(
-        csv_directory="datasets/csv",
-        neo4j_driver=neo4j_driver,
-        database_name=neo4j_database
-    )
-
     # if using non-default CSV file map, pass it to the connector
     file_map = {
         "database": "database_info.csv",
@@ -41,6 +34,14 @@ def main():
         "value": "value_info.csv",
         # ...
     }
+    
+    # Initialize CSV connector
+    connector = CSVConnector(
+        csv_directory="datasets/csv",
+        neo4j_driver=neo4j_driver,
+        database_name=neo4j_database,
+        csv_file_map=file_map,
+    )
 
     # by default, load all nodes and relationships
     # * structural nodes and relationships
@@ -52,7 +53,6 @@ def main():
     include_relationships = ["has_schema", "has_table", "has_column", "has_value", "references"]
     # Run the connector to load all CSV files
     connector.run(
-        csv_file_map=file_map,
         include_nodes=include_nodes,
         include_relationships=include_relationships
     )

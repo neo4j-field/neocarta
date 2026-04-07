@@ -1,72 +1,29 @@
 """CSV Connector for loading metadata from CSV files into Neo4j."""
 
-import pandas as pd
-from pathlib import Path
 from typing import Optional
 from neo4j import Driver
 
-from ...data_model.rdbms.core import (
-    Database,
-    Schema,
-    Table,
-    Column,
-    HasSchema,
-    HasTable,
-    HasColumn,
-    References,
-)
-from ...data_model.rdbms.expanded import (
-    Value,
-    HasValue,
-    Glossary,
-    Category,
-    BusinessTerm,
-    HasCategory,
-    HasBusinessTerm,
-    Query,
-    UsesTable,
-    UsesColumn,
-)
 from ...ingest.rdbms import Neo4jRDBMSLoader
-from ..utils.generate_id import (
-    generate_database_id,
-    generate_schema_id,
-    generate_table_id,
-    generate_column_id,
-    generate_value_id,
-)
+from .extract import CSVExtractor
+from .transform import CSVTransformer
 
 
 class CSVConnector:
     """
     Connector for loading metadata from CSV files into Neo4j.
 
-    Reads CSV files from a directory, validates them, generates IDs,
-    and loads them into Neo4j.
+    Follows an Extract → Transform → Load pattern:
+    - Extract: CSVExtractor reads and validates CSV files into DataFrames.
+    - Transform: CSVTransformer converts DataFrames into typed data model objects.
+    - Load: Neo4jRDBMSLoader writes the objects to Neo4j.
     """
-
-    # Default CSV file names
-    DEFAULT_FILE_MAP = {
-        "database": "database_info.csv",
-        "schema": "schema_info.csv",
-        "table": "table_info.csv",
-        "column": "column_info.csv",
-        "value": "value_info.csv",
-        "query": "query_info.csv",
-        "query_table": "query_table_info.csv",
-        "query_column": "query_column_info.csv",
-        "glossary": "glossary_info.csv",
-        "category": "category_info.csv",
-        "business_term": "business_term_info.csv",
-        "column_references": "column_references_info.csv",
-    }
 
     def __init__(
         self,
         csv_directory: str,
         neo4j_driver: Driver,
         database_name: str = "neo4j",
-        csv_file_map: Optional[dict[str, str]] = None
+        csv_file_map: Optional[dict[str, str]] = None,
     ):
         """
         Initialize the CSV connector.
@@ -74,709 +31,151 @@ class CSVConnector:
         Parameters
         ----------
         csv_directory : str
-            Path to directory containing CSV files
+            Path to directory containing CSV files.
         neo4j_driver : Driver
-            Neo4j driver instance
+            Neo4j driver instance.
         database_name : str, optional
-            Neo4j database name, by default "neo4j"
+            Neo4j database name, by default "neo4j".
         csv_file_map : dict[str, str], optional
-            Custom mapping of entity types to CSV filenames.
-            Merges with DEFAULT_FILE_MAP, allowing partial overrides.
+            Custom mapping of entity keys to CSV filenames.
+            Merges with CSVExtractor.DEFAULT_FILE_MAP, allowing partial overrides.
         """
-        self.csv_directory = Path(csv_directory)
-        self.neo4j_driver = neo4j_driver
-        self.database_name = database_name
+        self.extractor = CSVExtractor(csv_directory, csv_file_map)
+        self.transformer = CSVTransformer()
         self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
 
-        # Merge custom file map with defaults
-        self.csv_file_map = self.DEFAULT_FILE_MAP.copy()
-        if csv_file_map:
-            self.csv_file_map.update(csv_file_map)
-
-    def _read_csv_if_exists(self, filename: str) -> Optional[pd.DataFrame]:
-        """Read a CSV file if it exists."""
-        filepath = self.csv_directory / filename
-        if not filepath.exists():
-            return None
-        return pd.read_csv(filepath)
-
-    def _get_properties_list(
+    def extract_metadata(
         self,
-        df: pd.DataFrame,
-        exclude_columns: list[str],
-        column_mapping: dict[str, str] = None,
-        always_include: list[str] = None
-    ) -> list[str]:
+        include_nodes: Optional[list[str]] = None,
+        include_relationships: Optional[list[str]] = None,
+    ) -> None:
         """
-        Get list of properties to load based on CSV columns.
+        Read and validate CSV files from the configured directory.
 
         Parameters
         ----------
-        df : pd.DataFrame
-            The dataframe to extract columns from
-        exclude_columns : list[str]
-            Columns to exclude (typically ID fields used for node identification)
-        column_mapping : dict[str, str], optional
-            Mapping from CSV column names to model property names
-        always_include : list[str], optional
-            Properties to always include (e.g., 'name' which is always set)
-
-        Returns
-        -------
-        list[str]
-            List of property names to load (using model property names)
+        include_nodes : list[str], optional
+            Node types to extract. If None, all node CSVs are read.
+        include_relationships : list[str], optional
+            Relationship types to extract. If None, all relationship CSVs are read.
         """
-        # Always exclude 'id' column plus any additional columns specified
-        all_excluded = ["id"] + exclude_columns
-        csv_columns = [col for col in df.columns if col not in all_excluded]
+        self.extractor.extract_all(include_nodes, include_relationships)
 
-        # Map CSV column names to model property names
-        if column_mapping:
-            properties = [column_mapping.get(col, col) for col in csv_columns]
-        else:
-            properties = csv_columns
-
-        # Add properties that should always be included
-        if always_include:
-            for prop in always_include:
-                if prop not in properties:
-                    properties.append(prop)
-
-        return properties
-
-    def load_database_nodes(self, csv_filename: Optional[str] = None) -> None:
+    def transform_metadata(self) -> None:
         """
-        Load database nodes from CSV file.
+        Convert extracted DataFrames into data model objects.
 
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['database'].
+        extract_metadata() must be called before this method.
         """
-        filename = csv_filename or self.csv_file_map["database"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
+        self.transformer.transform_all(self.extractor)
 
-        nodes = [
-            Database(
-                id=generate_database_id(row.database_id),
-                name=row.get("name", row.database_id),
-                platform=row.get("platform"),
-                service=row.get("service"),
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(
-            df,
-            exclude_columns=["database_id"],
-            always_include=["name"]
-        )
-
-        print(f"Loading {len(nodes)} database nodes...")
-        print(self.loader.load_database_nodes(nodes, properties_list=properties_list))
-
-    def load_schema_nodes(self, csv_filename: Optional[str] = None) -> None:
+    def load_metadata(self) -> None:
         """
-        Load schema nodes from CSV file.
+        Write transformed data model objects into Neo4j.
 
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['schema'].
+        transform_metadata() must be called before this method.
+        Nodes are always loaded before relationships.
         """
-        filename = csv_filename or self.csv_file_map["schema"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Schema(
-                id=generate_schema_id(row.database_id, row.schema_id),
-                name=row.get("name", row.schema_id),
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(
-            df,
-            exclude_columns=["database_id", "schema_id"],
-            always_include=["name"]
-        )
-
-        print(f"Loading {len(nodes)} schema nodes...")
-        print(self.loader.load_schema_nodes(nodes, properties_list=properties_list))
-
-    def load_has_schema_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load HAS_SCHEMA relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['schema'].
-        """
-        filename = csv_filename or self.csv_file_map["schema"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            HasSchema(
-                database_id=generate_database_id(row.database_id),
-                schema_id=generate_schema_id(row.database_id, row.schema_id),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} HAS_SCHEMA relationships...")
-        print(self.loader.load_has_schema_relationships(relationships))
-
-    def load_table_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load table nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['table'].
-        """
-        filename = csv_filename or self.csv_file_map["table"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Table(
-                id=generate_table_id(row.database_id, row.schema_id, row.table_name),
-                name=row.get("name", row.table_name),
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(
-            df,
-            exclude_columns=["database_id", "schema_id", "table_name"],
-            always_include=["name"]
-        )
-
-        print(f"Loading {len(nodes)} table nodes...")
-        print(self.loader.load_table_nodes(nodes, properties_list=properties_list))
-
-    def load_has_table_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load HAS_TABLE relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['table'].
-        """
-        filename = csv_filename or self.csv_file_map["table"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            HasTable(
-                schema_id=generate_schema_id(row.database_id, row.schema_id),
-                table_id=generate_table_id(row.database_id, row.schema_id, row.table_name),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} HAS_TABLE relationships...")
-        print(self.loader.load_has_table_relationships(relationships))
-
-    def load_column_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load column nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['column'].
-        """
-        filename = csv_filename or self.csv_file_map["column"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Column(
-                id=generate_column_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name
-                ),
-                name=row.get("name", row.column_name),
-                description=row.get("description"),
-                type=row.get("data_type"),
-                nullable=row.get("is_nullable", True),
-                is_primary_key=row.get("is_primary_key", False),
-                is_foreign_key=row.get("is_foreign_key", False),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        # Map CSV column names to model property names
-        column_mapping = {
-            "data_type": "type",
-            "is_nullable": "nullable"
-        }
-
-        properties_list = self._get_properties_list(
-            df,
-            exclude_columns=["database_id", "schema_id", "table_name", "column_name"],
-            column_mapping=column_mapping,
-            always_include=["name"]
-        )
-
-        print(f"Loading {len(nodes)} column nodes...")
-        print(self.loader.load_column_nodes(nodes, properties_list=properties_list))
-
-    def load_has_column_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load HAS_COLUMN relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['column'].
-        """
-        filename = csv_filename or self.csv_file_map["column"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            HasColumn(
-                table_id=generate_table_id(row.database_id, row.schema_id, row.table_name),
-                column_id=generate_column_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name
-                ),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} HAS_COLUMN relationships...")
-        print(self.loader.load_has_column_relationships(relationships))
-
-    def load_value_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load value nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['value'].
-        """
-        filename = csv_filename or self.csv_file_map["value"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Value(
-                id=generate_value_id(row.database_id, row.schema_id, row.table_name, row.column_name, row.value),
-                value=row.value,
-            )
-            for _, row in df.iterrows()
-        ]
-
-        # Exclude columns used for ID generation
-        properties_list = self._get_properties_list(
-            df,
-            exclude_columns=["database_id", "schema_id", "table_name", "column_name"],
-            always_include=["value"]
-        )
-
-        print(f"Loading {len(nodes)} value nodes...")
-        print(self.loader.load_value_nodes(nodes, properties_list=properties_list))
-
-    def load_has_value_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load HAS_VALUE relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['value'].
-        """
-        filename = csv_filename or self.csv_file_map["value"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            HasValue(
-                column_id=generate_column_id(row.database_id, row.schema_id, row.table_name, row.column_name),
-                value_id=generate_value_id(row.database_id, row.schema_id, row.table_name, row.column_name, row.value),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} HAS_VALUE relationships...")
-        print(self.loader.load_has_value_relationships(relationships))
-
-    def load_query_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load query nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['query'].
-        """
-        filename = csv_filename or self.csv_file_map["query"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Query(
-                id=row.query_id,
-                content=row.content,
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(df, exclude_columns=["query_id"], always_include=["content"])
-
-        print(f"Loading {len(nodes)} query nodes...")
-        print(self.loader.load_query_nodes(nodes, properties_list=properties_list))
-
-    def load_glossary_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load glossary nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['glossary'].
-        """
-        filename = csv_filename or self.csv_file_map["glossary"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Glossary(
-                id=row.glossary_id,
-                name=row.get("name", row.glossary_id),
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(df, exclude_columns=["glossary_id"], always_include=["name"])
-
-        print(f"Loading {len(nodes)} glossary nodes...")
-        print(self.loader.load_glossary_nodes(nodes, properties_list=properties_list))
-
-    def load_category_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load category nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['category'].
-        """
-        filename = csv_filename or self.csv_file_map["category"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            Category(
-                id=row.category_id,
-                name=row.get("name", row.category_id),
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(df, exclude_columns=["glossary_id", "category_id"], always_include=["name"])
-
-        print(f"Loading {len(nodes)} category nodes...")
-        print(self.loader.load_category_nodes(nodes, properties_list=properties_list))
-
-    def load_has_category_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load HAS_CATEGORY relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['category'].
-        """
-        filename = csv_filename or self.csv_file_map["category"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            HasCategory(
-                glossary_id=row.glossary_id,
-                category_id=row.category_id,
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} HAS_CATEGORY relationships...")
-        print(self.loader.load_has_category_relationships(relationships))
-
-    def load_business_term_nodes(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load business term nodes from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['business_term'].
-        """
-        filename = csv_filename or self.csv_file_map["business_term"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        nodes = [
-            BusinessTerm(
-                id=row.term_id,
-                name=row.get("name", row.term_id),
-                description=row.get("description"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        properties_list = self._get_properties_list(df, exclude_columns=["category_id", "term_id"], always_include=["name"])
-
-        print(f"Loading {len(nodes)} business term nodes...")
-        print(self.loader.load_business_term_nodes(nodes, properties_list=properties_list))
-
-    def load_has_business_term_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load HAS_BUSINESS_TERM relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['business_term'].
-        """
-        filename = csv_filename or self.csv_file_map["business_term"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            HasBusinessTerm(
-                category_id=row.category_id,
-                business_term_id=row.term_id,
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} HAS_BUSINESS_TERM relationships...")
-        print(self.loader.load_has_business_term_relationships(relationships))
-
-    def load_references_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load REFERENCES relationships from CSV file.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename to load from. Defaults to value in csv_file_map['column_references'].
-        """
-        filename = csv_filename or self.csv_file_map["column_references"]
-        df = self._read_csv_if_exists(filename)
-        if df is None or df.empty:
-            print(f"No {filename} found or file is empty")
-            return
-
-        relationships = [
-            References(
-                source_column_id=generate_column_id(
-                    row.source_database_id,
-                    row.source_schema_id,
-                    row.source_table_name,
-                    row.source_column_name
-                ),
-                target_column_id=generate_column_id(
-                    row.target_database_id,
-                    row.target_schema_id,
-                    row.target_table_name,
-                    row.target_column_name
-                ),
-                criteria=row.get("criteria"),
-            )
-            for _, row in df.iterrows()
-        ]
-
-        print(f"Loading {len(relationships)} REFERENCES relationships...")
-        print(self.loader.load_references_relationships(relationships))
-
-    def load_uses_table_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load USES_TABLE relationships from CSV.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename for query-table relationships.
-            Defaults to value in csv_file_map['query_table'].
-        """
-        filename = csv_filename or self.csv_file_map["query_table"]
-        df = self._read_csv_if_exists(filename)
-        if df is not None and not df.empty:
-            relationships = [
-                UsesTable(
-                    query_id=row.query_id,
-                    table_id=row.table_id,
-                )
-                for _, row in df.iterrows()
-            ]
-            print(f"Loading {len(relationships)} USES_TABLE relationships...")
-            print(self.loader.load_uses_table_relationships(relationships))
-        else:
-            print(f"No {filename} found or file is empty")
-
-    def load_uses_column_relationships(self, csv_filename: Optional[str] = None) -> None:
-        """
-        Load USES_COLUMN relationships from CSV.
-
-        Parameters
-        ----------
-        csv_filename : str, optional
-            CSV filename for query-column relationships.
-            Defaults to value in csv_file_map['query_column'].
-        """
-        filename = csv_filename or self.csv_file_map["query_column"]
-        df = self._read_csv_if_exists(filename)
-        if df is not None and not df.empty:
-            relationships = [
-                UsesColumn(
-                    query_id=row.query_id,
-                    column_id=row.column_id,
-                )
-                for _, row in df.iterrows()
-            ]
-            print(f"Loading {len(relationships)} USES_COLUMN relationships...")
-            print(self.loader.load_uses_column_relationships(relationships))
-        else:
-            print(f"No {filename} found or file is empty")
+        t = self.transformer
+
+        print("\n=== Loading Nodes ===")
+        if t.database_nodes:
+            print(f"Loading {len(t.database_nodes)} database nodes...")
+            print(self.loader.load_database_nodes(t.database_nodes, properties_list=t._properties.get("database_nodes")))
+        if t.schema_nodes:
+            print(f"Loading {len(t.schema_nodes)} schema nodes...")
+            print(self.loader.load_schema_nodes(t.schema_nodes, properties_list=t._properties.get("schema_nodes")))
+        if t.table_nodes:
+            print(f"Loading {len(t.table_nodes)} table nodes...")
+            print(self.loader.load_table_nodes(t.table_nodes, properties_list=t._properties.get("table_nodes")))
+        if t.column_nodes:
+            print(f"Loading {len(t.column_nodes)} column nodes...")
+            print(self.loader.load_column_nodes(t.column_nodes, properties_list=t._properties.get("column_nodes")))
+        if t.value_nodes:
+            print(f"Loading {len(t.value_nodes)} value nodes...")
+            print(self.loader.load_value_nodes(t.value_nodes, properties_list=t._properties.get("value_nodes")))
+        if t.query_nodes:
+            print(f"Loading {len(t.query_nodes)} query nodes...")
+            print(self.loader.load_query_nodes(t.query_nodes, properties_list=t._properties.get("query_nodes")))
+        if t.glossary_nodes:
+            print(f"Loading {len(t.glossary_nodes)} glossary nodes...")
+            print(self.loader.load_glossary_nodes(t.glossary_nodes, properties_list=t._properties.get("glossary_nodes")))
+        if t.category_nodes:
+            print(f"Loading {len(t.category_nodes)} category nodes...")
+            print(self.loader.load_category_nodes(t.category_nodes, properties_list=t._properties.get("category_nodes")))
+        if t.business_term_nodes:
+            print(f"Loading {len(t.business_term_nodes)} business term nodes...")
+            print(self.loader.load_business_term_nodes(t.business_term_nodes, properties_list=t._properties.get("business_term_nodes")))
+
+        print("\n=== Loading Relationships ===")
+        if t.has_schema_relationships:
+            print(f"Loading {len(t.has_schema_relationships)} HAS_SCHEMA relationships...")
+            print(self.loader.load_has_schema_relationships(t.has_schema_relationships))
+        if t.has_table_relationships:
+            print(f"Loading {len(t.has_table_relationships)} HAS_TABLE relationships...")
+            print(self.loader.load_has_table_relationships(t.has_table_relationships))
+        if t.has_column_relationships:
+            print(f"Loading {len(t.has_column_relationships)} HAS_COLUMN relationships...")
+            print(self.loader.load_has_column_relationships(t.has_column_relationships))
+        if t.has_value_relationships:
+            print(f"Loading {len(t.has_value_relationships)} HAS_VALUE relationships...")
+            print(self.loader.load_has_value_relationships(t.has_value_relationships))
+        if t.has_category_relationships:
+            print(f"Loading {len(t.has_category_relationships)} HAS_CATEGORY relationships...")
+            print(self.loader.load_has_category_relationships(t.has_category_relationships))
+        if t.has_business_term_relationships:
+            print(f"Loading {len(t.has_business_term_relationships)} HAS_BUSINESS_TERM relationships...")
+            print(self.loader.load_has_business_term_relationships(t.has_business_term_relationships))
+        if t.references_relationships:
+            print(f"Loading {len(t.references_relationships)} REFERENCES relationships...")
+            print(self.loader.load_references_relationships(t.references_relationships))
+        if t.uses_table_relationships:
+            print(f"Loading {len(t.uses_table_relationships)} USES_TABLE relationships...")
+            print(self.loader.load_uses_table_relationships(t.uses_table_relationships))
+        if t.uses_column_relationships:
+            print(f"Loading {len(t.uses_column_relationships)} USES_COLUMN relationships...")
+            print(self.loader.load_uses_column_relationships(t.uses_column_relationships))
 
     def run(
         self,
-        csv_file_map: Optional[dict[str, str]] = None,
         include_nodes: Optional[list[str]] = None,
-        include_relationships: Optional[list[str]] = None
+        include_relationships: Optional[list[str]] = None,
     ) -> None:
         """
-        Run the complete CSV connector.
+        Run the complete CSV connector (extract → transform → load).
 
-        Loads CSV files, transforms data, and loads into Neo4j.
-        All nodes are loaded first, then all relationships.
         Files that don't exist are skipped with a warning message.
 
         Parameters
         ----------
-        csv_file_map : dict[str, str], optional
-            Runtime override for CSV file mapping. Merges with instance csv_file_map.
-            Allows per-run customization without modifying the instance.
         include_nodes : list[str], optional
-            Nodes to include in loading. If None, loads all nodes.
-            Allowed values: "database", "schema", "table", "column", "value", "query", "glossary", "category", "business_term".
+            Node types to load. If None, all available node CSVs are loaded.
+            Allowed values: "database", "schema", "table", "column", "value",
+            "query", "glossary", "category", "business_term".
         include_relationships : list[str], optional
-            Relationships to include in loading. If None, loads all relationships.
-            Allowed values: "has_schema", "has_table", "has_column", "has_value", "has_category", "has_business_term", "references", "uses_table", "uses_column".
+            Relationship types to load. If None, all available relationship CSVs
+            are loaded.
+            Allowed values: "has_schema", "has_table", "has_column", "has_value",
+            "has_category", "has_business_term", "references", "uses_table",
+            "uses_column".
+
+        Examples
+        --------
+        Load only core schema entities:
+
+        >>> connector.run(
+        ...     include_nodes=["database", "schema", "table", "column"],
+        ...     include_relationships=["has_schema", "has_table", "has_column"],
+        ... )
+
+        Load everything:
+
+        >>> connector.run()
         """
-        # Temporarily override file map if provided
-        original_map = self.csv_file_map.copy()
-        if csv_file_map:
-            self.csv_file_map.update(csv_file_map)
-
-        try:
-            print(f"Reading CSV files from {self.csv_directory}...")
-
-            # Define all available nodes and relationships
-            all_nodes = ["database", "schema", "table", "column", "value", "query", "glossary", "category", "business_term"]
-            all_relationships = ["has_schema", "has_table", "has_column", "has_value", "has_category", "has_business_term", "references", "uses_table", "uses_column"]
-
-            # Use include lists or default to all
-            nodes_to_load = set(include_nodes) if include_nodes else set(all_nodes)
-            rels_to_load = set(include_relationships) if include_relationships else set(all_relationships)
-
-            print("\n=== Loading Nodes ===")
-            # Load core nodes (in dependency order)
-            if "database" in nodes_to_load:
-                self.load_database_nodes()
-            if "schema" in nodes_to_load:
-                self.load_schema_nodes()
-            if "table" in nodes_to_load:
-                self.load_table_nodes()
-            if "column" in nodes_to_load:
-                self.load_column_nodes()
-
-            # Load extended nodes
-            if "value" in nodes_to_load:
-                self.load_value_nodes()
-            if "query" in nodes_to_load:
-                self.load_query_nodes()
-            if "glossary" in nodes_to_load:
-                self.load_glossary_nodes()
-            if "category" in nodes_to_load:
-                self.load_category_nodes()
-            if "business_term" in nodes_to_load:
-                self.load_business_term_nodes()
-
-            print("\n=== Loading Relationships ===")
-            # Load hierarchical relationships
-            if "has_schema" in rels_to_load:
-                self.load_has_schema_relationships()
-            if "has_table" in rels_to_load:
-                self.load_has_table_relationships()
-            if "has_column" in rels_to_load:
-                self.load_has_column_relationships()
-            if "has_value" in rels_to_load:
-                self.load_has_value_relationships()
-
-            # Load glossary relationships
-            if "has_category" in rels_to_load:
-                self.load_has_category_relationships()
-            if "has_business_term" in rels_to_load:
-                self.load_has_business_term_relationships()
-
-            # Load reference relationships
-            if "references" in rels_to_load:
-                self.load_references_relationships()
-
-            # Load query relationships
-            if "uses_table" in rels_to_load:
-                self.load_uses_table_relationships()
-            if "uses_column" in rels_to_load:
-                self.load_uses_column_relationships()
-
-            print("\nCSV connector completed successfully!")
-        finally:
-            # Restore original file map
-            self.csv_file_map = original_map
+        print("Extracting metadata from CSV files...")
+        self.extract_metadata(include_nodes, include_relationships)
+        print("Transforming metadata...")
+        self.transform_metadata()
+        print("Loading metadata into Neo4j...")
+        self.load_metadata()
+        print("\nCSV connector completed successfully!")
