@@ -1,93 +1,47 @@
 """Test custom CSV filename functionality."""
 
-import pytest
+from semantic_graph.connectors.csv import CSVConnector
 
 
 def test_custom_filename_in_constructor(neo4j_driver, temp_csv_dir):
-    """Test that custom filenames can be specified in constructor."""
-    from semantic_graph.connectors.csv.connector import CSVConnector
+    """Test that custom filenames specified in the constructor are used."""
+    (temp_csv_dir / "custom_databases.csv").write_text("database_id,name\nmy-db,My Database\n")
 
-    # Create CSV with custom name
-    db_csv = """database_id,name
-my-db,My Database
-"""
-    (temp_csv_dir / "custom_databases.csv").write_text(db_csv)
-
-    workflow = CSVConnector(
+    connector = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j",
         csv_file_map={"database": "custom_databases.csv"}
     )
 
-    workflow.load_database_nodes()
+    connector.run(include_nodes=["database"])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (d:Database) RETURN count(d) as count")
         assert result.single()["count"] == 1
 
 
-def test_custom_filename_in_method(neo4j_driver, temp_csv_dir):
-    """Test that custom filenames can be specified per method call."""
-    from semantic_graph.connectors.csv.connector import CSVConnector
-
-    # Create CSVs with custom names
-    db_csv = """database_id,name
-my-db,My Database
-"""
-    schema_csv = """database_id,schema_id,name
-my-db,my-schema,My Schema
-"""
-    (temp_csv_dir / "alt_databases.csv").write_text(db_csv)
-    (temp_csv_dir / "alt_schemas.csv").write_text(schema_csv)
-
-    workflow = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+def test_custom_filename_partial_override(neo4j_driver, temp_csv_dir):
+    """Test that a partial csv_file_map overrides only the specified keys."""
+    (temp_csv_dir / "alt_databases.csv").write_text("database_id,name\nmy-db,My Database\n")
+    # schema uses the default filename
+    (temp_csv_dir / "schema_info.csv").write_text(
+        "database_id,schema_id,name\nmy-db,my-schema,My Schema\n"
     )
 
-    # Use custom filenames per method call
-    workflow.load_database_nodes(csv_filename="alt_databases.csv")
-    workflow.load_schema_nodes(csv_filename="alt_schemas.csv")
-
-    with neo4j_driver.session(database="neo4j") as session:
-        result = session.run("MATCH (d:Database) RETURN count(d) as count")
-        assert result.single()["count"] == 1
-
-        result = session.run("MATCH (s:Schema) RETURN count(s) as count")
-        assert result.single()["count"] == 1
-
-
-def test_custom_filename_in_run(neo4j_driver, temp_csv_dir):
-    """Test that custom filenames can be specified in run() method."""
-    from semantic_graph.connectors.csv.connector import CSVConnector
-
-    # Create minimal CSVs with custom names
-    db_csv = """database_id
-test-db
-"""
-    schema_csv = """database_id,schema_id
-test-db,test-schema
-"""
-    (temp_csv_dir / "prod_databases.csv").write_text(db_csv)
-    (temp_csv_dir / "prod_schemas.csv").write_text(schema_csv)
-
-    workflow = CSVConnector(
+    connector = CSVConnector(
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        database_name="neo4j",
+        csv_file_map={"database": "alt_databases.csv"}
     )
 
-    # Override filenames for this run
-    workflow.run(csv_file_map={
-        "database": "prod_databases.csv",
-        "schema": "prod_schemas.csv"
-    })
+    connector.run(
+        include_nodes=["database", "schema"],
+        include_relationships=["has_schema"]
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
-        result = session.run("MATCH (d:Database) RETURN count(d) as count")
-        assert result.single()["count"] == 1
-
-        result = session.run("MATCH (s:Schema) RETURN count(s) as count")
-        assert result.single()["count"] == 1
+        assert session.run("MATCH (d:Database) RETURN count(d) as count").single()["count"] == 1
+        assert session.run("MATCH (s:Schema) RETURN count(s) as count").single()["count"] == 1
+        assert session.run("MATCH ()-[:HAS_SCHEMA]->() RETURN count(*) as count").single()["count"] == 1
