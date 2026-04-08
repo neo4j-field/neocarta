@@ -36,7 +36,7 @@ def get_ecommerce_eval_samples() -> list[EvalSample]:
     """
     # Load YAML config
     config_path = Path(__file__).parent / "ecommerce_samples.yaml"
-    with open(config_path) as f:
+    with config_path.open() as f:
         config = yaml.safe_load(f)
 
     # Convert YAML to EvalSample objects

@@ -33,7 +33,7 @@ class BigQuerySchemaRetriever:
         if not self.schema_path.exists():
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
 
-        with open(self.schema_path) as f:
+        with self.schema_path.open() as f:
             self.schema_data: list[dict[str, Any]] = json.load(f)
 
         self._schema_str: str | None = None
@@ -110,7 +110,7 @@ class BigQuerySchemaRetriever:
         # Serialize TableContext objects to JSON
         schema_data = [ctx.model_dump() for ctx in mcp_response]
 
-        with open(path, "w") as f:
+        with Path(path).open("w") as f:
             json.dump(schema_data, f, indent=2)
 
         return cls(path)

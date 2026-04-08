@@ -1,5 +1,7 @@
 """Reporting and analysis for evaluation results."""
 
+import json
+from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
 
@@ -260,9 +262,6 @@ def export_results_to_json(samples: list[EvalSample], output_path: str) -> None:
     output_path : str
         Path to output JSON file
     """
-    import json
-    from pathlib import Path
-
     results = []
     for sample in samples:
         results.append(
@@ -281,7 +280,7 @@ def export_results_to_json(samples: list[EvalSample], output_path: str) -> None:
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_path, "w") as f:
+    with Path(output_path).open("w") as f:
         json.dump(results, f, indent=2, default=str)
 
     print(f"\n✓ Exported results to {output_path}")

@@ -134,7 +134,7 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
     'my-project.sales.orders.status.9cdfb439c7876e703e307864c9167a15'
     """
     # Generate a short hash of the value (first 32 characters of MD5)
-    value_hash = hashlib.md5(str(value).encode()).hexdigest()[:32]
+    value_hash = hashlib.md5(str(value).encode(), usedforsecurity=False).hexdigest()[:32]
     return f"{database}.{schema}.{table}.{column}.{value_hash}"
 
 

@@ -1,6 +1,5 @@
 """Dataplex connector for extracting, transforming, and loading metadata into Neo4j."""
 
-
 from google.cloud import dataplex_v1
 from neo4j import Driver
 

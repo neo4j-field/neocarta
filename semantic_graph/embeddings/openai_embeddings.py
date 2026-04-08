@@ -1,6 +1,5 @@
 """Connector for creating OpenAI embeddings."""
 
-
 import pandas as pd
 from neo4j import Driver
 from openai import AsyncOpenAI, OpenAI

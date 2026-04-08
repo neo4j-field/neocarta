@@ -14,7 +14,7 @@ def test_validate_properties_list_valid():
 
 
 def test_validate_properties_list_invalid():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid"):
         _validate_properties_list(Database, ["name", "description", "platform", "invalid"])
 
 

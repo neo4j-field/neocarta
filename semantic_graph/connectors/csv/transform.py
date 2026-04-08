@@ -1,6 +1,5 @@
 """CSV Transformer for converting DataFrames into data model objects."""
 
-
 import pandas as pd
 
 from ...data_model.rdbms.core import (

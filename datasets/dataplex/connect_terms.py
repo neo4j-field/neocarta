@@ -138,9 +138,6 @@ if __name__ == "__main__":
     GLOSSARY_ID = os.getenv("DATAPLEX_GLOSSARY_ID")
 
     config = {
-        # "customers": {
-        #     "customer_id": "customer-id",
-        # },
         "products": {
             "product_id": "product-id",
         },

@@ -1,6 +1,7 @@
 """CSV Extractor for reading and validating CSV files into a cache."""
 
 from pathlib import Path
+from typing import ClassVar
 
 import pandas as pd
 
@@ -71,7 +72,7 @@ class CSVExtractor:
     and stores the resulting DataFrames in an internal cache.
     """
 
-    DEFAULT_FILE_MAP: dict[str, str] = {
+    DEFAULT_FILE_MAP: ClassVar[dict[str, str]] = {
         "database": "database_info.csv",
         "schema": "schema_info.csv",
         "table": "table_info.csv",

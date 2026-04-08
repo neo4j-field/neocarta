@@ -61,9 +61,8 @@ class TestIncludeValidation:
 
     def test_error_message_lists_valid_values(self, csv_dir):
         extractor = CSVExtractor(str(csv_dir))
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="database"):
             extractor.extract_all(include_nodes=["bad"])
-        assert "database" in str(exc_info.value)
 
     def test_all_valid_node_types_accepted(self, csv_dir):
         extractor = CSVExtractor(str(csv_dir))

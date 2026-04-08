@@ -75,7 +75,9 @@ def write_neo4j_constraints(
             try:
                 c = key_constraints[node_label]
             except KeyError as e:
-                raise ValueError(f"Node key constraint not found for node label {node_label}.") from e
+                raise ValueError(
+                    f"Node key constraint not found for node label {node_label}."
+                ) from e
             _, summary, _ = neo4j_driver.execute_query(
                 query_=c, routing_=RoutingControl.WRITE, database_=database_name
             )
@@ -86,7 +88,9 @@ def write_neo4j_constraints(
             try:
                 c = unique_constraints[node_label]
             except KeyError as e:
-                raise ValueError(f"Node unique constraint not found for node label {node_label}.") from e
+                raise ValueError(
+                    f"Node unique constraint not found for node label {node_label}."
+                ) from e
             _, summary, _ = neo4j_driver.execute_query(
                 query_=c, routing_=RoutingControl.WRITE, database_=database_name
             )

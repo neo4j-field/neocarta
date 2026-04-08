@@ -28,7 +28,8 @@ def create_vector_index(
     dict
         The summary of the vector index created.
     """
-    assert dimensions > 0, "Dimensions must be an integer greater than 0"
+    if dimensions <= 0:
+        raise ValueError("Dimensions must be an integer greater than 0")
 
     vector_index_query = f"""
 CREATE VECTOR INDEX {node_label.lower() + "_vector_index"} IF NOT EXISTS

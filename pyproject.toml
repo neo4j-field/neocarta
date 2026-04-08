@@ -109,16 +109,34 @@ ignore = [
     "FBT002",  # Boolean default value positional argument
     "FBT003",  # Boolean positional value in call
 
+    # Stylistic pandas preferences — existing style is fine
+    "PD003",   # .isnull() vs .isna()
+    "PD011",   # .values vs .to_numpy()
+    "PERF401", # Replace for loop with list comprehension — often less readable
+
+    # Internal SQL construction, not user-facing injection risk
+    "S608",    # Hardcoded SQL expression
+    # Intentional silent pass (e.g. best-effort parsing)
+    "S110",    # try-except-pass
+    "SIM117",  # Merge nested with statements — nested is often more readable
+
     # Exception details
     "EM101",   # Raw string in exception
     "EM102",   # f-string in exception
     "TRY003",  # Long exception messages outside exception class
+    "TRY300",  # Consider moving return to else block — reduces readability
+    "TRY301",  # Abstract raise to inner function — overly pedantic
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
-    "S101",  # assert is idiomatic in pytest
-    "ANN",   # Type hints optional in tests
+    "S101",    # assert is idiomatic in pytest
+    "ANN",     # Type hints optional in tests
+    "D",       # Docstrings optional in tests
+    "PLC0415", # Lazy imports acceptable in tests
+]
+"eval/retrievers/bigquery_schema_retriever.py" = [
+    "PLC0415", # Lazy import to avoid circular dependency with eval package
 ]
 
 [tool.ruff.lint.flake8-annotations]

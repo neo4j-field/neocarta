@@ -87,9 +87,10 @@ class BigQuerySchemaExtractor:
         """
         dataset_id = dataset_id or self.dataset_id
 
-        assert dataset_id is not None, (
-            "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
-        )
+        if dataset_id is None:
+            raise ValueError(
+                "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
+            )
 
         return dataset_id
 
@@ -152,9 +153,7 @@ WHERE schema_name = '{dataset_id}'
 
         return df
 
-    def extract_table_info(
-        self, dataset_id: str | None = None, cache: bool = True
-    ) -> pd.DataFrame:
+    def extract_table_info(self, dataset_id: str | None = None, cache: bool = True) -> pd.DataFrame:
         """
         Extract BigQuery table information from the specified dataset.
 
@@ -383,7 +382,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         result["value_id"] = result.apply(
             lambda row: row["column_id"]
             + "."
-            + hashlib.md5(row["unique_value"].encode()).hexdigest(),
+            + hashlib.md5(row["unique_value"].encode(), usedforsecurity=False).hexdigest(),
             axis=1,
         )
 

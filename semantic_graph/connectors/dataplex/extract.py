@@ -1,6 +1,5 @@
 """Extract metadata from GCP Dataplex."""
 
-
 import pandas as pd
 from google.cloud import dataplex_v1
 
@@ -126,9 +125,10 @@ class DataplexExtractor:
         """
         dataset_id = dataset_id or self.dataset_id
 
-        assert dataset_id is not None, (
-            "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
-        )
+        if dataset_id is None:
+            raise ValueError(
+                "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
+            )
 
         return dataset_id
 

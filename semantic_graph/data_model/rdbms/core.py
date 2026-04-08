@@ -1,6 +1,5 @@
 """The core components of the RDBMS metadata graph data model."""
 
-
 from pandas import isna
 from pydantic import BaseModel, Field, field_validator
 

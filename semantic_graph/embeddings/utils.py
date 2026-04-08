@@ -35,7 +35,8 @@ def get_nodes_to_embed(
         - node_label: The label of the node.
         - description: The description of the node.
     """
-    assert min_length > 0, "Minimum length must be greater than 0"
+    if min_length <= 0:
+        raise ValueError("Minimum length must be greater than 0")
 
     query = f"""
 MATCH (n:{node_label})
@@ -112,8 +113,8 @@ async def _create_embeddings_for_batch_async(
     # Execute all tasks concurrently
     embedding_results = await asyncio.gather(*tasks)
     return [
-        (id, embedding)
-        for id, embedding in zip(batch["id"], embedding_results, strict=False)
+        (node_id, embedding)
+        for node_id, embedding in zip(batch["id"], embedding_results, strict=False)
         if embedding is not None
     ]
 

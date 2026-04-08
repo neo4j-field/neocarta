@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pandas as pd
 import sqlglot
@@ -13,7 +14,7 @@ from semantic_graph.connectors.utils.generate_id import (
 
 def parse_bigquery_query_log_json(query_log_file: str) -> pd.DataFrame:
     """Parse a BigQuery query log JSON file into a Pandas DataFrame."""
-    with open(query_log_file) as f:
+    with Path(query_log_file).open() as f:
         data = json.load(f)
 
     query_metadata = []

@@ -122,7 +122,8 @@ def score_execution_accuracy(
                     gen_row = generated_result.iloc[idx].values
                     gold_row = gold_result.iloc[idx].values
                     if len(gen_row) == len(gold_row) and all(
-                        (pd.isna(g) and pd.isna(gd)) or g == gd for g, gd in zip(gen_row, gold_row, strict=False)
+                        (pd.isna(g) and pd.isna(gd)) or g == gd
+                        for g, gd in zip(gen_row, gold_row, strict=False)
                     ):
                         matching_rows += 1
                 except Exception:

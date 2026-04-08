@@ -1,6 +1,5 @@
 """The core components of the LPG (Labeled Property Graph) metadata graph data model."""
 
-
 from pandas import isna
 from pydantic import BaseModel, Field, field_validator
 
@@ -74,9 +73,7 @@ class Node(BaseModel):
     additional_labels: list[str] | None = Field(
         default=None, description="Additional labels on the node"
     )
-    description: str | None = Field(
-        default=None, description="The description of the node label"
-    )
+    description: str | None = Field(default=None, description="The description of the node label")
     embedding: list[float] | None = Field(
         default=None, description="The embedding of the node description"
     )

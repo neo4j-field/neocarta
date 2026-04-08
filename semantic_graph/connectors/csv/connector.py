@@ -1,6 +1,5 @@
 """CSV Connector for loading metadata from CSV files into Neo4j."""
 
-
 from neo4j import Driver
 
 from ...ingest.rdbms import Neo4jRDBMSLoader

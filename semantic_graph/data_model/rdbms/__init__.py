@@ -1,5 +1,25 @@
-from .core import *
-from .expanded import *
+from .core import (
+    Column,
+    Database,
+    HasColumn,
+    HasSchema,
+    HasTable,
+    References,
+    Schema,
+    Table,
+)
+from .expanded import (
+    BusinessTerm,
+    Category,
+    Glossary,
+    HasBusinessTerm,
+    HasCategory,
+    HasValue,
+    Query,
+    UsesColumn,
+    UsesTable,
+    Value,
+)
 
 __all__ = [
     "BusinessTerm",

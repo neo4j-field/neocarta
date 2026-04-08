@@ -182,11 +182,8 @@ def test_extractor_with_no_project_id_raises_error():
     mock_client = MagicMock()
     mock_client.project = None
 
-    try:
+    with pytest.raises(ValueError, match="Project ID is required"):
         BigQueryLogsExtractor(client=mock_client)
-        raise AssertionError("Should have raised ValueError")
-    except ValueError as e:
-        assert "Project ID is required" in str(e)
 
 
 def test_extract_with_empty_results(mock_bigquery_client):

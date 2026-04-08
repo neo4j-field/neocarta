@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from collections import Counter
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -16,6 +17,7 @@ from eval import (
     get_ecommerce_eval_samples,
     print_report,
 )
+from eval.datasets.schema_registry import persist_graph_schema_from_mcp
 
 
 async def main() -> None:
@@ -28,19 +30,17 @@ async def main() -> None:
     print("=" * 80)
 
     # Configuration
-    PROJECT_ROOT = Path(__file__).parent.parent
-    SEMANTIC_MCP_SERVER = "mcp-server"
-    FULL_SCHEMA_PATH = PROJECT_ROOT / "eval" / "datasets" / "schemas" / "demo_ecommerce_schema.json"
+    project_root = Path(__file__).parent.parent
+    semantic_mcp_server = "mcp-server"
+    full_schema_path = project_root / "eval" / "datasets" / "schemas" / "demo_ecommerce_schema.json"
 
     # Persist schema if it doesn't exist
-    if not FULL_SCHEMA_PATH.exists():
+    if not full_schema_path.exists():
         print("\n📥 Schema file not found. Persisting from MCP server...")
-        print(f"   Source: {SEMANTIC_MCP_SERVER}")
-        print(f"   Target: {FULL_SCHEMA_PATH}")
+        print(f"   Source: {semantic_mcp_server}")
+        print(f"   Target: {full_schema_path}")
 
-        from eval.datasets.schema_registry import persist_graph_schema_from_mcp
-
-        await persist_graph_schema_from_mcp(SEMANTIC_MCP_SERVER, FULL_SCHEMA_PATH)
+        await persist_graph_schema_from_mcp(semantic_mcp_server, full_schema_path)
         print("   ✓ Schema persisted successfully")
 
     # Initialize clients
@@ -48,8 +48,8 @@ async def main() -> None:
     llm_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     # Load schema baseline
-    print(f"\n📁 Loading schema baseline from {FULL_SCHEMA_PATH}")
-    full_schema_retriever = BigQuerySchemaRetriever(FULL_SCHEMA_PATH)
+    print(f"\n📁 Loading schema baseline from {full_schema_path}")
+    full_schema_retriever = BigQuerySchemaRetriever(full_schema_path)
     print(f"   Tables: {full_schema_retriever.get_num_tables()}")
     print(f"   Columns: {full_schema_retriever.get_num_columns()}")
 
@@ -59,8 +59,6 @@ async def main() -> None:
     print(f"   Total samples: {len(samples)}")
 
     # Count by archetype
-    from collections import Counter
-
     archetypes = Counter(s.archetype for s in samples)
     print("   Distribution:")
     for arch, count in archetypes.items():
@@ -68,11 +66,11 @@ async def main() -> None:
 
     # Initialize runner
     print("\n🚀 Initializing evaluation runner...")
-    print(f"   MCP Server: {SEMANTIC_MCP_SERVER}")
+    print(f"   MCP Server: {semantic_mcp_server}")
     print("   LLM Model: gpt-4o")
 
     runner = EvalRunner(
-        semantic_mcp_server_path=SEMANTIC_MCP_SERVER,
+        semantic_mcp_server_path=semantic_mcp_server,
         full_schema_retriever=full_schema_retriever,
         bq_client=bq_client,
         llm_client=llm_client,
@@ -96,7 +94,7 @@ async def main() -> None:
     print_report(report)
 
     # Export results
-    output_dir = PROJECT_ROOT / "eval" / "results"
+    output_dir = project_root / "eval" / "results"
     output_dir.mkdir(exist_ok=True)
 
     results_path = output_dir / "eval_results.json"

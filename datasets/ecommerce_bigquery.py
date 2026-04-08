@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from google.cloud import bigquery
 
 
@@ -10,7 +12,7 @@ def load_ecommerce_dataset_to_bigquery(client: bigquery.Client) -> None:
     client: bigquery.Client
         The BigQuery client.
     """
-    with open("datasets/create-ecommerce-dataset.sql") as f:
+    with Path("datasets/create-ecommerce-dataset.sql").open() as f:
         sql = f.read()
 
     job = client.query(sql)

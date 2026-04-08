@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field
 
 
@@ -7,13 +6,6 @@ class JoinContext(BaseModel):
 
     table_name: str = Field(..., description="The name of the table")
     column_names: list[str] = Field(..., description="The names of the columns a table joins on")
-
-
-# class ReferenceContext(BaseModel):
-#     """Model representing context for a column referencing a column in a different table"""
-
-#     table_name: str = Field(..., description="The name of the table")
-#     column_name: str = Field(..., description="The name of the column")
 
 
 class ColumnContext(BaseModel):

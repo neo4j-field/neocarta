@@ -1,4 +1,3 @@
-
 from google.cloud import bigquery
 from neo4j import Driver
 

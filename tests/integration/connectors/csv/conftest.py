@@ -14,28 +14,25 @@ neo4j_container = Neo4jContainer("neo4j:5.26.23")
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup(request):
+def setup():
     """Start Neo4j container once per test module."""
     print("\nStarting Neo4j container...")
     neo4j_container.start()
     print(f"Neo4j container started at {neo4j_container.get_connection_url()}")
-
-    def remove_container():
-        print("\nStopping Neo4j container...")
-        try:
-            if hasattr(neo4j_container, "_container") and neo4j_container._container:
-                neo4j_container.stop()
-        except Exception as e:
-            print(f"Error stopping container: {e}")
-
-    request.addfinalizer(remove_container)
 
     # Set environment variables
     os.environ["NEO4J_URI"] = neo4j_container.get_connection_url()
     os.environ["NEO4J_HOST"] = neo4j_container.get_container_host_ip()
     os.environ["NEO4J_PORT"] = str(neo4j_container.get_exposed_port(7687))
 
-    return neo4j_container
+    yield neo4j_container
+
+    print("\nStopping Neo4j container...")
+    try:
+        if hasattr(neo4j_container, "_container") and neo4j_container._container:
+            neo4j_container.stop()
+    except Exception as e:
+        print(f"Error stopping container: {e}")
 
 
 @pytest.fixture
