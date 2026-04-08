@@ -171,8 +171,10 @@ class CSVExtractor:
         if not filepath.exists():
             return None
         df = pd.read_csv(filepath)
-        # Normalize null-like string values
-        return df.replace({"NaN": None, "NULL": None, "null": None}).where(df.notna(), None)
+        # pandas already converts "NaN", "NULL", "null" to float NaN via its
+        # default na_values. Convert remaining NaN to Python None so downstream
+        # code receives None rather than float('nan').
+        return df.where(df.notna(), None)
 
     def _validate_columns(self, df: pd.DataFrame, entity_key: str, filename: str) -> None:
         """

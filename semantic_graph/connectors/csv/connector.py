@@ -67,7 +67,28 @@ class CSVConnector:
 
         extract_metadata() must be called before this method.
         """
-        self.transformer.transform_all(self.extractor)
+        e = self.extractor
+        t = self.transformer
+
+        t.transform_to_database_nodes(e.database_info)
+        t.transform_to_schema_nodes(e.schema_info)
+        t.transform_to_table_nodes(e.table_info)
+        t.transform_to_column_nodes(e.column_info)
+        t.transform_to_value_nodes(e.value_info)
+        t.transform_to_query_nodes(e.query_info)
+        t.transform_to_glossary_nodes(e.glossary_info)
+        t.transform_to_category_nodes(e.category_info)
+        t.transform_to_business_term_nodes(e.business_term_info)
+
+        t.transform_to_has_schema_relationships(e.schema_info)
+        t.transform_to_has_table_relationships(e.table_info)
+        t.transform_to_has_column_relationships(e.column_info)
+        t.transform_to_has_value_relationships(e.value_info)
+        t.transform_to_has_category_relationships(e.category_info)
+        t.transform_to_has_business_term_relationships(e.business_term_info)
+        t.transform_to_references_relationships(e.column_references_info)
+        t.transform_to_uses_table_relationships(e.query_table_info)
+        t.transform_to_uses_column_relationships(e.query_column_info)
 
     def load_metadata(self) -> None:
         """
@@ -81,31 +102,31 @@ class CSVConnector:
         print("\n=== Loading Nodes ===")
         if t.database_nodes:
             print(f"Loading {len(t.database_nodes)} database nodes...")
-            print(self.loader.load_database_nodes(t.database_nodes, properties_list=t._properties.get("database_nodes")))
+            print(self.loader.load_database_nodes(t.database_nodes, properties_list=t.get_properties("database_nodes")))
         if t.schema_nodes:
             print(f"Loading {len(t.schema_nodes)} schema nodes...")
-            print(self.loader.load_schema_nodes(t.schema_nodes, properties_list=t._properties.get("schema_nodes")))
+            print(self.loader.load_schema_nodes(t.schema_nodes, properties_list=t.get_properties("schema_nodes")))
         if t.table_nodes:
             print(f"Loading {len(t.table_nodes)} table nodes...")
-            print(self.loader.load_table_nodes(t.table_nodes, properties_list=t._properties.get("table_nodes")))
+            print(self.loader.load_table_nodes(t.table_nodes, properties_list=t.get_properties("table_nodes")))
         if t.column_nodes:
             print(f"Loading {len(t.column_nodes)} column nodes...")
-            print(self.loader.load_column_nodes(t.column_nodes, properties_list=t._properties.get("column_nodes")))
+            print(self.loader.load_column_nodes(t.column_nodes, properties_list=t.get_properties("column_nodes")))
         if t.value_nodes:
             print(f"Loading {len(t.value_nodes)} value nodes...")
-            print(self.loader.load_value_nodes(t.value_nodes, properties_list=t._properties.get("value_nodes")))
+            print(self.loader.load_value_nodes(t.value_nodes, properties_list=t.get_properties("value_nodes")))
         if t.query_nodes:
             print(f"Loading {len(t.query_nodes)} query nodes...")
-            print(self.loader.load_query_nodes(t.query_nodes, properties_list=t._properties.get("query_nodes")))
+            print(self.loader.load_query_nodes(t.query_nodes, properties_list=t.get_properties("query_nodes")))
         if t.glossary_nodes:
             print(f"Loading {len(t.glossary_nodes)} glossary nodes...")
-            print(self.loader.load_glossary_nodes(t.glossary_nodes, properties_list=t._properties.get("glossary_nodes")))
+            print(self.loader.load_glossary_nodes(t.glossary_nodes, properties_list=t.get_properties("glossary_nodes")))
         if t.category_nodes:
             print(f"Loading {len(t.category_nodes)} category nodes...")
-            print(self.loader.load_category_nodes(t.category_nodes, properties_list=t._properties.get("category_nodes")))
+            print(self.loader.load_category_nodes(t.category_nodes, properties_list=t.get_properties("category_nodes")))
         if t.business_term_nodes:
             print(f"Loading {len(t.business_term_nodes)} business term nodes...")
-            print(self.loader.load_business_term_nodes(t.business_term_nodes, properties_list=t._properties.get("business_term_nodes")))
+            print(self.loader.load_business_term_nodes(t.business_term_nodes, properties_list=t.get_properties("business_term_nodes")))
 
         print("\n=== Loading Relationships ===")
         if t.has_schema_relationships:

@@ -498,13 +498,19 @@ connector.run(
     include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
 )
 
-# Or use a custom file mapping
+# Or use a custom file mapping (configured at construction time)
 custom_file_map = {
     "database": "my_database.csv",
     "schema": "my_schema.csv",
     # ... other custom filenames
 }
-connector.run(csv_file_map=custom_file_map)
+connector = CSVConnector(
+    csv_directory="datasets/csv",
+    neo4j_driver=neo4j_driver,
+    database_name=neo4j_database,
+    csv_file_map=custom_file_map,
+)
+connector.run()
 ```
 
 ##### Sample Dataset

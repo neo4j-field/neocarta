@@ -88,8 +88,22 @@ class CSVTransformer:
     def __init__(self):
         self._node_cache: NodesCache = NodesCache()
         self._relationships_cache: RelationshipsCache = RelationshipsCache()
-        # Stores the properties_list for each node/relationship type
+        # Derived from the columns present in each source CSV file.
+        # CSV files have a dynamic structure (optional columns may or may not
+        # be present), so this cannot be hardcoded at the loader call site the
+        # way BigQuery's transformer can.
         self._properties: dict[str, list[str]] = {}
+
+    def get_properties(self, key: str) -> list[str]:
+        """
+        Return the properties_list for a given node or relationship type.
+
+        Parameters
+        ----------
+        key : str
+            Cache key (e.g. "database_nodes", "column_nodes").
+        """
+        return self._properties.get(key, [])
 
     # ------------------------------------------------------------------
     # Node cache properties
@@ -498,37 +512,3 @@ class CSVTransformer:
         self._relationships_cache["uses_column_relationships"] = relationships
         return relationships
 
-    # ------------------------------------------------------------------
-    # Bulk transform
-    # ------------------------------------------------------------------
-
-    def transform_all(self, extractor) -> None:
-        """
-        Transform all DataFrames from a CSVExtractor into data model objects.
-
-        Parameters
-        ----------
-        extractor : CSVExtractor
-            An extractor instance whose extract_all() has already been called.
-        """
-        print("Transforming nodes...")
-        self.transform_to_database_nodes(extractor.database_info)
-        self.transform_to_schema_nodes(extractor.schema_info)
-        self.transform_to_table_nodes(extractor.table_info)
-        self.transform_to_column_nodes(extractor.column_info)
-        self.transform_to_value_nodes(extractor.value_info)
-        self.transform_to_query_nodes(extractor.query_info)
-        self.transform_to_glossary_nodes(extractor.glossary_info)
-        self.transform_to_category_nodes(extractor.category_info)
-        self.transform_to_business_term_nodes(extractor.business_term_info)
-
-        print("Transforming relationships...")
-        self.transform_to_has_schema_relationships(extractor.schema_info)
-        self.transform_to_has_table_relationships(extractor.table_info)
-        self.transform_to_has_column_relationships(extractor.column_info)
-        self.transform_to_has_value_relationships(extractor.value_info)
-        self.transform_to_has_category_relationships(extractor.category_info)
-        self.transform_to_has_business_term_relationships(extractor.business_term_info)
-        self.transform_to_references_relationships(extractor.column_references_info)
-        self.transform_to_uses_table_relationships(extractor.query_table_info)
-        self.transform_to_uses_column_relationships(extractor.query_column_info)

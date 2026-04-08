@@ -460,10 +460,17 @@ connector.run(
 
 ### Runtime File Override
 
+File mapping is configured at construction time. To use a different mapping for a specific run, create a new connector instance:
+
 ```python
-# Override file mapping at runtime (without modifying instance config)
-connector.run(
+# Use an alternative file mapping for a specific run
+connector = CSVConnector(
+    csv_directory="path/to/csv/files",
+    neo4j_driver=neo4j_driver,
+    database_name="neo4j",
     csv_file_map={"table": "alternative_tables.csv"},
+)
+connector.run(
     include_nodes=["table"],
     include_relationships=["has_table"]
 )
