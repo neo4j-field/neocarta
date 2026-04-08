@@ -13,12 +13,12 @@ def generate_database_id(database: str) -> str:
     database : str
         The database identifier (name or ID)
 
-    Returns
+    Returns:
     -------
     str
         The database ID
 
-    Examples
+    Examples:
     --------
     >>> generate_database_id("my-project")
     'my-project'
@@ -37,12 +37,12 @@ def generate_schema_id(database: str, schema: str) -> str:
     schema : str
         The schema identifier (name or ID)
 
-    Returns
+    Returns:
     -------
     str
         The schema ID in format: {database}.{schema}
 
-    Examples
+    Examples:
     --------
     >>> generate_schema_id("my-project", "sales")
     'my-project.sales'
@@ -63,12 +63,12 @@ def generate_table_id(database: str, schema: str, table: str) -> str:
     table : str
         The table identifier (name or ID)
 
-    Returns
+    Returns:
     -------
     str
         The table ID in format: {database}.{schema}.{table}
 
-    Examples
+    Examples:
     --------
     >>> generate_table_id("my-project", "sales", "orders")
     'my-project.sales.orders'
@@ -91,12 +91,12 @@ def generate_column_id(database: str, schema: str, table: str, column: str) -> s
     column : str
         The column identifier (name or ID)
 
-    Returns
+    Returns:
     -------
     str
         The column ID in format: {database}.{schema}.{table}.{column}
 
-    Examples
+    Examples:
     --------
     >>> generate_column_id("my-project", "sales", "orders", "order_id")
     'my-project.sales.orders.order_id'
@@ -123,12 +123,12 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
     value : Any
         The value as any type, preferably a string
 
-    Returns
+    Returns:
     -------
     str
         The value ID in format: {database}.{schema}.{table}.{column}.{hashed-value}
 
-    Examples
+    Examples:
     --------
     >>> generate_value_id("my-project", "sales", "orders", "status", "completed")
     'my-project.sales.orders.status.9cdfb439c7876e703e307864c9167a15'
@@ -137,8 +137,7 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
     value_hash = hashlib.md5(str(value).encode()).hexdigest()[:32]
     return f"{database}.{schema}.{table}.{column}.{value_hash}"
 
+
 def create_query_id(query: str) -> str:
-    """
-    Create a query ID from a query string.
-    """
+    """Create a query ID from a query string."""
     return hashlib.sha256(query.encode()).hexdigest()

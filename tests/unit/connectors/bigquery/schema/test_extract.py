@@ -35,4 +35,6 @@ def test_get_column_references_info(bigquery_extractor_with_cache: BigQuerySchem
 def test_get_column_unique_values(bigquery_extractor_with_cache: BigQuerySchemaExtractor):
     """Test column_unique_values property returns cached data."""
     assert bigquery_extractor_with_cache.column_unique_values.shape[0] == 2
-    assert bigquery_extractor_with_cache.column_unique_values.iloc[0]["column_name"] == "customer_id"
+    assert (
+        bigquery_extractor_with_cache.column_unique_values.iloc[0]["column_name"] == "customer_id"
+    )

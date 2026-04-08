@@ -1,26 +1,31 @@
-"""
-Connector for creating OpenAI embeddings.
-"""
+"""Connector for creating OpenAI embeddings."""
 
-from openai import AsyncOpenAI, OpenAI
+
 import pandas as pd
+from neo4j import Driver
+from openai import AsyncOpenAI, OpenAI
+
+from ..ingest.indexes import create_vector_index
 from .utils import (
     create_embeddings_in_batches_async,
     create_embeddings_in_batches_sync,
     get_nodes_to_embed,
     write_embeddings_to_graph,
 )
-from neo4j import Driver
-from ..ingest.indexes import create_vector_index
-from typing import Optional
 
 
 class OpenAIEmbeddingsConnector:
-    """
-    Connector for creating OpenAI embeddings.
-    """
+    """Connector for creating OpenAI embeddings."""
 
-    def __init__(self, neo4j_driver: Driver, client: Optional[OpenAI] = None, async_client: Optional[AsyncOpenAI] = None, embedding_model: str = "text-embedding-3-small", dimensions: int = 768, database_name: str = "neo4j"):
+    def __init__(
+        self,
+        neo4j_driver: Driver,
+        client: OpenAI | None = None,
+        async_client: AsyncOpenAI | None = None,
+        embedding_model: str = "text-embedding-3-small",
+        dimensions: int = 768,
+        database_name: str = "neo4j",
+    ) -> None:
         """
         Initialize the OpenAI Embeddings Connector.
 
@@ -41,7 +46,7 @@ class OpenAIEmbeddingsConnector:
         """
         if client is None and async_client is None:
             raise ValueError("Either client or async_client must be provided")
-        
+
         self.client = client
         self.async_client = async_client
         self.embedding_model = embedding_model
@@ -49,7 +54,7 @@ class OpenAIEmbeddingsConnector:
         self.neo4j_driver = neo4j_driver
         self.database_name = database_name
 
-    def _create_embedding_sync(self, description: str) -> Optional[list[float]]:
+    def _create_embedding_sync(self, description: str) -> list[float] | None:
         """
         Create embedding for a single node's description (sync version).
         If embedding creation fails, return None.
@@ -59,13 +64,12 @@ class OpenAIEmbeddingsConnector:
         description: str
             The description of the node.
 
-        Returns
+        Returns:
         -------
         Optional[list[float]]
             The embedding for the node description.
             If embedding creation fails, return None.
         """
-
         try:
             response = self.client.embeddings.create(
                 model=self.embedding_model,
@@ -78,9 +82,10 @@ class OpenAIEmbeddingsConnector:
             print(e)
             return None
 
-    async def _create_embedding_async(self,
+    async def _create_embedding_async(
+        self,
         description: str,
-    ) -> Optional[list[float]]:
+    ) -> list[float] | None:
         """
         Create embedding for a single node's description.
         If embedding creation fails, return None.
@@ -90,13 +95,12 @@ class OpenAIEmbeddingsConnector:
         description: str
             The description of the node.
 
-        Returns
+        Returns:
         -------
         Optional[list[float]]
             The embedding for the node description.
             If embedding creation fails, return None.
         """
-
         try:
             response = await self.async_client.embeddings.create(
                 model=self.embedding_model,
@@ -108,7 +112,6 @@ class OpenAIEmbeddingsConnector:
         except Exception as e:
             print(e)
             return None
-
 
     def create_embeddings_sync(
         self,
@@ -126,13 +129,12 @@ class OpenAIEmbeddingsConnector:
         batch_size : int
             The number of nodes to process in each batch.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame where each row represents a node.
             Has columns `id`, and `embedding`.
         """
-
         results = create_embeddings_in_batches_sync(
             self._create_embedding_sync, nodes_to_embed_dataframe, batch_size
         )
@@ -155,19 +157,17 @@ class OpenAIEmbeddingsConnector:
         batch_size : int
             The number of nodes to process in each batch.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame where each row represents a node.
             Has columns `id`, and `embedding`.
         """
-
         results = await create_embeddings_in_batches_async(
             self._create_embedding_async, nodes_to_embed_dataframe, batch_size
         )
         print(f"Successful Embeddings : {len(results)}")
         return pd.DataFrame(results, columns=["id", "embedding"])
-
 
     def run(
         self,
@@ -178,7 +178,7 @@ class OpenAIEmbeddingsConnector:
         This sync workflow:
         * Gathers nodes from the Neo4j database that are missing embeddings
         * Creates embeddings of the description fields on found nodes
-        * Ingests embeddings into the Neo4j database
+        * Ingests embeddings into the Neo4j database.
 
         Parameters
         ----------
@@ -187,12 +187,11 @@ class OpenAIEmbeddingsConnector:
         batch_size: int
             The number of nodes to process in each batch.
 
-        Raises
+        Raises:
         ------
         ValueError
             If a sync client is not provided.
         """
-
         if self.client is None:
             raise ValueError("Sync client is not provided")
 
@@ -202,7 +201,9 @@ class OpenAIEmbeddingsConnector:
             # create vector index, if it doesn't exist
             create_vector_index(self.neo4j_driver, label, self.dimensions, self.database_name)
             # get nodes to embed
-            nodes_to_embed_dataframe = get_nodes_to_embed(self.neo4j_driver, label, 20, self.database_name)
+            nodes_to_embed_dataframe = get_nodes_to_embed(
+                self.neo4j_driver, label, 20, self.database_name
+            )
             # create embeddings
             embeddings = self.create_embeddings_sync(
                 nodes_to_embed_dataframe=nodes_to_embed_dataframe,
@@ -229,7 +230,7 @@ class OpenAIEmbeddingsConnector:
         This async workflow:
         * Gathers nodes from the Neo4j database that are missing embeddings
         * Creates embeddings of the description fields on found nodes
-        * Ingests embeddings into the Neo4j database
+        * Ingests embeddings into the Neo4j database.
 
         Parameters
         ----------
@@ -238,12 +239,11 @@ class OpenAIEmbeddingsConnector:
         batch_size: int
             The number of nodes to process in each batch.
 
-        Raises
+        Raises:
         ------
         ValueError
             If an async client is not provided.
-        """ 
-
+        """
         if self.async_client is None:
             raise ValueError("Async client is not provided")
 
@@ -253,7 +253,9 @@ class OpenAIEmbeddingsConnector:
             # create vector index, if it doesn't exist
             create_vector_index(self.neo4j_driver, label, self.dimensions, self.database_name)
             # get nodes to embed
-            nodes_to_embed_dataframe = get_nodes_to_embed(self.neo4j_driver, label, 20, self.database_name)
+            nodes_to_embed_dataframe = get_nodes_to_embed(
+                self.neo4j_driver, label, 20, self.database_name
+            )
             # create embeddings
             embeddings = await self.create_embeddings_async(
                 nodes_to_embed_dataframe=nodes_to_embed_dataframe,

@@ -1,11 +1,27 @@
-import pytest
 from unittest.mock import Mock
+
 import pandas as pd
-from semantic_graph.connectors.bigquery.schema import BigQuerySchemaExtractor, BigQuerySchemaTransformer
-from semantic_graph.data_model.rdbms import Database, Schema, Table, Column, HasSchema, HasTable, HasColumn, References, Value, HasValue
+import pytest
+
+from semantic_graph.connectors.bigquery.schema import (
+    BigQuerySchemaExtractor,
+    BigQuerySchemaTransformer,
+)
+from semantic_graph.data_model.rdbms import (
+    Column,
+    Database,
+    HasColumn,
+    HasSchema,
+    HasTable,
+    HasValue,
+    References,
+    Schema,
+    Table,
+    Value,
+)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def mock_bigquery_client():
     """Create a mock BigQuery client."""
     client = Mock()
@@ -13,135 +29,143 @@ def mock_bigquery_client():
     return client
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def bigquery_extractor(mock_bigquery_client):
     """Create a BigQuerySchemaExtractor with a mocked client."""
     return BigQuerySchemaExtractor(client=mock_bigquery_client, dataset_id="test_dataset")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def bigquery_extractor_with_cache(mock_bigquery_client):
     """Create a BigQuerySchemaExtractor with pre-populated cache."""
     extractor = BigQuerySchemaExtractor(client=mock_bigquery_client, dataset_id="test_dataset")
 
     # Database info cache
-    database_info = pd.DataFrame([
-        {"project_id": "test-project-id"}
-    ])
+    database_info = pd.DataFrame([{"project_id": "test-project-id"}])
 
     # Schema info cache
-    schema_info = pd.DataFrame([
-        {
-            "project_id": "test-project-id",
-            "dataset_id": "test_dataset",
-            "description": "Test dataset description"
-        }
-    ])
+    schema_info = pd.DataFrame(
+        [
+            {
+                "project_id": "test-project-id",
+                "dataset_id": "test_dataset",
+                "description": "Test dataset description",
+            }
+        ]
+    )
 
     # Table info cache
-    table_info = pd.DataFrame([
-        {
-            "table_catalog": "test-project-id",
-            "table_schema": "test_dataset",
-            "table_name": "customers",
-            "table_type": "BASE TABLE",
-            "creation_time": None,
-            "ddl": None,
-            "description": "Customer table"
-        },
-        {
-            "table_catalog": "test-project-id",
-            "table_schema": "test_dataset",
-            "table_name": "orders",
-            "table_type": "BASE TABLE",
-            "creation_time": None,
-            "ddl": None,
-            "description": "Order table"
-        }
-    ])
+    table_info = pd.DataFrame(
+        [
+            {
+                "table_catalog": "test-project-id",
+                "table_schema": "test_dataset",
+                "table_name": "customers",
+                "table_type": "BASE TABLE",
+                "creation_time": None,
+                "ddl": None,
+                "description": "Customer table",
+            },
+            {
+                "table_catalog": "test-project-id",
+                "table_schema": "test_dataset",
+                "table_name": "orders",
+                "table_type": "BASE TABLE",
+                "creation_time": None,
+                "ddl": None,
+                "description": "Order table",
+            },
+        ]
+    )
 
     # Column info cache
-    column_info = pd.DataFrame([
-        {
-            "table_catalog": "test-project-id",
-            "table_schema": "test_dataset",
-            "table_name": "customers",
-            "column_name": "customer_id",
-            "is_nullable": "NO",
-            "data_type": "INT64",
-            "description": "Customer ID",
-            "constraint_name": "test-project-id.test_dataset.customers.pk$",
-            "is_primary_key": True,
-            "is_foreign_key": False
-        },
-        {
-            "table_catalog": "test-project-id",
-            "table_schema": "test_dataset",
-            "table_name": "customers",
-            "column_name": "customer_name",
-            "is_nullable": "YES",
-            "data_type": "STRING",
-            "description": "Customer name",
-            "constraint_name": None,
-            "is_primary_key": False,
-            "is_foreign_key": False
-        },
-        {
-            "table_catalog": "test-project-id",
-            "table_schema": "test_dataset",
-            "table_name": "orders",
-            "column_name": "order_id",
-            "is_nullable": "NO",
-            "data_type": "INT64",
-            "description": "Order ID",
-            "constraint_name": "test-project-id.test_dataset.orders.pk$",
-            "is_primary_key": True,
-            "is_foreign_key": False
-        },
-        {
-            "table_catalog": "test-project-id",
-            "table_schema": "test_dataset",
-            "table_name": "orders",
-            "column_name": "customer_id",
-            "is_nullable": "NO",
-            "data_type": "INT64",
-            "description": "Customer ID reference",
-            "constraint_name": "test-project-id.test_dataset.orders.fk_customer",
-            "is_primary_key": False,
-            "is_foreign_key": True
-        }
-    ])
+    column_info = pd.DataFrame(
+        [
+            {
+                "table_catalog": "test-project-id",
+                "table_schema": "test_dataset",
+                "table_name": "customers",
+                "column_name": "customer_id",
+                "is_nullable": "NO",
+                "data_type": "INT64",
+                "description": "Customer ID",
+                "constraint_name": "test-project-id.test_dataset.customers.pk$",
+                "is_primary_key": True,
+                "is_foreign_key": False,
+            },
+            {
+                "table_catalog": "test-project-id",
+                "table_schema": "test_dataset",
+                "table_name": "customers",
+                "column_name": "customer_name",
+                "is_nullable": "YES",
+                "data_type": "STRING",
+                "description": "Customer name",
+                "constraint_name": None,
+                "is_primary_key": False,
+                "is_foreign_key": False,
+            },
+            {
+                "table_catalog": "test-project-id",
+                "table_schema": "test_dataset",
+                "table_name": "orders",
+                "column_name": "order_id",
+                "is_nullable": "NO",
+                "data_type": "INT64",
+                "description": "Order ID",
+                "constraint_name": "test-project-id.test_dataset.orders.pk$",
+                "is_primary_key": True,
+                "is_foreign_key": False,
+            },
+            {
+                "table_catalog": "test-project-id",
+                "table_schema": "test_dataset",
+                "table_name": "orders",
+                "column_name": "customer_id",
+                "is_nullable": "NO",
+                "data_type": "INT64",
+                "description": "Customer ID reference",
+                "constraint_name": "test-project-id.test_dataset.orders.fk_customer",
+                "is_primary_key": False,
+                "is_foreign_key": True,
+            },
+        ]
+    )
 
     # Column references info cache
-    column_references_info = pd.DataFrame([
-        {
-            "constraint_catalog": "test-project-id",
-            "constraint_schema": "test_dataset",
-            "constraint_name": "fk_customer",
-            "constraint_type": "FOREIGN KEY",
-            "table_name": "orders",
-            "column_name": "customer_id",
-            "ordinal_position": 1,
-            "referenced_table": "customers",
-            "referenced_column": "customer_id"
-        }
-    ])
+    column_references_info = pd.DataFrame(
+        [
+            {
+                "constraint_catalog": "test-project-id",
+                "constraint_schema": "test_dataset",
+                "constraint_name": "fk_customer",
+                "constraint_type": "FOREIGN KEY",
+                "table_name": "orders",
+                "column_name": "customer_id",
+                "ordinal_position": 1,
+                "referenced_table": "customers",
+                "referenced_column": "customer_id",
+            }
+        ]
+    )
 
     # Column unique values cache
-    column_unique_values = pd.DataFrame([
-        {
-            "column_name": "customer_id",
-            "unique_value": "1",
-            "column_id": "test-project-id.test_dataset.customers.customer_id",
-            "value_id": "test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
-        },
-        {
-            "column_name": "customer_id",
-            "unique_value": "2",
-            "column_id": "test-project-id.test_dataset.customers.customer_id",
-            "value_id": "test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
-        }
-    ])
+    column_unique_values = pd.DataFrame(
+        [
+            {
+                "column_name": "customer_id",
+                "unique_value": "1",
+                "column_id": "test-project-id.test_dataset.customers.customer_id",
+                "value_id": "test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
+            },
+            {
+                "column_name": "customer_id",
+                "unique_value": "2",
+                "column_id": "test-project-id.test_dataset.customers.customer_id",
+                "value_id": "test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
+            },
+        ]
+    )
 
     extractor._cache["database_info"] = database_info
     extractor._cache["schema_info"] = schema_info
@@ -153,31 +177,37 @@ def bigquery_extractor_with_cache(mock_bigquery_client):
     return extractor
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def bigquery_transformer():
     """Create a BigQuerySchemaTransformer."""
     return BigQuerySchemaTransformer()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def bigquery_transformer_with_cache():
     """Create a BigQuerySchemaTransformer with pre-populated cache."""
     transformer = BigQuerySchemaTransformer()
 
     # Database nodes
-    database_nodes = [
-        Database(id="test-project-id", name="test-project-id", description=None)
-    ]
+    database_nodes = [Database(id="test-project-id", name="test-project-id", description=None)]
 
     # Schema nodes
     schema_nodes = [
-        Schema(id="test-project-id.test_dataset", name="test_dataset", description="Test dataset description")
+        Schema(
+            id="test-project-id.test_dataset",
+            name="test_dataset",
+            description="Test dataset description",
+        )
     ]
 
     # Table nodes
     table_nodes = [
-        Table(id="test-project-id.test_dataset.customers", name="customers", description="Customer table"),
-        Table(id="test-project-id.test_dataset.orders", name="orders", description="Order table")
+        Table(
+            id="test-project-id.test_dataset.customers",
+            name="customers",
+            description="Customer table",
+        ),
+        Table(id="test-project-id.test_dataset.orders", name="orders", description="Order table"),
     ]
 
     # Column nodes
@@ -189,7 +219,7 @@ def bigquery_transformer_with_cache():
             type="INT64",
             nullable="NO",
             is_primary_key=True,
-            is_foreign_key=False
+            is_foreign_key=False,
         ),
         Column(
             id="test-project-id.test_dataset.customers.customer_name",
@@ -198,7 +228,7 @@ def bigquery_transformer_with_cache():
             type="STRING",
             nullable="YES",
             is_primary_key=False,
-            is_foreign_key=False
+            is_foreign_key=False,
         ),
         Column(
             id="test-project-id.test_dataset.orders.order_id",
@@ -207,7 +237,7 @@ def bigquery_transformer_with_cache():
             type="INT64",
             nullable="NO",
             is_primary_key=True,
-            is_foreign_key=False
+            is_foreign_key=False,
         ),
         Column(
             id="test-project-id.test_dataset.orders.customer_id",
@@ -216,20 +246,20 @@ def bigquery_transformer_with_cache():
             type="INT64",
             nullable="NO",
             is_primary_key=False,
-            is_foreign_key=True
-        )
+            is_foreign_key=True,
+        ),
     ]
 
     # Value nodes
     value_nodes = [
         Value(
             id="test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
-            value="1"
+            value="1",
         ),
         Value(
             id="test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
-            value="2"
-        )
+            value="2",
+        ),
     ]
 
     # Has schema relationships
@@ -239,23 +269,40 @@ def bigquery_transformer_with_cache():
 
     # Has table relationships
     has_table_relationships = [
-        HasTable(schema_id="test-project-id.test_dataset", table_id="test-project-id.test_dataset.customers"),
-        HasTable(schema_id="test-project-id.test_dataset", table_id="test-project-id.test_dataset.orders")
+        HasTable(
+            schema_id="test-project-id.test_dataset",
+            table_id="test-project-id.test_dataset.customers",
+        ),
+        HasTable(
+            schema_id="test-project-id.test_dataset", table_id="test-project-id.test_dataset.orders"
+        ),
     ]
 
     # Has column relationships
     has_column_relationships = [
-        HasColumn(table_id="test-project-id.test_dataset.customers", column_id="test-project-id.test_dataset.customers.customer_id"),
-        HasColumn(table_id="test-project-id.test_dataset.customers", column_id="test-project-id.test_dataset.customers.customer_name"),
-        HasColumn(table_id="test-project-id.test_dataset.orders", column_id="test-project-id.test_dataset.orders.order_id"),
-        HasColumn(table_id="test-project-id.test_dataset.orders", column_id="test-project-id.test_dataset.orders.customer_id")
+        HasColumn(
+            table_id="test-project-id.test_dataset.customers",
+            column_id="test-project-id.test_dataset.customers.customer_id",
+        ),
+        HasColumn(
+            table_id="test-project-id.test_dataset.customers",
+            column_id="test-project-id.test_dataset.customers.customer_name",
+        ),
+        HasColumn(
+            table_id="test-project-id.test_dataset.orders",
+            column_id="test-project-id.test_dataset.orders.order_id",
+        ),
+        HasColumn(
+            table_id="test-project-id.test_dataset.orders",
+            column_id="test-project-id.test_dataset.orders.customer_id",
+        ),
     ]
 
     # References relationships
     references_relationships = [
         References(
             source_column_id="test-project-id.test_dataset.orders.customer_id",
-            target_column_id="test-project-id.test_dataset.customers.customer_id"
+            target_column_id="test-project-id.test_dataset.customers.customer_id",
         )
     ]
 
@@ -263,12 +310,12 @@ def bigquery_transformer_with_cache():
     has_value_relationships = [
         HasValue(
             column_id="test-project-id.test_dataset.customers.customer_id",
-            value_id="test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
+            value_id="test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
         ),
         HasValue(
             column_id="test-project-id.test_dataset.customers.customer_id",
-            value_id="test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
-        )
+            value_id="test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
+        ),
     ]
 
     # Set all caches

@@ -1,5 +1,7 @@
-from semantic_graph.data_model.rdbms.core import Column, References
 import numpy as np
+
+from semantic_graph.data_model.rdbms.core import Column, References
+
 
 def test_column_valid():
     """Test creating a valid Column node."""
@@ -8,9 +10,16 @@ def test_column_valid():
     assert column.name == "my_column"
     assert column.description == "my column description"
 
+
 def test_column_pk_and_fk():
     """Test creating a Column node with both primary key and foreign key."""
-    column = Column(id="col1", name="my_column", description="my column description", is_primary_key=True, is_foreign_key=True)
+    column = Column(
+        id="col1",
+        name="my_column",
+        description="my column description",
+        is_primary_key=True,
+        is_foreign_key=True,
+    )
 
     assert column.is_primary_key is True
     assert column.is_foreign_key is True

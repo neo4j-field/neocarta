@@ -11,7 +11,7 @@ def test_custom_filename_in_constructor(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j",
-        csv_file_map={"database": "custom_databases.csv"}
+        csv_file_map={"database": "custom_databases.csv"},
     )
 
     connector.run(include_nodes=["database"])
@@ -33,15 +33,15 @@ def test_custom_filename_partial_override(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j",
-        csv_file_map={"database": "alt_databases.csv"}
+        csv_file_map={"database": "alt_databases.csv"},
     )
 
-    connector.run(
-        include_nodes=["database", "schema"],
-        include_relationships=["has_schema"]
-    )
+    connector.run(include_nodes=["database", "schema"], include_relationships=["has_schema"])
 
     with neo4j_driver.session(database="neo4j") as session:
         assert session.run("MATCH (d:Database) RETURN count(d) as count").single()["count"] == 1
         assert session.run("MATCH (s:Schema) RETURN count(s) as count").single()["count"] == 1
-        assert session.run("MATCH ()-[:HAS_SCHEMA]->() RETURN count(*) as count").single()["count"] == 1
+        assert (
+            session.run("MATCH ()-[:HAS_SCHEMA]->() RETURN count(*) as count").single()["count"]
+            == 1
+        )

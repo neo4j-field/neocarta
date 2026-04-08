@@ -10,8 +10,7 @@ def load_ecommerce_dataset_to_bigquery(client: bigquery.Client) -> None:
     client: bigquery.Client
         The BigQuery client.
     """
-
-    with open("datasets/create-ecommerce-dataset.sql", "r") as f:
+    with open("datasets/create-ecommerce-dataset.sql") as f:
         sql = f.read()
 
     job = client.query(sql)

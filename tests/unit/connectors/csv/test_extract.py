@@ -1,11 +1,11 @@
 import pytest
 
-from semantic_graph.connectors.csv.extract import CSVExtractor, NODE_ENTITIES, REL_ENTITIES
-
+from semantic_graph.connectors.csv.extract import NODE_ENTITIES, REL_ENTITIES, CSVExtractor
 
 # ---------------------------------------------------------------------------
 # Fix #1 — csv_directory validation
 # ---------------------------------------------------------------------------
+
 
 class TestCsvDirectoryValidation:
     def test_nonexistent_directory_raises(self, tmp_path):
@@ -31,6 +31,7 @@ class TestCsvDirectoryValidation:
 # ---------------------------------------------------------------------------
 # Fix #2 — include_nodes / include_relationships validation in extract_all
 # ---------------------------------------------------------------------------
+
 
 class TestIncludeValidation:
     def test_invalid_include_nodes_raises(self, csv_dir):
@@ -90,8 +91,8 @@ class TestIncludeValidation:
         extractor = CSVExtractor(str(csv_dir_with_files))
         extractor.extract_all(include_nodes=["database"])
         assert not extractor.database_info.empty
-        assert extractor.schema_info.empty   # not requested
-        assert extractor.table_info.empty    # not requested
+        assert extractor.schema_info.empty  # not requested
+        assert extractor.table_info.empty  # not requested
 
     def test_relationship_include_reads_shared_csv(self, csv_dir_with_files):
         """has_schema reuses schema_info.csv, so schema_info cache is populated."""
@@ -103,12 +104,13 @@ class TestIncludeValidation:
         extractor = CSVExtractor(str(csv_dir_with_files))
         extractor.extract_all(include_relationships=["references"])
         assert not extractor.column_references_info.empty
-        assert extractor.schema_info.empty   # not requested
+        assert extractor.schema_info.empty  # not requested
 
 
 # ---------------------------------------------------------------------------
 # Core extraction behaviour
 # ---------------------------------------------------------------------------
+
 
 class TestExtraction:
     def test_extract_database_info_row_count(self, csv_dir_with_files):
@@ -145,11 +147,7 @@ class TestExtraction:
         import pandas as pd
 
         (tmp_path / "database_info.csv").write_text(
-            "database_id,description\n"
-            "db1,NULL\n"
-            "db2,null\n"
-            "db3,NaN\n"
-            "db4,real description\n"
+            "database_id,description\ndb1,NULL\ndb2,null\ndb3,NaN\ndb4,real description\n"
         )
         extractor = CSVExtractor(str(tmp_path))
         df = extractor.extract_database_info()

@@ -4,12 +4,12 @@ Constraints ensure uniqueness and data integrity in the graph database.
 """
 
 from semantic_graph.ingest.constraints import (
-    database_id_unique_constraint,
     database_id_key_constraint,
-    schema_id_unique_constraint,
+    database_id_unique_constraint,
     schema_id_key_constraint,
-    value_id_unique_constraint,
+    schema_id_unique_constraint,
     value_id_key_constraint,
+    value_id_unique_constraint,
 )
 
 node_id_unique_constraint = """

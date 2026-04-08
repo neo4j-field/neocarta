@@ -1,60 +1,65 @@
 """global models for connectors."""
 
-from typing import TypedDict, Optional
+from typing import TypedDict
+
 from ..data_model.rdbms import (
-    Database,
-    Schema,
-    Table,
+    BusinessTerm,
+    Category,
     Column,
+    Database,
+    Glossary,
+    HasBusinessTerm,
+    HasCategory,
+    HasColumn,
     HasSchema,
     HasTable,
-    HasColumn,
-    References,
-    Value,
     HasValue,
-    Glossary,
-    Category,
-    BusinessTerm,
-    HasCategory,
-    HasBusinessTerm,
     Query,
-    UsesTable,
+    References,
+    Schema,
+    Table,
     UsesColumn,
+    UsesTable,
+    Value,
 )
+
 
 class NodesCache(TypedDict):
     """Cache dictionary used to store transformed metadata nodes."""
+
     # Core nodes
-    database_nodes: Optional[list[Database]]
-    schema_nodes: Optional[list[Schema]]
-    table_nodes: Optional[list[Table]]
-    column_nodes: Optional[list[Column]]
+    database_nodes: list[Database] | None
+    schema_nodes: list[Schema] | None
+    table_nodes: list[Table] | None
+    column_nodes: list[Column] | None
     # Value nodes
-    value_nodes: Optional[list[Value]]
+    value_nodes: list[Value] | None
 
     # Glossary nodes
-    glossary_nodes: Optional[list[Glossary]]
-    category_nodes: Optional[list[Category]]
-    business_term_nodes: Optional[list[BusinessTerm]]
+    glossary_nodes: list[Glossary] | None
+    category_nodes: list[Category] | None
+    business_term_nodes: list[BusinessTerm] | None
 
     # Query nodes
-    query_nodes: Optional[list[Query]]
+    query_nodes: list[Query] | None
+
 
 class RelationshipsCache(TypedDict):
     """Cache dictionary used to store transformed metadata relationships."""
+
     # Core relationships
-    has_schema_relationships: Optional[list[HasSchema]]
-    has_table_relationships: Optional[list[HasTable]]
-    has_column_relationships: Optional[list[HasColumn]]
-    references_relationships: Optional[list[References]]
+    has_schema_relationships: list[HasSchema] | None
+    has_table_relationships: list[HasTable] | None
+    has_column_relationships: list[HasColumn] | None
+    references_relationships: list[References] | None
 
     # Value relationships
-    has_value_relationships: Optional[list[HasValue]]
+    has_value_relationships: list[HasValue] | None
 
     # Glossary relationships
-    has_category_relationships: Optional[list[HasCategory]]
-    has_business_term_relationships: Optional[list[HasBusinessTerm]]
+    has_category_relationships: list[HasCategory] | None
+    has_business_term_relationships: list[HasBusinessTerm] | None
 
     # Query relationships
-    uses_table_relationships: Optional[list[UsesTable]]
-    uses_column_relationships: Optional[list[UsesColumn]]
+    uses_table_relationships: list[UsesTable] | None
+    uses_column_relationships: list[UsesColumn] | None

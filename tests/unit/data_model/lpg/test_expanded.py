@@ -2,7 +2,8 @@
 
 import pytest
 from pydantic import ValidationError
-from semantic_graph.data_model.lpg import Value, HasValue
+
+from semantic_graph.data_model.lpg import HasValue, Value
 
 
 def test_value_string():

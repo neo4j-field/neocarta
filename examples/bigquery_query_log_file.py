@@ -1,10 +1,13 @@
-import os
 import asyncio
+import os
+
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
+
 from semantic_graph.connectors.query_log import QueryLogConnector
 
-async def main():
+
+async def main() -> None:
     load_dotenv()
     print("Starting connector...")
     print("Creating drivers and clients...")
@@ -21,6 +24,7 @@ async def main():
         database_name=neo4j_database,
     )
     connector.run(query_log_file="datasets/bigquery_query_logs.json", source="bigquery")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

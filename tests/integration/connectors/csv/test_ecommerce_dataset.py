@@ -7,16 +7,16 @@ def test_run_workflow_loads_all_nodes(neo4j_driver, temp_csv_dir, all_sample_csv
     """Test that running the complete workflow loads all node types."""
     # all_sample_csvs ensures all CSV fixtures are created
     workflow = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     workflow.run()
 
     with neo4j_driver.session(database="neo4j") as session:
         # Verify Database node
-        result = session.run("MATCH (d:Database {id: 'my-project'}) RETURN d.name as name, d.platform as platform")
+        result = session.run(
+            "MATCH (d:Database {id: 'my-project'}) RETURN d.name as name, d.platform as platform"
+        )
         record = result.single()
         assert record is not None
         assert record["name"] == "My Project"
@@ -73,9 +73,7 @@ def test_run_workflow_loads_all_nodes(neo4j_driver, temp_csv_dir, all_sample_csv
 def test_run_workflow_loads_all_relationships(neo4j_driver, temp_csv_dir, all_sample_csvs):
     """Test that running the complete workflow loads all relationship types."""
     workflow = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     workflow.run()
@@ -131,15 +129,13 @@ def test_run_workflow_loads_all_relationships(neo4j_driver, temp_csv_dir, all_sa
 def test_include_nodes_core_only(neo4j_driver, temp_csv_dir, all_sample_csvs):
     """Test include_nodes parameter to load only core schema entities."""
     workflow = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     # Load only core entities
     workflow.run(
         include_nodes=["database", "schema", "table", "column"],
-        include_relationships=["has_schema", "has_table", "has_column", "references"]
+        include_relationships=["has_schema", "has_table", "has_column", "references"],
     )
 
     with neo4j_driver.session(database="neo4j") as session:
@@ -181,15 +177,13 @@ def test_include_nodes_core_only(neo4j_driver, temp_csv_dir, all_sample_csvs):
 def test_include_nodes_queries_only(neo4j_driver, temp_csv_dir, all_sample_csvs):
     """Test include_nodes parameter to load only queries and their lineage."""
     workflow = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     # Load queries and their target nodes (tables/columns) for lineage relationships
     workflow.run(
         include_nodes=["query", "table", "column"],
-        include_relationships=["uses_table", "uses_column"]
+        include_relationships=["uses_table", "uses_column"],
     )
 
     with neo4j_driver.session(database="neo4j") as session:
@@ -222,9 +216,7 @@ def test_include_nodes_queries_only(neo4j_driver, temp_csv_dir, all_sample_csvs)
 def test_verify_query_lineage(neo4j_driver, temp_csv_dir, all_sample_csvs):
     """Test that query lineage is correctly established."""
     workflow = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     workflow.run()

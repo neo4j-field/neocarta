@@ -1,11 +1,10 @@
 from langchain.agents import create_agent
-
-from langgraph.graph.state import CompiledStateGraph
 from langchain.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph.state import CompiledStateGraph
 
-SYSTEM_PROMPT = """You are a Text2SQL agent and are tasked with answering 
-questions about our BigQuery dataset on ecommerce. 
+SYSTEM_PROMPT = """You are a Text2SQL agent and are tasked with answering
+questions about our BigQuery dataset on ecommerce.
 
 Use the metadata graph to collect relevant schema to inform your SQL queries.
 

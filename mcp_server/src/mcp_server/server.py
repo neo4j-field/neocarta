@@ -1,11 +1,13 @@
-from fastmcp import FastMCP
 import asyncio
-from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
-from .models import TableContext, ListTablesBySchemaRecord, ListSchemaRecord
+
 from dotenv import load_dotenv
-from .settings import mcp_server_settings
-from .embeddings import create_embedding
+from fastmcp import FastMCP
+from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
 from openai import AsyncOpenAI
+
+from .embeddings import create_embedding
+from .models import ListSchemaRecord, ListTablesBySchemaRecord, TableContext
+from .settings import mcp_server_settings
 
 
 def create_mcp_server(
@@ -15,41 +17,32 @@ def create_mcp_server(
 
     @server.tool()
     async def list_schemas() -> list[ListSchemaRecord]:
-        """
-        List all schemas and their databases.
-        """
-
+        """List all schemas and their databases."""
         cypher = """
         MATCH (d:Database)-[:HAS_SCHEMA]->(schema:Schema)
         RETURN d.name as database_name, schema.name as schema_name
         """
-        results = await neo4j_driver.execute_query(
+        return await neo4j_driver.execute_query(
             query_=cypher,
             database_=neo4j_database,
             routing_=RoutingControl.READ,
             result_transformer_=lambda x: x.data(),
         )
-        return results
-    
 
     @server.tool()
     async def list_tables_by_schema(schema_name: str) -> list[ListTablesBySchemaRecord]:
-        """
-        List all tables for a provided schema name.
-        """
-
+        """List all tables for a provided schema name."""
         cypher = """
         MATCH (s:Schema {name: $schemaName})-[:HAS_TABLE]->(t:Table)
         RETURN s.name as schema_name, collect(t.name) as table_names
         """
-        results = await neo4j_driver.execute_query(
+        return await neo4j_driver.execute_query(
             query_=cypher,
             parameters_={"schemaName": schema_name},
             database_=neo4j_database,
             routing_=RoutingControl.READ,
             result_transformer_=lambda x: x.data(),
         )
-        return results
 
     @server.tool()
     async def get_metadata_schema_by_column_semantic_similarity(
@@ -59,7 +52,6 @@ def create_mcp_server(
         Get the metadata schema by column semantic similarity to the query.
         Uses embedding based column semantic similarity and graph traversal to find the most similar metadata schema.
         """
-
         embedding = await create_embedding(embedding_client, query)
 
         cypher = """
@@ -77,14 +69,14 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 // Get example values
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
-WITH 
+WITH
   table,
   col,
   collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
   collect(DISTINCT v.value)[0..5] AS exampleValues
 
 // Group columns by table and build column objects
-WITH 
+WITH
   table,
   collect({
     column_name: col.name,
@@ -129,32 +121,31 @@ ORDER BY table.name
             result_transformer_=lambda x: x.data(),
         )
         return [TableContext.model_validate(r["result"]) for r in results]
-    
+
     @server.tool()
     async def get_metadata_schema_by_schema_and_table_semantic_similarity(
-          query: str,
-          max_tables: int = 5,
-      ) -> list[TableContext]:
-          """
-          Get the metadata schema by schema and table semantic similarity to the query.
-          Uses embedding based semantic similarity and graph traversal to find the most similar metadata schema.
+        query: str,
+        max_tables: int = 5,
+    ) -> list[TableContext]:
+        """
+        Get the metadata schema by schema and table semantic similarity to the query.
+        Uses embedding based semantic similarity and graph traversal to find the most similar metadata schema.
 
-          Parameters
-          ----------
-          query: str
-              The query to search for.
-          max_tables: int
-              The maximum number of tables to return.
+        Parameters
+        ----------
+        query: str
+            The query to search for.
+        max_tables: int
+            The maximum number of tables to return.
 
-          Returns
-          -------
-          list[TableContext]
-              The metadata schema by schema and table semantic similarity to the query.
-          """
+        Returns:
+        -------
+        list[TableContext]
+            The metadata schema by schema and table semantic similarity to the query.
+        """
+        embedding = await create_embedding(embedding_client, query)
 
-          embedding = await create_embedding(embedding_client, query)
-
-          cypher = """
+        cypher = """
 // Find similar schemas by embedding
 CALL db.index.vector.queryNodes('schema_vector_index', 5, $queryEmbedding)
 YIELD node as schema, score as schemaScore
@@ -177,7 +168,7 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 // Get example values
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
-WITH 
+WITH
   schema,
   table,
   col,
@@ -187,7 +178,7 @@ WITH
   tableScore
 
 // Group columns by table and build column objects
-WITH 
+WITH
   schema,
   table,
   collect({
@@ -233,14 +224,14 @@ RETURN {
 ORDER BY schemaScore DESC, tableScore DESC
 LIMIT $maxTables
   """
-          results = await neo4j_driver.execute_query(
-              query_=cypher,
-              parameters_={"queryEmbedding": embedding, "maxTables": max_tables},
-              database_=neo4j_database,
-              routing_=RoutingControl.READ,
-              result_transformer_=lambda x: x.data(),
-          )
-          return [TableContext.model_validate(r["result"]) for r in results]
+        results = await neo4j_driver.execute_query(
+            query_=cypher,
+            parameters_={"queryEmbedding": embedding, "maxTables": max_tables},
+            database_=neo4j_database,
+            routing_=RoutingControl.READ,
+            result_transformer_=lambda x: x.data(),
+        )
+        return [TableContext.model_validate(r["result"]) for r in results]
 
     @server.tool()
     async def get_full_metadata_schema() -> list[TableContext]:
@@ -248,7 +239,6 @@ LIMIT $maxTables
         Get the full metadata schema for the database.
         WARNING: This is an expensive query and should only be used for debugging.
         """
-
         cypher = """
 // Get the columns for each table
 MATCH (col:Column)<-[:HAS_COLUMN]-(table:Table)
@@ -259,21 +249,21 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 // Get example values
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
-WITH 
+WITH
   table,
   col,
   collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
   collect(DISTINCT v.value)[0..5] AS exampleValues
 
 // Group columns by table and build column objects
-WITH 
+WITH
   table,
   collect({
     column_name: col.name,
     column_description: col.description,
     data_type: col.type,
     examples: exampleValues,
-    key_type: CASE 
+    key_type: CASE
       WHEN col.is_primary_key THEN "primary"
       WHEN col.is_foreign_key THEN "foreign"
       ELSE null
@@ -311,7 +301,7 @@ ORDER BY table.name
     return server
 
 
-async def main():
+async def main() -> None:
     neo4j_driver = AsyncGraphDatabase.driver(
         uri=mcp_server_settings.neo4j_uri,
         auth=(mcp_server_settings.neo4j_username, mcp_server_settings.neo4j_password),
@@ -323,7 +313,7 @@ async def main():
     await server.run_stdio_async()
 
 
-def run():
+def run() -> None:
     load_dotenv()
     asyncio.run(main())
 

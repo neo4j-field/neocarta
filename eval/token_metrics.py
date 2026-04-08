@@ -1,7 +1,8 @@
 """Token counting utilities for measuring context efficiency."""
 
-import tiktoken
 from typing import Any
+
+import tiktoken
 
 
 class ContextTokenMeasurement:
@@ -11,7 +12,7 @@ class ContextTokenMeasurement:
     Uses the LLM provider's tokenizer (tiktoken for OpenAI-compatible models).
     """
 
-    def __init__(self, model: str = "gpt-4o"):
+    def __init__(self, model: str = "gpt-4o") -> None:
         """
         Initialize token counter.
 
@@ -44,7 +45,7 @@ class ContextTokenMeasurement:
         few_shot_examples : list[str], optional
             Few-shot examples (if used in prompt)
 
-        Returns
+        Returns:
         -------
         dict
             Token measurements:
@@ -82,7 +83,7 @@ class ContextTokenMeasurement:
         text : str
             Text to count tokens for
 
-        Returns
+        Returns:
         -------
         int
             Number of tokens

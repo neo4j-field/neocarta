@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture
@@ -12,8 +13,7 @@ def csv_dir(tmp_path) -> Path:
 def csv_dir_with_files(tmp_path) -> Path:
     """A temporary directory with a minimal set of valid CSV files."""
     (tmp_path / "database_info.csv").write_text(
-        "database_id,name,description\n"
-        "my_db,My Database,A test database\n"
+        "database_id,name,description\nmy_db,My Database,A test database\n"
     )
     (tmp_path / "schema_info.csv").write_text(
         "database_id,schema_id,name,description\n"

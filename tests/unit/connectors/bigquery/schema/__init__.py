@@ -1,1 +1,1 @@
-"BigQuery Connector Unit Tests"
+"""BigQuery Connector Unit Tests."""

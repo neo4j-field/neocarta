@@ -8,6 +8,7 @@ The JSON format matches what the MCP server returns from get_full_metadata_schem
 import json
 from pathlib import Path
 from typing import Any
+
 from mcp_server.models import TableContext
 
 
@@ -19,7 +20,7 @@ class BigQuerySchemaRetriever:
     is stable and reproducible across eval runs.
     """
 
-    def __init__(self, schema_path: str | Path):
+    def __init__(self, schema_path: str | Path) -> None:
         """
         Initialize retriever with path to persisted schema.
 
@@ -42,7 +43,7 @@ class BigQuerySchemaRetriever:
         """
         Return schema as a single JSON string for LLM context injection.
 
-        Returns
+        Returns:
         -------
         str
             Full schema serialized as JSON
@@ -55,15 +56,14 @@ class BigQuerySchemaRetriever:
         """
         Return schema as structured TableContext objects.
 
-        Returns
+        Returns:
         -------
         list[TableContext]
             List of table contexts
         """
         if self._table_contexts is None:
             self._table_contexts = [
-                TableContext.model_validate(table_data)
-                for table_data in self.schema_data
+                TableContext.model_validate(table_data) for table_data in self.schema_data
             ]
         return self._table_contexts
 
@@ -73,7 +73,7 @@ class BigQuerySchemaRetriever:
 
         Each entry is one table's schema as a formatted string.
 
-        Returns
+        Returns:
         -------
         list[str]
             List of table context strings
@@ -85,9 +85,7 @@ class BigQuerySchemaRetriever:
 
     @classmethod
     def from_mcp_response(
-        cls,
-        mcp_response: list[TableContext],
-        persist_path: str | Path
+        cls, mcp_response: list[TableContext], persist_path: str | Path
     ) -> "BigQuerySchemaRetriever":
         """
         Persist MCP response to disk, then load it.
@@ -101,7 +99,7 @@ class BigQuerySchemaRetriever:
         persist_path : str | Path
             Where to save the schema file
 
-        Returns
+        Returns:
         -------
         BigQuerySchemaRetriever
             Retriever loaded from the persisted file
@@ -121,7 +119,7 @@ class BigQuerySchemaRetriever:
         """
         Extract all table and column names for object-level recall scoring.
 
-        Returns
+        Returns:
         -------
         set[str]
             Set of all table and column names (lowercased)
@@ -140,7 +138,4 @@ class BigQuerySchemaRetriever:
 
     def get_num_columns(self) -> int:
         """Get total number of columns across all tables."""
-        return sum(
-            len(ctx.columns)
-            for ctx in self.as_table_contexts()
-        )
+        return sum(len(ctx.columns) for ctx in self.as_table_contexts())

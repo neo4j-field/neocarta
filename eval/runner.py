@@ -1,30 +1,26 @@
 """Evaluation pipeline runner."""
 
+import json
 import time
-import asyncio
-from pathlib import Path
 from typing import Any
+
 from google.cloud import bigquery
-from openai import AsyncOpenAI
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-import json
+from openai import AsyncOpenAI
 
 from eval.datasets.models import EvalSample
-from eval.token_metrics import ContextTokenMeasurement
-from eval.sql_parser import (
-    score_structural_equivalence,
-    score_schema_faithfulness,
-    extract_required_objects,
-)
+from eval.inference_metrics import score_execution_accuracy
 from eval.retrieval_metrics import (
     score_retrieval,
     serialize_table_contexts,
-    extract_objects_from_table_contexts,
 )
-from eval.inference_metrics import score_execution_accuracy
 from eval.retrievers.bigquery_schema_retriever import BigQuerySchemaRetriever
-
+from eval.sql_parser import (
+    score_schema_faithfulness,
+    score_structural_equivalence,
+)
+from eval.token_metrics import ContextTokenMeasurement
 from mcp_server.models import TableContext
 
 system_prompt = """
@@ -43,6 +39,7 @@ Question: {question}
 
 Generate the SQL query:"""
 
+
 class EvalRunner:
     """
     Orchestrates the evaluation pipeline.
@@ -59,7 +56,7 @@ class EvalRunner:
         llm_client: AsyncOpenAI,
         llm: str = "gpt-4o",
         dialect: str = "bigquery",
-    ):
+    ) -> None:
         """
         Initialize evaluation runner.
 
@@ -108,7 +105,7 @@ class EvalRunner:
         mcp_session : ClientSession
             Active MCP session
 
-        Returns
+        Returns:
         -------
         dict
             Results for semantic condition
@@ -119,14 +116,14 @@ class EvalRunner:
         t_mcp_start = time.monotonic()
         result = await mcp_session.call_tool(
             "get_metadata_schema_by_schema_and_table_semantic_similarity",
-            arguments={"query": sample.nl_question, "max_tables": 2}
+            arguments={"query": sample.nl_question, "max_tables": 2},
         )
         mcp_latency_ms = (time.monotonic() - t_mcp_start) * 1000
 
         # Parse retrieved contexts
         retrieved_contexts = []
         for item in result.content:
-            if hasattr(item, 'text'):
+            if hasattr(item, "text"):
                 data = json.loads(item.text)
                 if isinstance(data, list):
                     retrieved_contexts = [TableContext.model_validate(t) for t in data]
@@ -143,7 +140,12 @@ class EvalRunner:
             model=self.llm,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt.format(schema_context=context_str, question=sample.nl_question)},
+                {
+                    "role": "user",
+                    "content": user_prompt.format(
+                        schema_context=context_str, question=sample.nl_question
+                    ),
+                },
             ],
             temperature=0.0,  # Deterministic
         )
@@ -184,7 +186,7 @@ class EvalRunner:
         sample : EvalSample
             Evaluation sample
 
-        Returns
+        Returns:
         -------
         dict
             Results for full_schema condition
@@ -201,7 +203,12 @@ class EvalRunner:
             model=self.llm,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt.format(schema_context=context_str, question=sample.nl_question)},
+                {
+                    "role": "user",
+                    "content": user_prompt.format(
+                        schema_context=context_str, question=sample.nl_question
+                    ),
+                },
             ],
             temperature=0.0,
         )
@@ -235,7 +242,7 @@ class EvalRunner:
         samples : list[EvalSample]
             Evaluation samples
 
-        Returns
+        Returns:
         -------
         list[EvalSample]
             Samples with results populated
@@ -251,7 +258,9 @@ class EvalRunner:
                 await mcp_session.initialize()
 
                 for i, sample in enumerate(samples):
-                    print(f"\n[{i+1}/{len(samples)}] Evaluating {sample.question_id}: {sample.nl_question}")
+                    print(
+                        f"\n[{i + 1}/{len(samples)}] Evaluating {sample.question_id}: {sample.nl_question}"
+                    )
 
                     # Run semantic condition
                     print("  Running semantic condition...")
@@ -265,10 +274,14 @@ class EvalRunner:
                     print("  Scoring results...")
                     self._score_sample(sample, sem_result, fs_result)
 
-                    print(f"  ✓ Semantic SQL generated in {sem_result['latency_ms']:.0f}ms "
-                          f"(MCP: {sem_result['mcp_latency_ms']:.0f}ms, LLM: {sem_result['llm_latency_ms']:.0f}ms)")
-                    print(f"  ✓ Full schema SQL generated in {fs_result['latency_ms']:.0f}ms "
-                          f"(LLM: {fs_result['llm_latency_ms']:.0f}ms)")
+                    print(
+                        f"  ✓ Semantic SQL generated in {sem_result['latency_ms']:.0f}ms "
+                        f"(MCP: {sem_result['mcp_latency_ms']:.0f}ms, LLM: {sem_result['llm_latency_ms']:.0f}ms)"
+                    )
+                    print(
+                        f"  ✓ Full schema SQL generated in {fs_result['latency_ms']:.0f}ms "
+                        f"(LLM: {fs_result['llm_latency_ms']:.0f}ms)"
+                    )
 
         return samples
 
@@ -279,7 +292,6 @@ class EvalRunner:
         fs_result: dict,
     ) -> None:
         """Score a single sample and populate results."""
-
         # Semantic condition results
         sem = sample.results_by_condition["semantic"]
         sem["retrieved_contexts"] = sem_result["retrieved_contexts"]

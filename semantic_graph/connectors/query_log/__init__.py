@@ -1,7 +1,7 @@
 """Query log connector."""
 
+from .connector import QueryLogConnector
 from .extract import QueryLogExtractor
 from .transform import QueryLogTransformer
-from .connector import QueryLogConnector
 
-__all__ = ["QueryLogExtractor", "QueryLogTransformer", "QueryLogConnector"]
+__all__ = ["QueryLogConnector", "QueryLogExtractor", "QueryLogTransformer"]

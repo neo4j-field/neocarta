@@ -2,37 +2,30 @@ from .core import *
 from .expanded import *
 
 __all__ = [
+    "BusinessTerm",
+    "Category",
+    "Column",
     # RDBMS Core nodes
     "Database",
-    "Schema",
-    "Table",
-    "Column",
-
+    # RDBMS Glossary nodes
+    "Glossary",
+    "HasBusinessTerm",
+    # RDBMS Glossary relationships
+    "HasCategory",
+    "HasColumn",
     # RDBMS Core relationships
     "HasSchema",
     "HasTable",
-    "HasColumn",
-    "References",
-
-    # RDBMS Value nodes
-    "Value",
-
     # RDBMS Value relationships
     "HasValue",
-
-    # RDBMS Glossary nodes
-    "Glossary",
-    "Category",
-    "BusinessTerm",
-
-    # RDBMS Glossary relationships
-    "HasCategory",
-    "HasBusinessTerm",
-
     # RDBMS Query nodes
     "Query",
-
+    "References",
+    "Schema",
+    "Table",
+    "UsesColumn",
     # RDBMS Query relationships
     "UsesTable",
-    "UsesColumn",
+    # RDBMS Value nodes
+    "Value",
 ]

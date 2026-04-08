@@ -1,5 +1,5 @@
 """
-BigQuery Query Logs Connector Example
+BigQuery Query Logs Connector Example.
 
 This example demonstrates how to extract query logs from BigQuery,
 parse the SQL queries to extract table and column references,
@@ -32,23 +32,24 @@ Environment Variables Required:
 import argparse
 import asyncio
 import os
-from datetime import datetime, timedelta
+
 from dotenv import load_dotenv
-from neo4j import GraphDatabase
 from google.cloud import bigquery
+from neo4j import GraphDatabase
+
 from semantic_graph.connectors.bigquery import BigQueryLogsConnector
 
 
 async def main(
-    start_timestamp: str = None,
-    end_timestamp: str = None,
+    start_timestamp: str | None = None,
+    end_timestamp: str | None = None,
     limit: int = 100,
     region: str = "region-us",
     drop_failed_queries: bool = True,
-):
+) -> None:
     load_dotenv()
     print("Starting BigQuery Logs connector...")
-    
+
     # Create clients and drivers
     print("Creating drivers and clients...")
     neo4j_driver = GraphDatabase.driver(
@@ -58,12 +59,12 @@ async def main(
     # neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
     neo4j_database = "github-eval-1"
     bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
-    
-    print(f"Extracting query logs from BigQuery...")
+
+    print("Extracting query logs from BigQuery...")
     if start_timestamp and end_timestamp:
         print(f"  Time range: {start_timestamp} to {end_timestamp}")
     else:
-        print(f"  Time range: Last 30 days (default)")
+        print("  Time range: Last 30 days (default)")
     print(f"  Dataset: {os.getenv('BIGQUERY_DATASET_ID')}")
     print(f"  Region: {region}")
     print(f"  Limit: {limit} queries")
@@ -76,7 +77,7 @@ async def main(
         neo4j_driver=neo4j_driver,
         database_name=neo4j_database,
     )
-    
+
     bigquery_logs_connector.run(
         dataset_id=os.getenv("BIGQUERY_DATASET_ID"),
         region=region,
@@ -86,7 +87,7 @@ async def main(
         drop_failed_queries=drop_failed_queries,
     )
 
-    print(f"\nQuery logs loaded into Neo4j!")
+    print("\nQuery logs loaded into Neo4j!")
     print(f"  Queries: {len(bigquery_logs_connector.extractor.query_info)}")
     print(f"  Tables referenced: {len(bigquery_logs_connector.extractor.table_info)}")
     print(f"  Columns referenced: {len(bigquery_logs_connector.extractor.column_info)}")
@@ -96,6 +97,7 @@ async def main(
     print("  - Query Neo4j to analyze query patterns")
     print("  - Identify frequently used tables and columns")
     print("  - Analyze join relationships between tables")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -114,37 +116,37 @@ Examples:
 
   # Include failed queries for debugging
   python examples/bigquery_logs.py --include-failed-queries
-        """
+        """,
     )
-    
+
     parser.add_argument(
         "--start-date",
         type=str,
         default=None,
         help="Start timestamp (ISO format: 'YYYY-MM-DD HH:MM:SS'). Defaults to 30 days ago.",
     )
-    
+
     parser.add_argument(
         "--end-date",
         type=str,
         default=None,
         help="End timestamp (ISO format: 'YYYY-MM-DD HH:MM:SS'). Defaults to now.",
     )
-    
+
     parser.add_argument(
         "--limit",
         type=int,
         default=100,
         help="Maximum number of queries to extract (default: 100)",
     )
-    
+
     parser.add_argument(
         "--region",
         type=str,
         default=os.getenv("BIGQUERY_REGION", "region-us"),
         help="BigQuery region for JOBS_BY_PROJECT (default: region-us)",
     )
-    
+
     parser.add_argument(
         "--include-failed-queries",
         action="store_true",

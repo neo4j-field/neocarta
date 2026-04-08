@@ -1,154 +1,154 @@
-"""
-The core components of the LPG (Labeled Property Graph) metadata graph data model.
-"""
+"""The core components of the LPG (Labeled Property Graph) metadata graph data model."""
 
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+
 from pandas import isna
+from pydantic import BaseModel, Field, field_validator
 
 
 class Database(BaseModel):
-    """A Database node"""
+    """A Database node."""
 
     id: str = Field(..., description="The unique identifier for the database")
     name: str = Field(..., description="The name of the database")
-    platform: Optional[str] = Field(default=None, description="The platform of the database", examples=["GCP", "AWS", "AZURE"])
-    service: Optional[str] = Field(default=None, description="The service running the database", examples=["NEO4J", "MEMGRAPH", "NEPTUNE"])
-    description: Optional[str] = Field(
-        default=None, description="The description of the database"
+    platform: str | None = Field(
+        default=None, description="The platform of the database", examples=["GCP", "AWS", "AZURE"]
     )
-    embedding: Optional[list[float]] = Field(
+    service: str | None = Field(
+        default=None,
+        description="The service running the database",
+        examples=["NEO4J", "MEMGRAPH", "NEPTUNE"],
+    )
+    description: str | None = Field(default=None, description="The description of the database")
+    embedding: list[float] | None = Field(
         default=None, description="The embedding of the database description"
     )
 
     @field_validator("platform", "service", mode="after")
-    def validate_string_uppercase(cls, v: Optional[str]) -> Optional[str]:
-        """
-        Validate that the string is in uppercase.
-        """
+    def validate_string_uppercase(cls, v: str | None) -> str | None:
+        """Validate that the string is in uppercase."""
         return v.upper() if v is not None else None
 
     @field_validator("description", "platform", "service", mode="before")
-    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+    def validate_string_or_none(cls, v: str | None) -> str | None:
         """
         Validate that the string is string type or None.
         This will cast NaN values to None.
         """
         if isinstance(v, str):
             return v
-        elif v is None or isna(v):
+        if v is None or isna(v):
             return None
 
         return v
 
 
 class Schema(BaseModel):
-    """A Schema node"""
+    """A Schema node."""
 
     id: str = Field(..., description="The unique identifier for the schema")
     name: str = Field(..., description="The name of the schema")
-    description: Optional[str] = Field(
-        default=None, description="The description of the schema"
-    )
-    embedding: Optional[list[float]] = Field(
+    description: str | None = Field(default=None, description="The description of the schema")
+    embedding: list[float] | None = Field(
         default=None, description="The embedding of the schema description"
     )
 
     @field_validator("description", mode="before")
-    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+    def validate_string_or_none(cls, v: str | None) -> str | None:
         """
         Validate that the string is string type or None.
         This will cast NaN values to None.
         """
         if isinstance(v, str):
             return v
-        elif v is None or isna(v):
+        if v is None or isna(v):
             return None
 
         return v
 
 
 class Node(BaseModel):
-    """A Node node (represents a node label in the LPG)"""
+    """A Node node (represents a node label in the LPG)."""
 
     id: str = Field(..., description="The unique identifier for the node label")
     label: str = Field(..., description="The primary label of the node")
-    additional_labels: Optional[list[str]] = Field(
+    additional_labels: list[str] | None = Field(
         default=None, description="Additional labels on the node"
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None, description="The description of the node label"
     )
-    embedding: Optional[list[float]] = Field(
+    embedding: list[float] | None = Field(
         default=None, description="The embedding of the node description"
     )
 
     @field_validator("description", mode="before")
-    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+    def validate_string_or_none(cls, v: str | None) -> str | None:
         """
         Validate that the string is string type or None.
         This will cast NaN values to None.
         """
         if isinstance(v, str):
             return v
-        elif v is None or isna(v):
+        if v is None or isna(v):
             return None
 
         return v
 
 
 class Relationship(BaseModel):
-    """A Relationship node (represents a relationship type in the LPG)"""
+    """A Relationship node (represents a relationship type in the LPG)."""
 
     id: str = Field(..., description="The unique identifier for the relationship type")
     type: str = Field(..., description="The type of the relationship")
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None, description="The description of the relationship type"
     )
-    embedding: Optional[list[float]] = Field(
+    embedding: list[float] | None = Field(
         default=None, description="The embedding of the relationship description"
     )
 
     @field_validator("description", mode="before")
-    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+    def validate_string_or_none(cls, v: str | None) -> str | None:
         """
         Validate that the string is string type or None.
         This will cast NaN values to None.
         """
         if isinstance(v, str):
             return v
-        elif v is None or isna(v):
+        if v is None or isna(v):
             return None
 
         return v
 
 
 class Property(BaseModel):
-    """A Property node"""
+    """A Property node."""
 
     id: str = Field(..., description="The unique identifier for the property")
     name: str = Field(..., description="The name of the property")
-    type: Optional[str] = Field(default=None, description="The data type of the property")
-    description: Optional[str] = Field(
-        default=None, description="The description of the property"
+    type: str | None = Field(default=None, description="The data type of the property")
+    description: str | None = Field(default=None, description="The description of the property")
+    unique: bool = Field(
+        default=False, description="Whether the property has a uniqueness constraint"
     )
-    unique: bool = Field(default=False, description="Whether the property has a uniqueness constraint")
     nullable: bool = Field(default=True, description="Whether the property can be null")
     indexed: bool = Field(default=False, description="Whether the property is indexed")
-    existence: bool = Field(default=False, description="Whether the property has an existence constraint")
-    embedding: Optional[list[float]] = Field(
+    existence: bool = Field(
+        default=False, description="Whether the property has an existence constraint"
+    )
+    embedding: list[float] | None = Field(
         default=None, description="The embedding of the property description"
     )
 
     @field_validator("description", "type", mode="before")
-    def validate_string_or_none(cls, v: Optional[str]) -> Optional[str]:
+    def validate_string_or_none(cls, v: str | None) -> str | None:
         """
         Validate that the string is string type or None.
         This will cast NaN values to None.
         """
         if isinstance(v, str):
             return v
-        elif v is None or isna(v):
+        if v is None or isna(v):
             return None
 
         return v
@@ -157,7 +157,7 @@ class Property(BaseModel):
 class HasSchema(BaseModel):
     """
     A relationship between a database and a schema
-    (Database)-[:HAS_SCHEMA]->(Schema)
+    (Database)-[:HAS_SCHEMA]->(Schema).
     """
 
     database_id: str = Field(..., description="The unique identifier for the database")
@@ -167,7 +167,7 @@ class HasSchema(BaseModel):
 class HasNode(BaseModel):
     """
     A relationship between a schema and a node label
-    (Schema)-[:HAS_NODE]->(Node)
+    (Schema)-[:HAS_NODE]->(Node).
     """
 
     schema_id: str = Field(..., description="The unique identifier for the schema")
@@ -177,7 +177,7 @@ class HasNode(BaseModel):
 class HasRelationship(BaseModel):
     """
     A relationship between a schema and a relationship type
-    (Schema)-[:HAS_RELATIONSHIP]->(Relationship)
+    (Schema)-[:HAS_RELATIONSHIP]->(Relationship).
     """
 
     schema_id: str = Field(..., description="The unique identifier for the schema")
@@ -187,7 +187,7 @@ class HasRelationship(BaseModel):
 class HasSourceNode(BaseModel):
     """
     A relationship between a relationship type and its source node label
-    (Relationship)-[:HAS_SOURCE_NODE]->(Node)
+    (Relationship)-[:HAS_SOURCE_NODE]->(Node).
     """
 
     relationship_id: str = Field(..., description="The unique identifier for the relationship type")
@@ -197,7 +197,7 @@ class HasSourceNode(BaseModel):
 class HasTargetNode(BaseModel):
     """
     A relationship between a relationship type and its target node label
-    (Relationship)-[:HAS_TARGET_NODE]->(Node)
+    (Relationship)-[:HAS_TARGET_NODE]->(Node).
     """
 
     relationship_id: str = Field(..., description="The unique identifier for the relationship type")
@@ -207,16 +207,17 @@ class HasTargetNode(BaseModel):
 class NodeHasProperty(BaseModel):
     """
     A relationship between a node and a property
-    (Node)-[:HAS_PROPERTY]->(Property)
+    (Node)-[:HAS_PROPERTY]->(Property).
     """
 
     source_id: str = Field(..., description="The unique identifier for the source node")
     property_id: str = Field(..., description="The unique identifier for the property")
 
+
 class RelationshipHasProperty(BaseModel):
     """
     A relationship between a relationship and a property
-    (Relationship)-[:HAS_PROPERTY]->(Property)
+    (Relationship)-[:HAS_PROPERTY]->(Property).
     """
 
     source_id: str = Field(..., description="The unique identifier for the source relationship")

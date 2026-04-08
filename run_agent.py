@@ -1,18 +1,20 @@
-from agent.agent import create_text2sql_agent
 import asyncio
-from dotenv import load_dotenv
 import os
-from langchain_mcp_adapters.client import MultiServerMCPClient
+
+import httpx
+from dotenv import load_dotenv
 from google.auth import default
 from google.auth.transport.requests import Request
-import httpx
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+from agent.agent import create_text2sql_agent
 
 load_dotenv()
 
 
 # Custom auth class for Google Cloud
 class GoogleAuth(httpx.Auth):
-    def __init__(self):
+    def __init__(self) -> None:
         self.credentials, _ = default()
 
     def auth_flow(self, request):
@@ -53,7 +55,7 @@ CONFIG = {"configurable": {"thread_id": "1"}}
 
 
 # run the agent with MCP server using stdio transport
-async def main():
+async def main() -> None:
     # Get tools
     mcp_tools = await client.get_tools()
 
@@ -70,9 +72,7 @@ async def main():
     agent = create_text2sql_agent(allowed_tools)
 
     # conversation loop
-    print(
-        "\n===================================== Chat =====================================\n"
-    )
+    print("\n===================================== Chat =====================================\n")
 
     while True:
         user_input = input("> ")
@@ -89,9 +89,7 @@ async def main():
             if latest_message.content:
                 print(f"Agent: {latest_message.content}")
             elif latest_message.tool_calls:
-                print(
-                    f"Calling tools: {[tc['name'] for tc in latest_message.tool_calls]}"
-                )
+                print(f"Calling tools: {[tc['name'] for tc in latest_message.tool_calls]}")
 
 
 if __name__ == "__main__":

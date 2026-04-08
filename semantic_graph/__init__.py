@@ -1,1 +1,1 @@
-"Semantic Graph library root package"
+"""Semantic Graph library root package."""

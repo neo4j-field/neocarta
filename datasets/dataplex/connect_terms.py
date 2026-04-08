@@ -3,8 +3,9 @@ Link BigQuery table columns to Dataplex Universal Catalog glossary terms
 using the google-cloud-dataplex Python client.
 """
 
-from google.cloud import dataplex_v1
 import uuid
+
+from google.cloud import dataplex_v1
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +124,9 @@ def link_column_to_glossary_term(
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import os
+
     from dotenv import load_dotenv
+
     load_dotenv()
 
     PROJECT_ID = os.getenv("GCP_PROJECT_ID")

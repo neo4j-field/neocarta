@@ -1,6 +1,6 @@
 """CSV Connector for loading metadata from CSV files into Neo4j."""
 
-from typing import Optional
+
 from neo4j import Driver
 
 from ...ingest.rdbms import Neo4jRDBMSLoader
@@ -23,8 +23,8 @@ class CSVConnector:
         csv_directory: str,
         neo4j_driver: Driver,
         database_name: str = "neo4j",
-        csv_file_map: Optional[dict[str, str]] = None,
-    ):
+        csv_file_map: dict[str, str] | None = None,
+    ) -> None:
         """
         Initialize the CSV connector.
 
@@ -46,8 +46,8 @@ class CSVConnector:
 
     def extract_metadata(
         self,
-        include_nodes: Optional[list[str]] = None,
-        include_relationships: Optional[list[str]] = None,
+        include_nodes: list[str] | None = None,
+        include_relationships: list[str] | None = None,
     ) -> None:
         """
         Read and validate CSV files from the configured directory.
@@ -102,31 +102,67 @@ class CSVConnector:
         print("\n=== Loading Nodes ===")
         if t.database_nodes:
             print(f"Loading {len(t.database_nodes)} database nodes...")
-            print(self.loader.load_database_nodes(t.database_nodes, properties_list=t.get_properties("database_nodes")))
+            print(
+                self.loader.load_database_nodes(
+                    t.database_nodes, properties_list=t.get_properties("database_nodes")
+                )
+            )
         if t.schema_nodes:
             print(f"Loading {len(t.schema_nodes)} schema nodes...")
-            print(self.loader.load_schema_nodes(t.schema_nodes, properties_list=t.get_properties("schema_nodes")))
+            print(
+                self.loader.load_schema_nodes(
+                    t.schema_nodes, properties_list=t.get_properties("schema_nodes")
+                )
+            )
         if t.table_nodes:
             print(f"Loading {len(t.table_nodes)} table nodes...")
-            print(self.loader.load_table_nodes(t.table_nodes, properties_list=t.get_properties("table_nodes")))
+            print(
+                self.loader.load_table_nodes(
+                    t.table_nodes, properties_list=t.get_properties("table_nodes")
+                )
+            )
         if t.column_nodes:
             print(f"Loading {len(t.column_nodes)} column nodes...")
-            print(self.loader.load_column_nodes(t.column_nodes, properties_list=t.get_properties("column_nodes")))
+            print(
+                self.loader.load_column_nodes(
+                    t.column_nodes, properties_list=t.get_properties("column_nodes")
+                )
+            )
         if t.value_nodes:
             print(f"Loading {len(t.value_nodes)} value nodes...")
-            print(self.loader.load_value_nodes(t.value_nodes, properties_list=t.get_properties("value_nodes")))
+            print(
+                self.loader.load_value_nodes(
+                    t.value_nodes, properties_list=t.get_properties("value_nodes")
+                )
+            )
         if t.query_nodes:
             print(f"Loading {len(t.query_nodes)} query nodes...")
-            print(self.loader.load_query_nodes(t.query_nodes, properties_list=t.get_properties("query_nodes")))
+            print(
+                self.loader.load_query_nodes(
+                    t.query_nodes, properties_list=t.get_properties("query_nodes")
+                )
+            )
         if t.glossary_nodes:
             print(f"Loading {len(t.glossary_nodes)} glossary nodes...")
-            print(self.loader.load_glossary_nodes(t.glossary_nodes, properties_list=t.get_properties("glossary_nodes")))
+            print(
+                self.loader.load_glossary_nodes(
+                    t.glossary_nodes, properties_list=t.get_properties("glossary_nodes")
+                )
+            )
         if t.category_nodes:
             print(f"Loading {len(t.category_nodes)} category nodes...")
-            print(self.loader.load_category_nodes(t.category_nodes, properties_list=t.get_properties("category_nodes")))
+            print(
+                self.loader.load_category_nodes(
+                    t.category_nodes, properties_list=t.get_properties("category_nodes")
+                )
+            )
         if t.business_term_nodes:
             print(f"Loading {len(t.business_term_nodes)} business term nodes...")
-            print(self.loader.load_business_term_nodes(t.business_term_nodes, properties_list=t.get_properties("business_term_nodes")))
+            print(
+                self.loader.load_business_term_nodes(
+                    t.business_term_nodes, properties_list=t.get_properties("business_term_nodes")
+                )
+            )
 
         print("\n=== Loading Relationships ===")
         if t.has_schema_relationships:
@@ -145,8 +181,12 @@ class CSVConnector:
             print(f"Loading {len(t.has_category_relationships)} HAS_CATEGORY relationships...")
             print(self.loader.load_has_category_relationships(t.has_category_relationships))
         if t.has_business_term_relationships:
-            print(f"Loading {len(t.has_business_term_relationships)} HAS_BUSINESS_TERM relationships...")
-            print(self.loader.load_has_business_term_relationships(t.has_business_term_relationships))
+            print(
+                f"Loading {len(t.has_business_term_relationships)} HAS_BUSINESS_TERM relationships..."
+            )
+            print(
+                self.loader.load_has_business_term_relationships(t.has_business_term_relationships)
+            )
         if t.references_relationships:
             print(f"Loading {len(t.references_relationships)} REFERENCES relationships...")
             print(self.loader.load_references_relationships(t.references_relationships))
@@ -159,8 +199,8 @@ class CSVConnector:
 
     def run(
         self,
-        include_nodes: Optional[list[str]] = None,
-        include_relationships: Optional[list[str]] = None,
+        include_nodes: list[str] | None = None,
+        include_relationships: list[str] | None = None,
     ) -> None:
         """
         Run the complete CSV connector (extract → transform → load).
@@ -180,7 +220,7 @@ class CSVConnector:
             "has_category", "has_business_term", "references", "uses_table",
             "uses_column".
 
-        Examples
+        Examples:
         --------
         Load only core schema entities:
 

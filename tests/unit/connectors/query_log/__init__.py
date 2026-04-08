@@ -1,1 +1,1 @@
-"Query Log Connector Unit Tests"
+"""Query Log Connector Unit Tests."""

@@ -1,28 +1,28 @@
+import pandas as pd
+
 from ....data_model.rdbms import (
-    Database,
-    Schema,
-    Table,
     Column,
+    Database,
+    HasColumn,
     HasSchema,
     HasTable,
-    HasColumn,
-    References,
-    Value,
     HasValue,
+    References,
+    Schema,
+    Table,
+    Value,
 )
-import pandas as pd
 from ...models import NodesCache, RelationshipsCache
+
 
 class BigQuerySchemaTransformer:
     """
-    Transformer class for BigQuery. 
+    Transformer class for BigQuery.
     Transforms metadata from BigQuery Information Tables into data model nodes and relationships.
     """
 
-    def __init__(self):
-        """
-        Initialize the BigQuery transformer.
-        """
+    def __init__(self) -> None:
+        """Initialize the BigQuery transformer."""
         self._node_cache: NodesCache = NodesCache()
         self._relationships_cache: RelationshipsCache = RelationshipsCache()
 
@@ -30,16 +30,15 @@ class BigQuerySchemaTransformer:
     def database_nodes(self) -> list[Database]:
         """
         Get the database nodes.
-        (:Database)
+        (:Database).
         """
         return self._node_cache.get("database_nodes", [])
-
 
     @property
     def schema_nodes(self) -> list[Schema]:
         """
         Get the schema nodes.
-        (:Schema)
+        (:Schema).
         """
         return self._node_cache.get("schema_nodes", [])
 
@@ -47,7 +46,7 @@ class BigQuerySchemaTransformer:
     def table_nodes(self) -> list[Table]:
         """
         Get the table nodes.
-        (:Table)
+        (:Table).
         """
         return self._node_cache.get("table_nodes", [])
 
@@ -55,7 +54,7 @@ class BigQuerySchemaTransformer:
     def column_nodes(self) -> list[Column]:
         """
         Get the column nodes.
-        (:Column)
+        (:Column).
         """
         return self._node_cache.get("column_nodes", [])
 
@@ -63,7 +62,7 @@ class BigQuerySchemaTransformer:
     def value_nodes(self) -> list[Value]:
         """
         Get the value nodes.
-        (:Value)
+        (:Value).
         """
         return self._node_cache.get("value_nodes", [])
 
@@ -71,7 +70,7 @@ class BigQuerySchemaTransformer:
     def has_schema_relationships(self) -> list[HasSchema]:
         """
         Get the has schema relationships.
-        (:Database)-[:HAS_SCHEMA]->(:Schema)
+        (:Database)-[:HAS_SCHEMA]->(:Schema).
         """
         return self._relationships_cache.get("has_schema_relationships", [])
 
@@ -79,7 +78,7 @@ class BigQuerySchemaTransformer:
     def has_table_relationships(self) -> list[HasTable]:
         """
         Get the has table relationships.
-        (:Schema)-[:HAS_TABLE]->(:Table)
+        (:Schema)-[:HAS_TABLE]->(:Table).
         """
         return self._relationships_cache.get("has_table_relationships", [])
 
@@ -87,7 +86,7 @@ class BigQuerySchemaTransformer:
     def has_column_relationships(self) -> list[HasColumn]:
         """
         Get the has column relationships.
-        (:Table)-[:HAS_COLUMN]->(:Column)
+        (:Table)-[:HAS_COLUMN]->(:Column).
         """
         return self._relationships_cache.get("has_column_relationships", [])
 
@@ -95,19 +94,21 @@ class BigQuerySchemaTransformer:
     def references_relationships(self) -> list[References]:
         """
         Get the references relationships.
-        (:Column)-[:REFERENCES]->(:Column)
+        (:Column)-[:REFERENCES]->(:Column).
         """
         return self._relationships_cache.get("references_relationships", [])
 
     @property
     def has_value_relationships(self) -> list[HasValue]:
         """
-        Get the has value relationships. 
-        (:Column)-[:HAS_VALUE]->(:Value)
+        Get the has value relationships.
+        (:Column)-[:HAS_VALUE]->(:Value).
         """
         return self._relationships_cache.get("has_value_relationships", [])
 
-    def transform_to_database_nodes(self, database_info: pd.DataFrame, cache: bool = True) -> list[Database]:
+    def transform_to_database_nodes(
+        self, database_info: pd.DataFrame, cache: bool = True
+    ) -> list[Database]:
         """
         Transform BigQuery database (project) information into database nodes.
 
@@ -119,7 +120,7 @@ class BigQuerySchemaTransformer:
         cache: bool = True
             Whether to cache the transform. If True, will cache the database nodes in the instance.
 
-        Returns
+        Returns:
         -------
         list[Database]
             The database nodes.
@@ -138,8 +139,9 @@ class BigQuerySchemaTransformer:
 
         return database_nodes
 
-
-    def transform_to_schema_nodes(self, schema_info: pd.DataFrame, cache: bool = True) -> list[Schema]:
+    def transform_to_schema_nodes(
+        self, schema_info: pd.DataFrame, cache: bool = True
+    ) -> list[Schema]:
         """
         Transform BigQuery schema (dataset) information into schema nodes.
 
@@ -149,12 +151,11 @@ class BigQuerySchemaTransformer:
             A Pandas DataFrame containing the BigQuery schema information.
             Has columns `project_id`, `dataset_id`, and `description`.
 
-        Returns
+        Returns:
         -------
         list[Schema]
             The schema nodes.
         """
-
         schema_nodes = [
             Schema(
                 id=row.project_id + "." + row.dataset_id,
@@ -169,7 +170,6 @@ class BigQuerySchemaTransformer:
 
         return schema_nodes
 
-
     def transform_to_table_nodes(self, table_info: pd.DataFrame, cache: bool = True) -> list[Table]:
         """
         Transform BigQuery table information into table nodes.
@@ -182,12 +182,11 @@ class BigQuerySchemaTransformer:
         cache: bool = True
             Whether to cache the transform. If True, will cache the table nodes in the instance.
 
-        Returns
+        Returns:
         -------
         list[Table]
             The table nodes.
         """
-
         table_nodes = [
             Table(
                 id=row.table_catalog + "." + row.table_schema + "." + row.table_name,
@@ -202,8 +201,9 @@ class BigQuerySchemaTransformer:
 
         return table_nodes
 
-
-    def transform_to_column_nodes(self, column_info: pd.DataFrame, cache: bool = True) -> list[Column]:
+    def transform_to_column_nodes(
+        self, column_info: pd.DataFrame, cache: bool = True
+    ) -> list[Column]:
         """
         Transform BigQuery column information into column nodes.
 
@@ -215,12 +215,11 @@ class BigQuerySchemaTransformer:
         cache: bool = True
             Whether to cache the transform. If True, will cache the column nodes in the instance.
 
-        Returns
+        Returns:
         -------
         list[Column]
             The column nodes.
         """
-
         column_nodes = [
             Column(
                 id=row.table_catalog
@@ -245,7 +244,6 @@ class BigQuerySchemaTransformer:
 
         return column_nodes
 
-
     def transform_to_value_nodes(self, value_info: pd.DataFrame, cache: bool = True) -> list[Value]:
         """
         Transform BigQuery value information into value nodes.
@@ -257,7 +255,7 @@ class BigQuerySchemaTransformer:
         cache: bool = True
             Whether to cache the transform. If True, will cache the value nodes in the instance.
 
-        Returns
+        Returns:
         -------
         list[Value]
             The value nodes.
@@ -275,10 +273,8 @@ class BigQuerySchemaTransformer:
 
         return value_nodes
 
-
     def transform_to_has_schema_relationships(
-        self, schema_info: pd.DataFrame,
-        cache: bool = True
+        self, schema_info: pd.DataFrame, cache: bool = True
     ) -> list[HasSchema]:
         """
         Transform BigQuery schema information into contains schema relationships.
@@ -289,7 +285,7 @@ class BigQuerySchemaTransformer:
             A Pandas DataFrame containing the BigQuery schema information.
             Has columns `project_id` and `dataset_id`.
 
-        Returns
+        Returns:
         -------
         list[HasSchema]
             The contains schema relationships.
@@ -307,10 +303,8 @@ class BigQuerySchemaTransformer:
 
         return has_schema_relationships
 
-
     def transform_to_has_table_relationships(
-        self, table_info: pd.DataFrame,
-        cache: bool = True
+        self, table_info: pd.DataFrame, cache: bool = True
     ) -> list[HasTable]:
         """
         Transform BigQuery table information into contains table relationships.
@@ -323,12 +317,11 @@ class BigQuerySchemaTransformer:
         cache: bool = True
             Whether to cache the transform. If True, will cache the has table relationships in the instance.
 
-        Returns
+        Returns:
         -------
         list[HasTable]
             The contains table relationships.
         """
-
         has_table_relationships = [
             HasTable(
                 schema_id=row.table_catalog + "." + row.table_schema,
@@ -342,8 +335,9 @@ class BigQuerySchemaTransformer:
 
         return has_table_relationships
 
-
-    def transform_to_has_column_relationships(self, column_info: pd.DataFrame, cache: bool = True) -> list[HasColumn]:
+    def transform_to_has_column_relationships(
+        self, column_info: pd.DataFrame, cache: bool = True
+    ) -> list[HasColumn]:
         """
         Transform BigQuery column information into has column relationships.
 
@@ -354,8 +348,8 @@ class BigQuerySchemaTransformer:
             Has columns `table_catalog`, `table_schema`, `table_name`, and `column_name`.
         cache: bool = True
             Whether to cache the transform. If True, will cache the has column relationships in the instance.
-            
-        Returns
+
+        Returns:
         -------
         list[HasColumn]
             The has column relationships.
@@ -379,10 +373,8 @@ class BigQuerySchemaTransformer:
 
         return has_column_relationships
 
-
     def transform_to_references_relationships(
-        self, column_references_info: pd.DataFrame,
-        cache: bool = True
+        self, column_references_info: pd.DataFrame, cache: bool = True
     ) -> list[References]:
         """
         Transform BigQuery column references information into references relationships.
@@ -395,7 +387,7 @@ class BigQuerySchemaTransformer:
         cache: bool = True
             Whether to cache the transform. If True, will cache the references relationships in the instance.
 
-        Returns
+        Returns:
         -------
         list[References]
             The references relationships.
@@ -427,8 +419,9 @@ class BigQuerySchemaTransformer:
 
         return references_relationships
 
-
-    def transform_to_has_value_relationships(self, value_info: pd.DataFrame, cache: bool = True) -> list[HasValue]:
+    def transform_to_has_value_relationships(
+        self, value_info: pd.DataFrame, cache: bool = True
+    ) -> list[HasValue]:
         """
         Transform BigQuery value information into has value relationships.
 
@@ -439,8 +432,8 @@ class BigQuerySchemaTransformer:
             Must have columns `column_id` and `value_id`.
         cache: bool = True
             Whether to cache the transform. If True, will cache the has value relationships in the instance.
-            
-        Returns
+
+        Returns:
         -------
         list[HasValue]
             The has value relationships.

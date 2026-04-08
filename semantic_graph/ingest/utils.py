@@ -1,6 +1,7 @@
 from neo4j import Driver, RoutingControl
 from pydantic import BaseModel
 
+
 def is_enterprise_edition(neo4j_driver: Driver, database_name: str = "neo4j") -> bool:
     """
     Check if using enterprise edition of Neo4j.
@@ -12,7 +13,7 @@ def is_enterprise_edition(neo4j_driver: Driver, database_name: str = "neo4j") ->
     database_name: str
         The name of the database to check the edition of.
 
-    Returns
+    Returns:
     -------
     bool
         True if the Neo4j database is running in enterprise edition, False otherwise.
@@ -34,7 +35,14 @@ return name, versions, edition
         print(f"Error checking enterprise edition: {e}")
         return False
 
-def write_neo4j_constraints(neo4j_driver: Driver, node_labels: list[str], key_constraints:dict[str, str], unique_constraints:dict[str, str], database_name: str = "neo4j") -> dict:
+
+def write_neo4j_constraints(
+    neo4j_driver: Driver,
+    node_labels: list[str],
+    key_constraints: dict[str, str],
+    unique_constraints: dict[str, str],
+    database_name: str = "neo4j",
+) -> dict:
     """
     Write constraints to the database according to which edition is being used.
     Iterate over a list of node labels and write the appropriate constraints.
@@ -53,12 +61,11 @@ def write_neo4j_constraints(neo4j_driver: Driver, node_labels: list[str], key_co
     database_name: str
         The name of the database to write constraints to.
 
-    Returns
+    Returns:
     -------
     dict
         The summary of the constraints written.
     """
-
     is_enterprise = is_enterprise_edition(neo4j_driver, database_name)
     summaries = [{"enterprise_edition": is_enterprise}]
 
@@ -67,8 +74,8 @@ def write_neo4j_constraints(neo4j_driver: Driver, node_labels: list[str], key_co
         for node_label in node_labels:
             try:
                 c = key_constraints[node_label]
-            except KeyError:
-                raise ValueError(f"Node key constraint not found for node label {node_label}.")
+            except KeyError as e:
+                raise ValueError(f"Node key constraint not found for node label {node_label}.") from e
             _, summary, _ = neo4j_driver.execute_query(
                 query_=c, routing_=RoutingControl.WRITE, database_=database_name
             )
@@ -78,8 +85,8 @@ def write_neo4j_constraints(neo4j_driver: Driver, node_labels: list[str], key_co
         for node_label in node_labels:
             try:
                 c = unique_constraints[node_label]
-            except KeyError:
-                raise ValueError(f"Node unique constraint not found for node label {node_label}.")
+            except KeyError as e:
+                raise ValueError(f"Node unique constraint not found for node label {node_label}.") from e
             _, summary, _ = neo4j_driver.execute_query(
                 query_=c, routing_=RoutingControl.WRITE, database_=database_name
             )
@@ -99,17 +106,21 @@ def _validate_properties_list(model: BaseModel, properties_list: list[str]) -> N
     properties_list: list[str]
         The list of properties to validate.
 
-    Raises
+    Raises:
     ------
     ValueError
         If any properties are not found in the model fields.
     """
-
     invalid_props = set(properties_list) - set(model.model_fields)
     if invalid_props:
-        raise ValueError(f"Properties list contains invalid properties for model {model.__class__.__name__}: {invalid_props}")
+        raise ValueError(
+            f"Properties list contains invalid properties for model {model.__class__.__name__}: {invalid_props}"
+        )
 
-def _build_node_ingest_query(node_label: str, overwrite_existing: bool, properties_list: list[str]) -> str:
+
+def _build_node_ingest_query(
+    node_label: str, overwrite_existing: bool, properties_list: list[str]
+) -> str:
     """
     Build a node ingest query for a given node label, overwrite existing flag, and properties list.
     Will return a MERGE query that sets properties according to the configuration.
@@ -123,7 +134,7 @@ def _build_node_ingest_query(node_label: str, overwrite_existing: bool, properti
     properties_list: list[str]
         The list of properties to set on the node.
 
-    Returns
+    Returns:
     -------
     str
         The MERGE query to ingest the nodes.
@@ -153,15 +164,16 @@ MERGE (n:{node_label} {{id: row.id}})
     return query
 
 
-def _build_relationship_ingest_query(relationship_type: str, 
-source_node_label: str, 
-target_node_label: str, 
-source_id_column_name: str,
-target_id_column_name: str,
-overwrite_existing: bool, properties_list: list[str]) -> str:
-    """
-    Build a relationship ingest query for a given relationship type, source node label, target node label, source id column name, target id column name, overwrite existing flag, and properties list.
-    """
+def _build_relationship_ingest_query(
+    relationship_type: str,
+    source_node_label: str,
+    target_node_label: str,
+    source_id_column_name: str,
+    target_id_column_name: str,
+    overwrite_existing: bool,
+    properties_list: list[str],
+) -> str:
+    """Build a relationship ingest query for a given relationship type, source node label, target node label, source id column name, target id column name, overwrite existing flag, and properties list."""
     query = f"""
 UNWIND $rows as row
 MATCH (n1:{source_node_label} {{id: row.{source_id_column_name}}})

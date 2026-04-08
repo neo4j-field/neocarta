@@ -1,27 +1,27 @@
 """Extract metadata from GCP Dataplex."""
 
-from google.cloud import dataplex_v1
+
 import pandas as pd
-from typing import Optional
-from .models import BigQueryMetadataInfoResponse, GlossaryInfoResponse, DataplexExtractorCache
+from google.cloud import dataplex_v1
+
+from .models import BigQueryMetadataInfoResponse, DataplexExtractorCache, GlossaryInfoResponse
 
 
 class DataplexExtractor:
-    """
-    Extractor class for Dataplex.
-    """
+    """Extractor class for Dataplex."""
 
-    def __init__(self, 
+    def __init__(
+        self,
         catalog_client: dataplex_v1.CatalogServiceClient,
         glossary_client: dataplex_v1.BusinessGlossaryServiceClient,
         project_id: str,
         project_number: str,
         dataplex_location: str,
-        dataset_id: Optional[str] = None,
-    ):
+        dataset_id: str | None = None,
+    ) -> None:
         """
         Initialize the Dataplex extractor.
-        
+
         Parameters
         ----------
         catalog_client: dataplex_v1.CatalogServiceClient
@@ -37,7 +37,6 @@ class DataplexExtractor:
         dataplex_location: str
             The Dataplex location (e.g. 'us-central1' or 'us').
         """
-
         self.catalog_client = catalog_client
         self.glossary_client = glossary_client
         self.project_id = project_id
@@ -49,62 +48,69 @@ class DataplexExtractor:
 
     @property
     def database_info(self) -> pd.DataFrame:
-        """
-        Get the database information DataFrame.
-        """
+        """Get the database information DataFrame."""
         cols = ["project_id", "service", "platform"]
-        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id"])[cols]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["project_id"]
+        )[cols]
 
     @property
     def schema_info(self) -> pd.DataFrame:
-        """
-        Get the schema information DataFrame.
-        """
+        """Get the schema information DataFrame."""
         cols = ["project_id", "dataset_id"]
-        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id"])[cols]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["project_id", "dataset_id"]
+        )[cols]
 
     @property
     def table_info(self) -> pd.DataFrame:
-        """
-        Get the table information DataFrame.
-        """
+        """Get the table information DataFrame."""
         cols = ["project_id", "dataset_id", "table_id", "table_display_name", "table_description"]
-        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id", "table_id"])[cols]
-    
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["project_id", "dataset_id", "table_id"]
+        )[cols]
+
     @property
     def column_info(self) -> pd.DataFrame:
-        """
-        Get the column information DataFrame.
-        """
-        cols = ["project_id", "dataset_id", "table_id", "column_name", "column_description", "column_data_type", "column_mode"]
-        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["project_id", "dataset_id", "table_id", "column_name"])[cols]
-
+        """Get the column information DataFrame."""
+        cols = [
+            "project_id",
+            "dataset_id",
+            "table_id",
+            "column_name",
+            "column_description",
+            "column_data_type",
+            "column_mode",
+        ]
+        return self._cache.get("table_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["project_id", "dataset_id", "table_id", "column_name"]
+        )[cols]
 
     @property
     def glossary_info(self) -> pd.DataFrame:
-        """
-        Get the glossary information DataFrame.
-        """
+        """Get the glossary information DataFrame."""
         cols = ["glossary_id", "glossary_name"]
-        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id"])[cols]
-    
+        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["glossary_id"]
+        )[cols]
+
     @property
     def category_info(self) -> pd.DataFrame:
-        """
-        Get the category information DataFrame.
-        """
+        """Get the category information DataFrame."""
         cols = ["glossary_id", "category_id"]
-        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id", "category_id"])[cols]
-    
+        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["glossary_id", "category_id"]
+        )[cols]
+
     @property
     def business_term_info(self) -> pd.DataFrame:
-        """
-        Get the business term information DataFrame.
-        """
+        """Get the business term information DataFrame."""
         cols = ["glossary_id", "category_id", "term_id", "term_name", "term_description"]
-        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(subset=["glossary_id", "category_id", "term_id"])[cols]
-    
-    def _get_dataset_id(self, dataset_id: Optional[str] = None) -> str:
+        return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(
+            subset=["glossary_id", "category_id", "term_id"]
+        )[cols]
+
+    def _get_dataset_id(self, dataset_id: str | None = None) -> str:
         """
         Get the dataset ID. If not provided, will use default instance `dataset_id`.
 
@@ -112,21 +118,23 @@ class DataplexExtractor:
         ----------
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
-            
-        Returns
+
+        Returns:
         -------
         str
             The dataset ID.
         """
         dataset_id = dataset_id or self.dataset_id
 
-        assert dataset_id is not None, "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
+        assert dataset_id is not None, (
+            "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
+        )
 
         return dataset_id
 
     def _extract_bigquery_dataset_table_ids(
         self,
-        dataset_id: Optional[str] = None,
+        dataset_id: str | None = None,
     ) -> list[str]:
         """
         Discover all BigQuery table IDs in a dataset via Dataplex Universal Catalog.
@@ -138,13 +146,12 @@ class DataplexExtractor:
         ----------
         dataset_id: Optional[str] = None
             The BigQuery dataset ID. If not provided, will use default instance `dataset_id`.
-       
-        Returns
+
+        Returns:
         -------
         list[str]
             A list of table IDs within the dataset.
         """
-
         dataset_id = self._get_dataset_id(dataset_id)
 
         entry_group = (
@@ -155,23 +162,18 @@ class DataplexExtractor:
         # Table entries have names of the form:
         # .../@bigquery/entries/bigquery.googleapis.com/projects/{project_id}/datasets/{dataset_id}/tables/{table_id}
         table_path_segment = (
-            f"bigquery.googleapis.com/projects/{self.project_id}"
-            f"/datasets/{dataset_id}/tables/"
+            f"bigquery.googleapis.com/projects/{self.project_id}/datasets/{dataset_id}/tables/"
         )
 
         table_ids = []
         for entry in self.catalog_client.list_entries(parent=entry_group):
             if table_path_segment in entry.name:
                 table_ids.append(entry.name.split("/tables/")[-1])
-        
+
         return table_ids
 
-
     def extract_bigquery_info_for_table(
-        self,
-        table_id: str,
-        dataset_id: Optional[str] = None,
-        cache: bool = True
+        self, table_id: str, dataset_id: str | None = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract full table metadata from Dataplex Universal Catalog for a BigQuery table.
@@ -186,17 +188,15 @@ class DataplexExtractor:
         cache: bool = True
             Whether to cache the extract. If True, will cache the table information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame with one row per column.
             Has columns: project_id, project_number, dataset_id, table_id, table_display_name, table_description, column_name, column_data_type, column_metadata_type, column_mode, column_description, service, platform, location, resource_name, fully_qualified_name, parent_entry, entry_type.
         """
-
         dataset_id = self._get_dataset_id(dataset_id)
 
         table_entry_name = f"projects/{self.project_number}/locations/{self.dataplex_location}/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/{self.project_id}/datasets/{dataset_id}/tables/{table_id}"
-
 
         request = dataplex_v1.LookupEntryRequest(
             name=f"projects/{self.project_id}/locations/{self.dataplex_location}",
@@ -216,7 +216,7 @@ class DataplexExtractor:
         for key, aspect in entry.aspects.items():
             if "storage" in key and aspect.data:
                 storage = dict(aspect.data)
-            
+
         # Schema fields
         schema_fields = []
         for key, aspect in entry.aspects.items():
@@ -226,38 +226,40 @@ class DataplexExtractor:
 
         records = []
         for col in schema_fields:
-            records.append(BigQueryMetadataInfoResponse(
-                project_id=self.project_id,
-                project_number=self.project_number,
-                dataset_id=dataset_id,
-                table_id=table_id,
-                table_display_name=src.display_name,
-                table_description=src.description,
-                column_name=col.get("name"),
-                column_data_type=col.get("dataType"),
-                column_metadata_type=col.get("metadataType"),
-                column_mode=col.get("mode"),
-                column_description=col.get("description", ""),
-                service=src.system,
-                platform=src.platform,
-                location=src.location,
-                resource_name=storage.get("resourceName", ""),
-                fully_qualified_name=fqn,
-                parent_entry=entry.parent_entry,
-                entry_type=entry.entry_type,
-            ))
+            records.append(
+                BigQueryMetadataInfoResponse(
+                    project_id=self.project_id,
+                    project_number=self.project_number,
+                    dataset_id=dataset_id,
+                    table_id=table_id,
+                    table_display_name=src.display_name,
+                    table_description=src.description,
+                    column_name=col.get("name"),
+                    column_data_type=col.get("dataType"),
+                    column_metadata_type=col.get("metadataType"),
+                    column_mode=col.get("mode"),
+                    column_description=col.get("description", ""),
+                    service=src.system,
+                    platform=src.platform,
+                    location=src.location,
+                    resource_name=storage.get("resourceName", ""),
+                    fully_qualified_name=fqn,
+                    parent_entry=entry.parent_entry,
+                    entry_type=entry.entry_type,
+                )
+            )
 
         # TODO: Handle caching duplicate table information if method run multiple times for same table.
         df = pd.DataFrame(records)
         if cache:
-            self._cache["table_info"] = pd.concat([self._cache.get("table_info", pd.DataFrame()), df], ignore_index=True)
+            self._cache["table_info"] = pd.concat(
+                [self._cache.get("table_info", pd.DataFrame()), df], ignore_index=True
+            )
 
         return df
 
     def extract_bigquery_info_for_all_tables(
-        self,
-        dataset_id: Optional[str] = None,
-        cache: bool = True
+        self, dataset_id: str | None = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract full table metadata from Dataplex Universal Catalog for all BigQuery tables in a dataset.
@@ -269,26 +271,31 @@ class DataplexExtractor:
         cache: bool = True
             Whether to cache the extract. If True, will cache the table information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame with one row per table column.
         """
-        
         dataset_id = self._get_dataset_id(dataset_id)
 
         table_ids = self._extract_bigquery_dataset_table_ids(dataset_id)
 
         df = pd.DataFrame()
         for table_id in table_ids:
-            df = pd.concat([df, self.extract_bigquery_info_for_table(table_id, dataset_id, cache=False)], ignore_index=True)
-        
+            df = pd.concat(
+                [df, self.extract_bigquery_info_for_table(table_id, dataset_id, cache=False)],
+                ignore_index=True,
+            )
+
         if cache:
-            self._cache["table_info"] = pd.concat([self._cache.get("table_info", pd.DataFrame()), df], ignore_index=True)
+            self._cache["table_info"] = pd.concat(
+                [self._cache.get("table_info", pd.DataFrame()), df], ignore_index=True
+            )
 
         return df
 
-    def _parse_glossary_category_id(term_parent: str) -> Optional[str]:
+    @staticmethod
+    def _parse_glossary_category_id(term_parent: str) -> str | None:
         """
         Parse a Dataplex term parent to a category ID
         (projects/{project}/locations/{location}/glossaries/{glossary}/categories/{category}).
@@ -297,11 +304,8 @@ class DataplexExtractor:
         if parts[-2] == "categories":
             return parts[-1]
         return None
-        
 
-    def extract_glossary_info(
-        self, cache: bool = True
-    ) -> pd.DataFrame:
+    def extract_glossary_info(self, cache: bool = True) -> pd.DataFrame:
         """
         Extract all glossary terms from all glossaries in the given location.
 
@@ -310,7 +314,7 @@ class DataplexExtractor:
         cache: bool = True
             Whether to cache the extract. If True, will cache the glossary information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame with one row per term.
@@ -352,8 +356,8 @@ class DataplexExtractor:
         # TODO: Handle caching duplicate glossary information if method run multiple times for same glossary.
         df = pd.DataFrame(records)
         if cache:
-            self._cache["glossary_info"] = pd.concat([self._cache.get("glossary_info", pd.DataFrame()), df], ignore_index=True)
+            self._cache["glossary_info"] = pd.concat(
+                [self._cache.get("glossary_info", pd.DataFrame()), df], ignore_index=True
+            )
 
         return df
-
-

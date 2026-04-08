@@ -1,78 +1,82 @@
 import pandas as pd
+
 from .models import QueryLogExtractorCache
 from .utils import parse_bigquery_query_log_json, parse_sql_query
 
+
 class QueryLogExtractor:
-    """
-    Extractor class for query log files.
-    """
+    """Extractor class for query log files."""
 
     def __init__(self) -> None:
-        
         self._cache: QueryLogExtractorCache = QueryLogExtractorCache()
 
-    
     @property
     def database_info(self) -> pd.DataFrame:
-        """
-        Get the database information.
-        """
-        return self._cache.get("table_info", pd.DataFrame())[["project_id", "project_name", "platform", "service"]].drop_duplicates()
-    
+        """Get the database information."""
+        return self._cache.get("table_info", pd.DataFrame())[
+            ["project_id", "project_name", "platform", "service"]
+        ].drop_duplicates()
+
     @property
     def schema_info(self) -> pd.DataFrame:
-        """
-        Get the schema information.
-        """
-        return self._cache.get("table_info", pd.DataFrame())[["project_id", "dataset_id", "dataset_name"]].drop_duplicates()
-    
+        """Get the schema information."""
+        return self._cache.get("table_info", pd.DataFrame())[
+            ["project_id", "dataset_id", "dataset_name"]
+        ].drop_duplicates()
+
     @property
     def table_info(self) -> pd.DataFrame:
-        """
-        Get the table information.
-        """
-        return self._cache.get("table_info", pd.DataFrame())[["project_id", "dataset_id", "table_id", "table_name"]].drop_duplicates()
-    
+        """Get the table information."""
+        return self._cache.get("table_info", pd.DataFrame())[
+            ["project_id", "dataset_id", "table_id", "table_name"]
+        ].drop_duplicates()
+
     @property
-    def column_info(self) -> pd.DataFrame: 
-        """
-        Get the column information.
-        """
-        return self._cache.get("column_info", pd.DataFrame())[["query_id", "table_id", "table_name", "column_id", "column_name"]].drop_duplicates()
-    
+    def column_info(self) -> pd.DataFrame:
+        """Get the column information."""
+        return self._cache.get("column_info", pd.DataFrame())[
+            ["query_id", "table_id", "table_name", "column_id", "column_name"]
+        ].drop_duplicates()
+
     @property
     def column_references_info(self) -> pd.DataFrame:
-        """
-        Get the column references information.
-        """
-        return self._cache.get("column_references_info", pd.DataFrame())[[
-        "left_table_id", "left_table_name", "left_column_id", "left_column_name", 
-        "right_table_id", "right_table_name", "right_column_id", "right_column_name", 
-        "criteria"]].drop_duplicates()
-    
+        """Get the column references information."""
+        return self._cache.get("column_references_info", pd.DataFrame())[
+            [
+                "left_table_id",
+                "left_table_name",
+                "left_column_id",
+                "left_column_name",
+                "right_table_id",
+                "right_table_name",
+                "right_column_id",
+                "right_column_name",
+                "criteria",
+            ]
+        ].drop_duplicates()
 
     @property
     def query_info(self) -> pd.DataFrame:
-        """
-        Get the query information.
-        """
+        """Get the query information."""
         return self._cache.get("query_info", pd.DataFrame())
-    
+
     @property
     def query_table_info(self) -> pd.DataFrame:
-        """
-        Get the query table information.
-        """
-        return self._cache.get("table_info", pd.DataFrame())[["query_id", "table_id"]].drop_duplicates()
-    
+        """Get the query table information."""
+        return self._cache.get("table_info", pd.DataFrame())[
+            ["query_id", "table_id"]
+        ].drop_duplicates()
+
     @property
     def query_column_info(self) -> pd.DataFrame:
-        """
-        Get the query column information.
-        """
-        return self._cache.get("column_info", pd.DataFrame())[["query_id", "column_id"]].drop_duplicates()
+        """Get the query column information."""
+        return self._cache.get("column_info", pd.DataFrame())[
+            ["query_id", "column_id"]
+        ].drop_duplicates()
 
-    def extract_info_from_query_log_json(self, query_log_file: str, source: str = "bigquery", cache: bool = True) -> dict[str, pd.DataFrame]:
+    def extract_info_from_query_log_json(
+        self, query_log_file: str, source: str = "bigquery", cache: bool = True
+    ) -> dict[str, pd.DataFrame]:
         """
         Extract information from a query log file.
 
@@ -85,7 +89,7 @@ class QueryLogExtractor:
         cache: bool = True
             Whether to cache the extracted information.
 
-        Returns
+        Returns:
         -------
         dict[str, pd.DataFrame]
             A dictionary with the extracted information.
@@ -112,8 +116,10 @@ class QueryLogExtractor:
             query_id = row["query_id"]
             project_id = row.get("project_id")
 
-            parsed_dict = parse_sql_query(query, query_id, "bigquery", default_project_id=project_id)
-            
+            parsed_dict = parse_sql_query(
+                query, query_id, "bigquery", default_project_id=project_id
+            )
+
             if parsed_dict:
                 table_info.extend(parsed_dict["table_info"])
                 column_info.extend(parsed_dict["column_info"])
@@ -128,7 +134,7 @@ class QueryLogExtractor:
             self._cache["table_info"] = table_info_df
             self._cache["column_info"] = column_info_df
             self._cache["column_references_info"] = references_info_df
-        
+
         return {
             "query_info": query_info_df,
             "table_info": table_info_df,

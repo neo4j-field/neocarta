@@ -1,5 +1,5 @@
 """
-Sync Embeddings Example
+Sync Embeddings Example.
 
 This example demonstrates how to generate embeddings synchronously
 using the OpenAI Embeddings API on an existing Neo4j graph.
@@ -27,16 +27,18 @@ Environment Variables Required:
 
 import argparse
 import os
+
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import OpenAI
+
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 def main(
     node_labels: list[str] = ["Table", "Column"],
     batch_size: int = 100,
-):
+) -> None:
     load_dotenv()
     print("Starting sync embeddings workflow...")
     print("Creating drivers and clients...")

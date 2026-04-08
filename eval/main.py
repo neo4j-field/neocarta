@@ -3,28 +3,29 @@
 import asyncio
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 from google.cloud import bigquery
 from openai import AsyncOpenAI
 
 from eval import (
-    get_ecommerce_eval_samples,
+    BigQuerySchemaRetriever,
     EvalRunner,
     build_delta_report,
-    print_report,
     export_results_to_json,
-    BigQuerySchemaRetriever,
+    get_ecommerce_eval_samples,
+    print_report,
 )
 
 
-async def main():
+async def main() -> None:
     """Run semantic layer evaluation."""
     # Load environment
     load_dotenv()
 
-    print("="*80)
+    print("=" * 80)
     print("SEMANTIC LAYER EVALUATION")
-    print("="*80)
+    print("=" * 80)
 
     # Configuration
     PROJECT_ROOT = Path(__file__).parent.parent
@@ -33,13 +34,14 @@ async def main():
 
     # Persist schema if it doesn't exist
     if not FULL_SCHEMA_PATH.exists():
-        print(f"\n📥 Schema file not found. Persisting from MCP server...")
+        print("\n📥 Schema file not found. Persisting from MCP server...")
         print(f"   Source: {SEMANTIC_MCP_SERVER}")
         print(f"   Target: {FULL_SCHEMA_PATH}")
 
         from eval.datasets.schema_registry import persist_graph_schema_from_mcp
+
         await persist_graph_schema_from_mcp(SEMANTIC_MCP_SERVER, FULL_SCHEMA_PATH)
-        print(f"   ✓ Schema persisted successfully")
+        print("   ✓ Schema persisted successfully")
 
     # Initialize clients
     bq_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
@@ -58,15 +60,16 @@ async def main():
 
     # Count by archetype
     from collections import Counter
+
     archetypes = Counter(s.archetype for s in samples)
     print("   Distribution:")
     for arch, count in archetypes.items():
         print(f"     - {arch}: {count}")
 
     # Initialize runner
-    print(f"\n🚀 Initializing evaluation runner...")
+    print("\n🚀 Initializing evaluation runner...")
     print(f"   MCP Server: {SEMANTIC_MCP_SERVER}")
-    print(f"   LLM Model: gpt-4o")
+    print("   LLM Model: gpt-4o")
 
     runner = EvalRunner(
         semantic_mcp_server_path=SEMANTIC_MCP_SERVER,
@@ -78,16 +81,16 @@ async def main():
     )
 
     # Run evaluation
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("RUNNING EVALUATION")
-    print("="*80)
+    print("=" * 80)
 
     results = await runner.run_eval(samples)
 
     # Build report
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("BUILDING REPORT")
-    print("="*80)
+    print("=" * 80)
 
     report = build_delta_report(results)
     print_report(report)

@@ -1,36 +1,36 @@
 """CSV Transformer for converting DataFrames into data model objects."""
 
+
 import pandas as pd
-from typing import Optional
 
 from ...data_model.rdbms.core import (
-    Database,
-    Schema,
-    Table,
     Column,
+    Database,
+    HasColumn,
     HasSchema,
     HasTable,
-    HasColumn,
     References,
+    Schema,
+    Table,
 )
 from ...data_model.rdbms.expanded import (
-    Value,
-    HasValue,
-    Glossary,
-    Category,
     BusinessTerm,
-    HasCategory,
+    Category,
+    Glossary,
     HasBusinessTerm,
+    HasCategory,
+    HasValue,
     Query,
-    UsesTable,
     UsesColumn,
+    UsesTable,
+    Value,
 )
 from ..models import NodesCache, RelationshipsCache
 from ..utils.generate_id import (
+    generate_column_id,
     generate_database_id,
     generate_schema_id,
     generate_table_id,
-    generate_column_id,
     generate_value_id,
 )
 
@@ -38,8 +38,8 @@ from ..utils.generate_id import (
 def _available_properties(
     df: pd.DataFrame,
     exclude: list[str],
-    column_mapping: Optional[dict[str, str]] = None,
-    always_include: Optional[list[str]] = None,
+    column_mapping: dict[str, str] | None = None,
+    always_include: list[str] | None = None,
 ) -> list[str]:
     """
     Derive the list of model property names to write based on CSV columns present.
@@ -62,10 +62,7 @@ def _available_properties(
     all_excluded = {"id"} | set(exclude)
     csv_cols = [c for c in df.columns if c not in all_excluded]
 
-    if column_mapping:
-        properties = [column_mapping.get(c, c) for c in csv_cols]
-    else:
-        properties = list(csv_cols)
+    properties = [column_mapping.get(c, c) for c in csv_cols] if column_mapping else list(csv_cols)
 
     if always_include:
         for prop in always_include:
@@ -85,7 +82,7 @@ class CSVTransformer:
     loader knows which Neo4j properties to write.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._node_cache: NodesCache = NodesCache()
         self._relationships_cache: RelationshipsCache = RelationshipsCache()
         # Derived from the columns present in each source CSV file.
@@ -445,7 +442,9 @@ class CSVTransformer:
         self._relationships_cache["has_category_relationships"] = relationships
         return relationships
 
-    def transform_to_has_business_term_relationships(self, df: pd.DataFrame) -> list[HasBusinessTerm]:
+    def transform_to_has_business_term_relationships(
+        self, df: pd.DataFrame
+    ) -> list[HasBusinessTerm]:
         if df is None or df.empty:
             return []
 
@@ -511,4 +510,3 @@ class CSVTransformer:
         ]
         self._relationships_cache["uses_column_relationships"] = relationships
         return relationships
-

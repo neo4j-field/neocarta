@@ -1,8 +1,10 @@
-from neo4j import Driver, RoutingControl
-import pandas as pd
-from typing import Any, Callable
 import asyncio
+from collections.abc import Callable
 from math import ceil
+from typing import Any
+
+import pandas as pd
+from neo4j import Driver, RoutingControl
 
 
 def get_nodes_to_embed(
@@ -25,7 +27,7 @@ def get_nodes_to_embed(
     database_name: str
         The name of the database to get nodes from.
 
-    Returns
+    Returns:
     -------
     pd.DataFrame
         The nodes to embed.
@@ -33,7 +35,6 @@ def get_nodes_to_embed(
         - node_label: The label of the node.
         - description: The description of the node.
     """
-
     assert min_length > 0, "Minimum length must be greater than 0"
 
     query = f"""
@@ -41,8 +42,8 @@ MATCH (n:{node_label})
 WHERE n.description IS NOT NULL
     AND n.embedding IS NULL
     AND size(n.description) > 0
-RETURN n.id as id, 
-    labels(n)[0] as node_label, 
+RETURN n.id as id,
+    labels(n)[0] as node_label,
     n.description as description
 """
     results = neo4j_driver.execute_query(
@@ -70,12 +71,11 @@ def _create_embeddings_for_batch_sync(
         A Pandas DataFrame where each row represents a node to embed.
         Has columns `id`, `node_label`, and `description`.
 
-    Returns
+    Returns:
     -------
     list[tuple[str, list[dict[str, Any]]]]
         A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
     """
-
     results = []
     for _, row in batch.iterrows():
         embedding = embedding_fn(description=row["description"])
@@ -101,22 +101,19 @@ async def _create_embeddings_for_batch_async(
         A list of tuples, where the first element is the node id, the second element is the node label, and the third element is the node description.
         This is used to log failed embeddings across batches.
 
-    Returns
+    Returns:
     -------
     list[tuple[str, list[dict[str, Any]]]]
         A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
     """
-
     # Create tasks for all nodes in the batch
     # order is maintained
-    tasks = [
-        embedding_fn(description=row["description"]) for _, row in batch.iterrows()
-    ]
+    tasks = [embedding_fn(description=row["description"]) for _, row in batch.iterrows()]
     # Execute all tasks concurrently
     embedding_results = await asyncio.gather(*tasks)
     return [
         (id, embedding)
-        for id, embedding in zip(batch["id"], embedding_results)
+        for id, embedding in zip(batch["id"], embedding_results, strict=False)
         if embedding is not None
     ]
 
@@ -139,13 +136,12 @@ def create_embeddings_in_batches_sync(
     batch_size : int
         The number of nodes to process in each batch.
 
-    Returns
+    Returns:
     -------
     list[tuple[str, list[Any]]]
         A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
     """
-
-    results = list()
+    results = []
 
     for batch_idx, i in enumerate(range(0, len(nodes_dataframe), batch_size)):
         print(
@@ -182,13 +178,12 @@ async def create_embeddings_in_batches_async(
     batch_size : int
         The number of nodes to process in each batch.
 
-    Returns
+    Returns:
     -------
     list[tuple[str, list[Any]]]
         A list of tuples, where the first element is the node id and the second element is the embedding for the node description.
     """
-
-    results = list()
+    results = []
 
     for batch_idx, i in enumerate(range(0, len(nodes_dataframe), batch_size)):
         print(
@@ -228,7 +223,6 @@ def write_embeddings_to_graph(
     database_name: str
         The name of the database to write embeddings to.
     """
-
     query = f"""
     UNWIND $rows as row
     MATCH (n:{node_label} {{id: row.id}})

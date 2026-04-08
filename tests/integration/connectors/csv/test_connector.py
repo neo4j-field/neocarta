@@ -1,21 +1,20 @@
 """Integration tests for CSV connector workflow."""
 
-import pytest
 from semantic_graph.connectors.csv import CSVConnector
 
 
 def test_load_database_nodes(neo4j_driver, temp_csv_dir, sample_database_csv):
     """Test that database nodes are loaded correctly."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database"])
 
     with neo4j_driver.session(database="neo4j") as session:
-        result = session.run("MATCH (d:Database) RETURN d.id as id, d.name as name, d.platform as platform")
+        result = session.run(
+            "MATCH (d:Database) RETURN d.id as id, d.name as name, d.platform as platform"
+        )
         records = list(result)
 
         assert len(records) == 1
@@ -27,14 +26,11 @@ def test_load_database_nodes(neo4j_driver, temp_csv_dir, sample_database_csv):
 def test_database_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     """Test that only CSV columns are loaded as properties, not all possible fields."""
     (temp_csv_dir / "database_info.csv").write_text(
-        "database_id,name,platform\n"
-        "test-db,Test Database,AWS\n"
+        "database_id,name,platform\ntest-db,Test Database,AWS\n"
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database"])
@@ -54,9 +50,7 @@ def test_database_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
 def test_load_schema_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv):
     """Test that schema nodes are loaded correctly."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema"])
@@ -73,12 +67,12 @@ def test_load_schema_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, samp
 def test_schema_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     """Test that only CSV columns are loaded for schemas."""
     (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
-    (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id,name\nmy-project,sales,Sales\n")
+    (temp_csv_dir / "schema_info.csv").write_text(
+        "database_id,schema_id,name\nmy-project,sales,Sales\n"
+    )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema"])
@@ -92,18 +86,15 @@ def test_schema_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
         assert "description" not in props
 
 
-def test_load_has_schema_relationships(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv):
+def test_load_has_schema_relationships(
+    neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv
+):
     """Test that HAS_SCHEMA relationships are created."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(
-        include_nodes=["database", "schema"],
-        include_relationships=["has_schema"]
-    )
+    connector.run(include_nodes=["database", "schema"], include_relationships=["has_schema"])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -117,12 +108,12 @@ def test_load_has_schema_relationships(neo4j_driver, temp_csv_dir, sample_databa
         assert records[0]["schema_name"] == "Analytics"
 
 
-def test_load_table_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv, sample_table_csv):
+def test_load_table_nodes(
+    neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv, sample_table_csv
+):
     """Test that table nodes are loaded correctly."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema", "table"])
@@ -137,12 +128,17 @@ def test_load_table_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sampl
         assert records[2]["name"] == "summary"
 
 
-def test_load_column_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, sample_schema_csv, sample_table_csv, sample_column_csv):
+def test_load_column_nodes(
+    neo4j_driver,
+    temp_csv_dir,
+    sample_database_csv,
+    sample_schema_csv,
+    sample_table_csv,
+    sample_column_csv,
+):
     """Test that column nodes are loaded correctly."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema", "table", "column"])
@@ -164,16 +160,16 @@ def test_column_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     """Test that only CSV columns are loaded for columns."""
     (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
     (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
-    (temp_csv_dir / "table_info.csv").write_text("database_id,schema_id,table_name\nmy-project,sales,orders\n")
+    (temp_csv_dir / "table_info.csv").write_text(
+        "database_id,schema_id,table_name\nmy-project,sales,orders\n"
+    )
     (temp_csv_dir / "column_info.csv").write_text(
         "database_id,schema_id,table_name,column_name,is_nullable,is_primary_key\n"
         "my-project,sales,orders,order_id,false,true\n"
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema", "table", "column"])
@@ -196,16 +192,16 @@ def test_column_properties_correct_values(neo4j_driver, temp_csv_dir):
     """Test that column properties are set with correct values."""
     (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
     (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
-    (temp_csv_dir / "table_info.csv").write_text("database_id,schema_id,table_name\nmy-project,sales,orders\n")
+    (temp_csv_dir / "table_info.csv").write_text(
+        "database_id,schema_id,table_name\nmy-project,sales,orders\n"
+    )
     (temp_csv_dir / "column_info.csv").write_text(
         "database_id,schema_id,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key\n"
         "my-project,sales,orders,order_id,STRING,false,true,false\n"
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema", "table", "column"])
@@ -217,9 +213,9 @@ def test_column_properties_correct_values(neo4j_driver, temp_csv_dir):
         )
         record = result.single()
 
-        assert record["is_pk"] == True
-        assert record["is_fk"] == False
-        assert record["nullable"] == False
+        assert record["is_pk"]
+        assert not record["is_fk"]
+        assert not record["nullable"]
 
 
 def test_load_references_relationships(neo4j_driver, temp_csv_dir):
@@ -227,9 +223,7 @@ def test_load_references_relationships(neo4j_driver, temp_csv_dir):
     (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
     (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
     (temp_csv_dir / "table_info.csv").write_text(
-        "database_id,schema_id,table_name\n"
-        "my-project,sales,orders\n"
-        "my-project,sales,customers\n"
+        "database_id,schema_id,table_name\nmy-project,sales,orders\nmy-project,sales,customers\n"
     )
     (temp_csv_dir / "column_info.csv").write_text(
         "database_id,schema_id,table_name,column_name\n"
@@ -244,14 +238,12 @@ def test_load_references_relationships(neo4j_driver, temp_csv_dir):
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(
         include_nodes=["database", "schema", "table", "column"],
-        include_relationships=["has_schema", "has_table", "has_column", "references"]
+        include_relationships=["has_schema", "has_table", "has_column", "references"],
     )
 
     with neo4j_driver.session(database="neo4j") as session:
@@ -271,7 +263,9 @@ def test_load_value_nodes(neo4j_driver, temp_csv_dir):
     """Test that value nodes are loaded correctly."""
     (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
     (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
-    (temp_csv_dir / "table_info.csv").write_text("database_id,schema_id,table_name\nmy-project,sales,orders\n")
+    (temp_csv_dir / "table_info.csv").write_text(
+        "database_id,schema_id,table_name\nmy-project,sales,orders\n"
+    )
     (temp_csv_dir / "column_info.csv").write_text(
         "database_id,schema_id,table_name,column_name\nmy-project,sales,orders,status\n"
     )
@@ -283,9 +277,7 @@ def test_load_value_nodes(neo4j_driver, temp_csv_dir):
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["database", "schema", "table", "column", "value"])
@@ -304,15 +296,15 @@ def test_load_value_nodes(neo4j_driver, temp_csv_dir):
 def test_load_query_nodes(neo4j_driver, temp_csv_dir, sample_query_csv):
     """Test that query nodes are loaded correctly."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["query"])
 
     with neo4j_driver.session(database="neo4j") as session:
-        result = session.run("MATCH (q:Query) RETURN q.id as id, q.content as content ORDER BY q.id")
+        result = session.run(
+            "MATCH (q:Query) RETURN q.id as id, q.content as content ORDER BY q.id"
+        )
         records = list(result)
 
         assert len(records) == 2
@@ -325,9 +317,7 @@ def test_query_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     (temp_csv_dir / "query_info.csv").write_text("query_id,content\nq001,SELECT * FROM table\n")
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(include_nodes=["query"])
@@ -354,14 +344,12 @@ def test_load_glossary_entities(neo4j_driver, temp_csv_dir):
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run(
         include_nodes=["glossary", "category", "business_term"],
-        include_relationships=["has_category", "has_business_term"]
+        include_relationships=["has_category", "has_business_term"],
     )
 
     with neo4j_driver.session(database="neo4j") as session:
@@ -379,16 +367,24 @@ def test_load_glossary_entities(neo4j_driver, temp_csv_dir):
 def test_run_complete_workflow(neo4j_driver, temp_csv_dir, all_sample_csvs):
     """Test that the complete workflow runs successfully."""
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run()
 
     with neo4j_driver.session(database="neo4j") as session:
         node_counts = {}
-        for label in ["Database", "Schema", "Table", "Column", "Value", "Query", "Glossary", "Category", "BusinessTerm"]:
+        for label in [
+            "Database",
+            "Schema",
+            "Table",
+            "Column",
+            "Value",
+            "Query",
+            "Glossary",
+            "Category",
+            "BusinessTerm",
+        ]:
             result = session.run(f"MATCH (n:{label}) RETURN count(n) as count")
             node_counts[label] = result.single()["count"]
 
@@ -403,7 +399,14 @@ def test_run_complete_workflow(neo4j_driver, temp_csv_dir, all_sample_csvs):
         assert node_counts["BusinessTerm"] == 1
 
         rel_counts = {}
-        for rel_type in ["HAS_SCHEMA", "HAS_TABLE", "HAS_COLUMN", "REFERENCES", "HAS_VALUE", "USES_TABLE"]:
+        for rel_type in [
+            "HAS_SCHEMA",
+            "HAS_TABLE",
+            "HAS_COLUMN",
+            "REFERENCES",
+            "HAS_VALUE",
+            "USES_TABLE",
+        ]:
             result = session.run(f"MATCH ()-[r:{rel_type}]->() RETURN count(r) as count")
             rel_counts[rel_type] = result.single()["count"]
 
@@ -419,15 +422,15 @@ def test_minimal_csv_with_only_required_fields(neo4j_driver, temp_csv_dir):
     """Test that CSV with only required fields works correctly."""
     (temp_csv_dir / "database_info.csv").write_text("database_id\nminimal-db\n")
     (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nminimal-db,schema1\n")
-    (temp_csv_dir / "table_info.csv").write_text("database_id,schema_id,table_name\nminimal-db,schema1,table1\n")
+    (temp_csv_dir / "table_info.csv").write_text(
+        "database_id,schema_id,table_name\nminimal-db,schema1,table1\n"
+    )
     (temp_csv_dir / "column_info.csv").write_text(
         "database_id,schema_id,table_name,column_name\nminimal-db,schema1,table1,col1\n"
     )
 
     connector = CSVConnector(
-        csv_directory=str(temp_csv_dir),
-        neo4j_driver=neo4j_driver,
-        database_name="neo4j"
+        csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
     connector.run()
@@ -436,7 +439,9 @@ def test_minimal_csv_with_only_required_fields(neo4j_driver, temp_csv_dir):
         db_props = session.run("MATCH (d:Database) RETURN properties(d) as props").single()["props"]
         assert "id" in db_props
         assert "name" in db_props
-        assert len([k for k in db_props.keys() if not k.startswith("_")]) == 2
+        assert len([k for k in db_props if not k.startswith("_")]) == 2
 
-        rel_count = session.run("MATCH ()-[r:HAS_SCHEMA]->() RETURN count(r) as count").single()["count"]
+        rel_count = session.run("MATCH ()-[r:HAS_SCHEMA]->() RETURN count(r) as count").single()[
+            "count"
+        ]
         assert rel_count == 1

@@ -1,5 +1,5 @@
 """
-Async Embeddings Example
+Async Embeddings Example.
 
 This example demonstrates how to generate embeddings asynchronously
 using the OpenAI Embeddings API on an existing Neo4j graph.
@@ -28,16 +28,18 @@ Environment Variables Required:
 import argparse
 import asyncio
 import os
+
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
+
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 async def main(
     node_labels: list[str] = ["Table", "Column"],
     batch_size: int = 100,
-):
+) -> None:
     load_dotenv()
     print("Starting async embeddings process...")
     print("Creating drivers and clients...")
@@ -86,7 +88,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(main(
-        node_labels=args.node_labels,
-        batch_size=args.batch_size,
-    ))
+    asyncio.run(
+        main(
+            node_labels=args.node_labels,
+            batch_size=args.batch_size,
+        )
+    )

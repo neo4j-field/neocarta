@@ -1,13 +1,13 @@
 """Pytest fixtures for CSV connector integration tests."""
 
-import pytest
-import tempfile
+import os
 import shutil
+import tempfile
 from pathlib import Path
+
+import pytest
 from neo4j import GraphDatabase
 from testcontainers.neo4j import Neo4jContainer
-import os
-
 
 # Use community edition (more stable, faster startup)
 neo4j_container = Neo4jContainer("neo4j:5.26.23")
@@ -23,7 +23,7 @@ def setup(request):
     def remove_container():
         print("\nStopping Neo4j container...")
         try:
-            if hasattr(neo4j_container, '_container') and neo4j_container._container:
+            if hasattr(neo4j_container, "_container") and neo4j_container._container:
                 neo4j_container.stop()
         except Exception as e:
             print(f"Error stopping container: {e}")
@@ -35,16 +35,13 @@ def setup(request):
     os.environ["NEO4J_HOST"] = neo4j_container.get_container_host_ip()
     os.environ["NEO4J_PORT"] = str(neo4j_container.get_exposed_port(7687))
 
-    yield neo4j_container
+    return neo4j_container
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def neo4j_driver(setup: Neo4jContainer):
     """Provide a Neo4j driver for each test, with database cleanup."""
-    driver = GraphDatabase.driver(
-        setup.get_connection_url(),
-        auth=(setup.username, setup.password)
-    )
+    driver = GraphDatabase.driver(setup.get_connection_url(), auth=(setup.username, setup.password))
 
     # Clean up database before test
     with driver.session(database="neo4j") as session:
@@ -64,7 +61,7 @@ def temp_csv_dir():
     """
     Provide a temporary directory for CSV files.
 
-    Yields
+    Yields:
     ------
     Path
         Path to temporary directory

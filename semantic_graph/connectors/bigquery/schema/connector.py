@@ -1,26 +1,31 @@
-from neo4j import Driver
-from google.cloud import bigquery
-from typing import Optional
 
+from google.cloud import bigquery
+from neo4j import Driver
+
+from ....ingest.rdbms import Neo4jRDBMSLoader
 from .extract import BigQuerySchemaExtractor
 from .transform import BigQuerySchemaTransformer
-from ....ingest.rdbms import Neo4jRDBMSLoader
+
 
 class BigQuerySchemaConnector:
-    """
-    A connector for extracting, transforming, and loading BigQuery data into Neo4j.
-    """
+    """A connector for extracting, transforming, and loading BigQuery data into Neo4j."""
 
-    def __init__(self, client: bigquery.Client, project_id: str, dataset_id: str, neo4j_driver: Driver, database_name: str = "neo4j"):
-        """
-        Initialize the BigQuery connector.
-        """
-
+    def __init__(
+        self,
+        client: bigquery.Client,
+        project_id: str,
+        dataset_id: str,
+        neo4j_driver: Driver,
+        database_name: str = "neo4j",
+    ) -> None:
+        """Initialize the BigQuery connector."""
         self.client = client
         self.project_id = client.project or project_id
 
         if self.project_id is None:
-            raise ValueError("Project ID is required as argument in constructor or as attribute in BigQueryclient.")
+            raise ValueError(
+                "Project ID is required as argument in constructor or as attribute in BigQueryclient."
+            )
 
         self.dataset_id = dataset_id
         self.neo4j_driver = neo4j_driver
@@ -30,7 +35,7 @@ class BigQuerySchemaConnector:
         self.transformer = BigQuerySchemaTransformer()
         self.loader = Neo4jRDBMSLoader(neo4j_driver, database_name)
 
-    def extract_metadata(self, dataset_id: Optional[str] = None) -> None:
+    def extract_metadata(self, dataset_id: str | None = None) -> None:
         """
         Extract and cache metadata from BigQuery.
 
@@ -45,11 +50,9 @@ class BigQuerySchemaConnector:
         self.extractor.extract_column_info(dataset_id=dataset_id)
         self.extractor.extract_column_references_info(dataset_id=dataset_id)
         self.extractor.extract_column_unique_values_for_all_tables(dataset_id=dataset_id)
-    
+
     def transform_metadata(self) -> None:
-        """
-        Transform and cache metadata from BigQuery. `extract_metadata` must be called before this method.
-        """
+        """Transform and cache metadata from BigQuery. `extract_metadata` must be called before this method."""
         self.transformer.transform_to_database_nodes(self.extractor.database_info)
         self.transformer.transform_to_schema_nodes(self.extractor.schema_info)
         self.transformer.transform_to_table_nodes(self.extractor.table_info)
@@ -59,13 +62,13 @@ class BigQuerySchemaConnector:
         self.transformer.transform_to_has_schema_relationships(self.extractor.schema_info)
         self.transformer.transform_to_has_table_relationships(self.extractor.table_info)
         self.transformer.transform_to_has_column_relationships(self.extractor.column_info)
-        self.transformer.transform_to_references_relationships(self.extractor.column_references_info)
+        self.transformer.transform_to_references_relationships(
+            self.extractor.column_references_info
+        )
         self.transformer.transform_to_has_value_relationships(self.extractor.column_unique_values)
-        
+
     def load_metadata(self) -> None:
-        """
-        Load BigQuery metadata into Neo4j. `transform_metadata` must be called before this method.
-        """
+        """Load BigQuery metadata into Neo4j. `transform_metadata` must be called before this method."""
         print(self.loader.load_database_nodes(self.transformer.database_nodes))
         print(self.loader.load_schema_nodes(self.transformer.schema_nodes))
         print(self.loader.load_table_nodes(self.transformer.table_nodes))
@@ -77,8 +80,8 @@ class BigQuerySchemaConnector:
         print(self.loader.load_has_column_relationships(self.transformer.has_column_relationships))
         print(self.loader.load_references_relationships(self.transformer.references_relationships))
         print(self.loader.load_has_value_relationships(self.transformer.has_value_relationships))
-    
-    def run(self, dataset_id: Optional[str] = None) -> None:
+
+    def run(self, dataset_id: str | None = None) -> None:
         """
         Run the BigQuery connector.
 

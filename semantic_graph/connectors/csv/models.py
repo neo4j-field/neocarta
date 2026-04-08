@@ -1,27 +1,29 @@
 """Models for CSV connector."""
 
-from typing import TypedDict, Optional
+from typing import TypedDict
+
 import pandas as pd
 
 
 class CSVExtractorCache(TypedDict):
     """Cache dictionary for CSV metadata extraction."""
+
     # Core entity DataFrames
-    database_info: Optional[pd.DataFrame]
-    schema_info: Optional[pd.DataFrame]
-    table_info: Optional[pd.DataFrame]
-    column_info: Optional[pd.DataFrame]
+    database_info: pd.DataFrame | None
+    schema_info: pd.DataFrame | None
+    table_info: pd.DataFrame | None
+    column_info: pd.DataFrame | None
 
     # Relationship DataFrames
-    column_references_info: Optional[pd.DataFrame]
+    column_references_info: pd.DataFrame | None
 
     # Extended entity DataFrames
-    value_info: Optional[pd.DataFrame]
-    query_info: Optional[pd.DataFrame]
-    query_table_info: Optional[pd.DataFrame]
-    query_column_info: Optional[pd.DataFrame]
+    value_info: pd.DataFrame | None
+    query_info: pd.DataFrame | None
+    query_table_info: pd.DataFrame | None
+    query_column_info: pd.DataFrame | None
 
     # Glossary entity DataFrames
-    glossary_info: Optional[pd.DataFrame]
-    category_info: Optional[pd.DataFrame]
-    business_term_info: Optional[pd.DataFrame]
+    glossary_info: pd.DataFrame | None
+    category_info: pd.DataFrame | None
+    business_term_info: pd.DataFrame | None

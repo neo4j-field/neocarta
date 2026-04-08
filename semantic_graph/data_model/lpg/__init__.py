@@ -4,23 +4,20 @@ from .expanded import *
 __all__ = [
     # LPG Core nodes
     "Database",
-    "Schema",
-    "Node",
-    "Relationship",
-    "Property",
-
-    # LPG Core relationships
-    "HasSchema",
     "HasNode",
     "HasRelationship",
+    # LPG Core relationships
+    "HasSchema",
     "HasSourceNode",
     "HasTargetNode",
-    "NodeHasProperty",
-    "RelationshipHasProperty",
-
-    # LPG Value nodes
-    "Value",
-
     # LPG Value relationships
     "HasValue",
+    "Node",
+    "NodeHasProperty",
+    "Property",
+    "Relationship",
+    "RelationshipHasProperty",
+    "Schema",
+    # LPG Value nodes
+    "Value",
 ]

@@ -1,6 +1,4 @@
-"""
-Universal index functions independent of the source database.
-"""
+"""Universal index functions independent of the source database."""
 
 from neo4j import Driver, RoutingControl
 
@@ -25,19 +23,18 @@ def create_vector_index(
     database_name: str
         The name of the database to create a vector index for.
 
-    Returns
+    Returns:
     -------
     dict
         The summary of the vector index created.
     """
-
     assert dimensions > 0, "Dimensions must be an integer greater than 0"
 
     vector_index_query = f"""
 CREATE VECTOR INDEX {node_label.lower() + "_vector_index"} IF NOT EXISTS
     FOR (n:{node_label})
     ON n.embedding
-    OPTIONS {{ 
+    OPTIONS {{
         indexConfig: {{
             `vector.dimensions`: {dimensions},
             `vector.similarity_function`: 'cosine'

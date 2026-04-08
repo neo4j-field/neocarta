@@ -1,7 +1,8 @@
-from google.cloud import bigquery
-import pandas as pd
 import hashlib
-from typing import Optional
+
+import pandas as pd
+from google.cloud import bigquery
+
 from .models import SchemaExtractorCache
 
 
@@ -10,7 +11,13 @@ class BigQuerySchemaExtractor:
     Extractor class for BigQuery schema metadata.
     Extracts metadata from BigQuery Information Schema tables.
     """
-    def __init__(self, client: bigquery.Client, project_id: Optional[str] = None, dataset_id: Optional[str] = None):
+
+    def __init__(
+        self,
+        client: bigquery.Client,
+        project_id: str | None = None,
+        dataset_id: str | None = None,
+    ) -> None:
         """
         Initialize the BigQuery schema extractor.
 
@@ -23,59 +30,48 @@ class BigQuerySchemaExtractor:
         dataset_id: Optional[str] = None
             The dataset ID. May be provided in extractor methods.
         """
-
         self.client = client
         self.project_id = client.project or project_id
 
         if self.project_id is None:
-            raise ValueError("Project ID is required as argument in constructor or as attribute in BigQueryclient.")
+            raise ValueError(
+                "Project ID is required as argument in constructor or as attribute in BigQueryclient."
+            )
 
         self.dataset_id = dataset_id
         self._cache: SchemaExtractorCache = SchemaExtractorCache()
 
     @property
     def database_info(self) -> pd.DataFrame:
-        """
-        Get the database information.
-        """
+        """Get the database information."""
         return self._cache.get("database_info", pd.DataFrame())
 
     @property
     def schema_info(self) -> pd.DataFrame:
-        """
-        Get the schema information.
-        """
+        """Get the schema information."""
         return self._cache.get("schema_info", pd.DataFrame())
 
     @property
     def table_info(self) -> pd.DataFrame:
-        """
-        Get the table information.
-        """
+        """Get the table information."""
         return self._cache.get("table_info", pd.DataFrame())
 
     @property
     def column_info(self) -> pd.DataFrame:
-        """
-        Get the column information.
-        """
+        """Get the column information."""
         return self._cache.get("column_info", pd.DataFrame())
 
     @property
     def column_references_info(self) -> pd.DataFrame:
-        """
-        Get the column references information.
-        """
+        """Get the column references information."""
         return self._cache.get("column_references_info", pd.DataFrame())
 
     @property
     def column_unique_values(self) -> pd.DataFrame:
-        """
-        Get the column unique values.
-        """
+        """Get the column unique values."""
         return self._cache.get("column_unique_values", pd.DataFrame())
 
-    def _get_dataset_id(self, dataset_id: Optional[str] = None) -> str:
+    def _get_dataset_id(self, dataset_id: str | None = None) -> str:
         """
         Get the dataset ID. If not provided, will use default instance `dataset_id`.
 
@@ -84,17 +80,18 @@ class BigQuerySchemaExtractor:
         dataset_id: Optional[str] = None
             The dataset ID. If not provided, will use default instance `dataset_id`.
 
-        Returns
+        Returns:
         -------
         str
             The dataset ID.
         """
         dataset_id = dataset_id or self.dataset_id
 
-        assert dataset_id is not None, "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
+        assert dataset_id is not None, (
+            "Dataset ID is required in either constructor as `dataset_id` or as an argument to `extract_schema_info` method."
+        )
 
         return dataset_id
-
 
     def extract_database_info(self, cache: bool = True) -> pd.DataFrame:
         """
@@ -105,21 +102,19 @@ class BigQuerySchemaExtractor:
         cache: bool = True
             Whether to cache the extract. If True, will cache the database information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame containing the BigQuery database information.
         """
-
         df = pd.DataFrame([{"project_id": self.project_id}])
         if cache:
             self._cache["database_info"] = df
 
         return df
 
-
     def extract_schema_info(
-        self, dataset_id: Optional[str] = None, cache: bool = True
+        self, dataset_id: str | None = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery schema (dataset) information.
@@ -131,12 +126,11 @@ class BigQuerySchemaExtractor:
         cache: bool = True
             Whether to cache the extract. If True, will cache the schema information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame containing the BigQuery schema information.
         """
-
         dataset_id = self._get_dataset_id(dataset_id)
 
         df = self.client.query(f"""
@@ -151,16 +145,15 @@ WHERE schema_name = '{dataset_id}'
 
         if df.empty:
             data = [{"project_id": self.project_id, "dataset_id": dataset_id, "description": None}]
-            df=pd.DataFrame(data)
+            df = pd.DataFrame(data)
 
         if cache:
             self._cache["schema_info"] = df
 
         return df
 
-
     def extract_table_info(
-        self, dataset_id: Optional[str] = None, cache: bool = True
+        self, dataset_id: str | None = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery table information from the specified dataset.
@@ -172,12 +165,11 @@ WHERE schema_name = '{dataset_id}'
         cache: bool = True
             Whether to cache the extract. If True, will cache the table information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame containing the BigQuery table information.
         """
-
         dataset_id = self._get_dataset_id(dataset_id)
 
         df = self.client.query(f"""
@@ -203,9 +195,8 @@ ORDER BY table_name
 
         return df
 
-
     def extract_column_info(
-        self, dataset_id: Optional[str] = None, cache: bool = True
+        self, dataset_id: str | None = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery column information.
@@ -217,20 +208,19 @@ ORDER BY table_name
         cache: bool = True
             Whether to cache the extract. If True, will cache the column information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame containing the BigQuery column information.
         """
+
         def _is_pk(row: pd.Series) -> bool:
-            return isinstance(row["constraint_name"], str) and row[
-                "constraint_name"
-            ].endswith("pk$")
+            return isinstance(row["constraint_name"], str) and row["constraint_name"].endswith(
+                "pk$"
+            )
 
         def _is_fk(row: pd.Series) -> bool:
-            return (
-                isinstance(row["constraint_name"], str) and ".fk_" in row["constraint_name"]
-            )
+            return isinstance(row["constraint_name"], str) and ".fk_" in row["constraint_name"]
 
         dataset_id = self._get_dataset_id(dataset_id)
 
@@ -265,9 +255,8 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
 
         return df
 
-
     def extract_column_references_info(
-        self, dataset_id: Optional[str] = None, cache: bool = True
+        self, dataset_id: str | None = None, cache: bool = True
     ) -> pd.DataFrame:
         """
         Extract BigQuery column references information.
@@ -279,7 +268,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.COLUMNS as columns
         cache: bool = True
             Whether to cache the extract. If True, will cache the column references information in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame containing the BigQuery column references information.
@@ -310,15 +299,14 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 
         return df
 
-
     def extract_column_unique_values_for_table(
         self,
         table_name: str,
         column_names: list[str],
-        dataset_id: Optional[str] = None,
+        dataset_id: str | None = None,
         limit: int = 10,
         cache: bool = True,
-        column_info: Optional[pd.DataFrame] = None,
+        column_info: pd.DataFrame | None = None,
     ) -> pd.DataFrame:
         """
         Extract BigQuery column unique values to be used as reference values.
@@ -339,13 +327,12 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             The column information. If not provided, will use cached column information.
             Used to determine column data types to skip array columns.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame with columns: column_name, unique_value.
             Each row represents one unique value for a column.
         """
-
         dataset_id = self._get_dataset_id(dataset_id)
 
         # Get column_info to check data types
@@ -357,14 +344,13 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             # Check if this column is an array or struct type
             if column_info is not None:
                 col_data_type = column_info[
-                    (column_info["table_name"] == table_name) &
-                    (column_info["column_name"] == col)
+                    (column_info["table_name"] == table_name) & (column_info["column_name"] == col)
                 ]["data_type"]
 
                 # Skip array and struct columns as ARRAY_AGG(DISTINCT) cannot be applied to these types
                 if not col_data_type.empty:
                     data_type = col_data_type.iloc[0]
-                    if data_type.startswith("ARRAY") or data_type.startswith("STRUCT"):
+                    if data_type.startswith(("ARRAY", "STRUCT")):
                         continue
 
             select_clauses.append(
@@ -403,15 +389,18 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 
         # TODO: Handle caching duplicate column information if method run multiple times for same table and columns.
         if cache:
-            self._cache["column_unique_values"] = pd.concat([self._cache.get("column_unique_values", pd.DataFrame()), result], ignore_index=True)
+            self._cache["column_unique_values"] = pd.concat(
+                [self._cache.get("column_unique_values", pd.DataFrame()), result], ignore_index=True
+            )
 
         return result
 
     def extract_column_unique_values_for_all_tables(
-        self, dataset_id: Optional[str] = None,
-        table_info: Optional[pd.DataFrame] = None,
-        column_info: Optional[pd.DataFrame] = None,
-        cache: bool = True
+        self,
+        dataset_id: str | None = None,
+        table_info: pd.DataFrame | None = None,
+        column_info: pd.DataFrame | None = None,
+        cache: bool = True,
     ) -> pd.DataFrame:
         """
         Extract BigQuery column unique values for all tables in the dataset.
@@ -427,7 +416,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         cache: bool = True
             Whether to cache the extract. If True, will cache the column unique values in the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             A Pandas DataFrame.
@@ -435,11 +424,15 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
         """
         column_info = column_info or self._cache.get("column_info", None)
         if column_info is None:
-            raise ValueError("Column information is required to extract column unique values for all tables. Please use `extract_column_info` method to extract column information. You may cache results by setting method argument `cache` to True.")
+            raise ValueError(
+                "Column information is required to extract column unique values for all tables. Please use `extract_column_info` method to extract column information. You may cache results by setting method argument `cache` to True."
+            )
 
         table_info = table_info or self._cache.get("table_info", None)
         if table_info is None:
-            raise ValueError("Table information is required to extract column unique values for all tables. Please use `extract_table_info` method to extract table information. You may cache results by setting method argument `cache` to True.")
+            raise ValueError(
+                "Table information is required to extract column unique values for all tables. Please use `extract_table_info` method to extract table information. You may cache results by setting method argument `cache` to True."
+            )
 
         dataset_id = self._get_dataset_id(dataset_id)
 
@@ -451,11 +444,16 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
             value_info = pd.concat(
                 [
                     value_info,
-                    self.extract_column_unique_values_for_table(table_name, column_names, dataset_id)
+                    self.extract_column_unique_values_for_table(
+                        table_name, column_names, dataset_id
+                    ),
                 ]
             )
 
         if cache:
-            self._cache["column_unique_values"] = pd.concat([self._cache.get("column_unique_values", pd.DataFrame()), value_info], ignore_index=True)
+            self._cache["column_unique_values"] = pd.concat(
+                [self._cache.get("column_unique_values", pd.DataFrame()), value_info],
+                ignore_index=True,
+            )
 
         return value_info

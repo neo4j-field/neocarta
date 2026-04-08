@@ -1,8 +1,10 @@
 """Question bank with evaluation samples for the ecommerce dataset."""
 
-import yaml
 import hashlib
 from pathlib import Path
+
+import yaml
+
 from eval.datasets.models import EvalSample
 from eval.sql_parser import extract_required_objects
 
@@ -27,7 +29,7 @@ def get_ecommerce_eval_samples() -> list[EvalSample]:
     - orders (order_id, customer_id, order_date, total_amount)
     - order_items (order_item_id, order_id, product_id, quantity, price)
 
-    Returns
+    Returns:
     -------
     list[EvalSample]
         List of evaluation samples loaded from ecommerce_samples.yaml
@@ -69,15 +71,16 @@ if __name__ == "__main__":
 
     # Count by archetype
     from collections import Counter
+
     archetypes = Counter(s.archetype for s in samples)
 
     print("Distribution by archetype:")
     for archetype, count in archetypes.items():
         print(f"  {archetype}: {count}")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Sample questions:")
-    print("="*60)
+    print("=" * 60)
 
     for sample in samples:
         print(f"\n[{sample.question_id}] {sample.archetype}")

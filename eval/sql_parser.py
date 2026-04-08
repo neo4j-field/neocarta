@@ -1,8 +1,9 @@
 """SQL parsing utilities using sqlglot for structural analysis and scoring."""
 
+from typing import Any
+
 import sqlglot
 from sqlglot import exp
-from typing import Any
 
 
 def extract_required_objects(sql: str, dialect: str = "bigquery") -> dict[str, Any]:
@@ -20,7 +21,7 @@ def extract_required_objects(sql: str, dialect: str = "bigquery") -> dict[str, A
     dialect : str
         SQL dialect (default: bigquery)
 
-    Returns
+    Returns:
     -------
     dict
         Dictionary containing:
@@ -81,9 +82,7 @@ def extract_required_objects(sql: str, dialect: str = "bigquery") -> dict[str, A
 
 
 def score_structural_equivalence(
-    generated_sql: str,
-    gold_sql: str,
-    dialect: str = "bigquery"
+    generated_sql: str, gold_sql: str, dialect: str = "bigquery"
 ) -> dict[str, Any]:
     """
     Score structural equivalence between generated and gold SQL.
@@ -99,7 +98,7 @@ def score_structural_equivalence(
     dialect : str
         SQL dialect
 
-    Returns
+    Returns:
     -------
     dict
         Scoring results with:
@@ -168,9 +167,7 @@ def score_structural_equivalence(
 
 
 def score_schema_faithfulness(
-    generated_sql: str,
-    retrieved_context: list[str],
-    dialect: str = "bigquery"
+    generated_sql: str, retrieved_context: list[str], dialect: str = "bigquery"
 ) -> dict[str, Any]:
     """
     Deterministic faithfulness scoring without LLM judge.
@@ -186,7 +183,7 @@ def score_schema_faithfulness(
     dialect : str
         SQL dialect
 
-    Returns
+    Returns:
     -------
     dict
         Faithfulness scores:
@@ -239,9 +236,7 @@ def score_schema_faithfulness(
 
 
 def score_context_utilization(
-    generated_sql: str,
-    retrieved_context_objects: set[str],
-    dialect: str = "bigquery"
+    generated_sql: str, retrieved_context_objects: set[str], dialect: str = "bigquery"
 ) -> float:
     """
     Measure context utilization (inverse of over-retrieval).
@@ -257,7 +252,7 @@ def score_context_utilization(
     dialect : str
         SQL dialect
 
-    Returns
+    Returns:
     -------
     float
         Utilization score (0.0 to 1.0)

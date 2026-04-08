@@ -72,3 +72,61 @@ mcp-server = { workspace = true }
 [tool.pytest.ini_options]
 pythonpath = "."
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "C90",     # McCabe complexity
+    "COM812",  # Conflicts with the formatter
+    "CPY",     # No copyright
+    "D212",    # Conflicts with Google convention (D213)
+    "FIX002",  # Line contains TODO
+    "PERF203", # Rarely useful
+    "PLR09",   # Too many something (args, statements, etc.)
+    "TD002",   # Missing author in TODO
+    "TD003",   # Missing issue link in TODO
+
+    # Intentionally lenient
+    "ANN401",  # Any in type annotations
+    "ARG001",  # Unused function arguments — needed for interface conformance
+    "BLE",     # Blind exceptions
+    "B006",    # Mutable default arguments — lists are read-only in this codebase
+    "E501",    # Line too long — unavoidable in data/SQL code
+    "INP001",  # Implicit namespace packages — intentional
+    "PLR2004", # Magic value comparisons — too noisy in data code
+    "SLF001",  # Private member access — often necessary
+    "T201",    # print — will migrate to logging in a future PR
+    "TID252",  # Relative imports are fine
+
+    # Boolean handling
+    "FBT001",  # Boolean type hint positional argument
+    "FBT002",  # Boolean default value positional argument
+    "FBT003",  # Boolean positional value in call
+
+    # Exception details
+    "EM101",   # Raw string in exception
+    "EM102",   # f-string in exception
+    "TRY003",  # Long exception messages outside exception class
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",  # assert is idiomatic in pytest
+    "ANN",   # Type hints optional in tests
+]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["field_validator", "model_validator"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-var-parameters = true  # ignore missing documentation for *args and **kwargs parameters

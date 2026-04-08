@@ -1,8 +1,9 @@
 """Inference metrics for evaluating SQL generation quality."""
 
 from typing import Any
-from google.cloud import bigquery
+
 import pandas as pd
+from google.cloud import bigquery
 
 
 def score_execution_accuracy(
@@ -28,7 +29,7 @@ def score_execution_accuracy(
     timeout_seconds : int
         Query timeout in seconds
 
-    Returns
+    Returns:
     -------
     dict
         Execution scoring results:
@@ -90,26 +91,25 @@ def score_execution_accuracy(
             generated_sorted = generated_result.sort_values(
                 by=list(generated_result.columns)
             ).reset_index(drop=True)
-            gold_sorted = gold_result.sort_values(
-                by=list(gold_result.columns)
-            ).reset_index(drop=True)
+            gold_sorted = gold_result.sort_values(by=list(gold_result.columns)).reset_index(
+                drop=True
+            )
             execution_match = generated_sorted.equals(gold_sorted)
-        else:
-            # Different columns - check if VALUES match (ignoring column names)
-            # This handles cases like: COUNT(*) as count vs COUNT(*) as total
-            if generated_result.shape == gold_result.shape:
-                # Same dimensions - compare values position by position
-                # Sort by values to ensure consistent ordering
-                gen_values = generated_result.values
-                gold_values = gold_result.values
+        # Different columns - check if VALUES match (ignoring column names)
+        # This handles cases like: COUNT(*) as count vs COUNT(*) as total
+        elif generated_result.shape == gold_result.shape:
+            # Same dimensions - compare values position by position
+            # Sort by values to ensure consistent ordering
+            gen_values = generated_result.values
+            gold_values = gold_result.values
 
-                # For small results (aggregates), check if values are equal
-                try:
-                    execution_match = pd.DataFrame(gen_values).equals(pd.DataFrame(gold_values))
-                except:
-                    execution_match = False
-            else:
+            # For small results (aggregates), check if values are equal
+            try:
+                execution_match = pd.DataFrame(gen_values).equals(pd.DataFrame(gold_values))
+            except Exception:
                 execution_match = False
+        else:
+            execution_match = False
 
         # Calculate row match percentage
         if len(gold_result) == 0:
@@ -122,15 +122,14 @@ def score_execution_accuracy(
                     gen_row = generated_result.iloc[idx].values
                     gold_row = gold_result.iloc[idx].values
                     if len(gen_row) == len(gold_row) and all(
-                        (pd.isna(g) and pd.isna(gd)) or g == gd
-                        for g, gd in zip(gen_row, gold_row)
+                        (pd.isna(g) and pd.isna(gd)) or g == gd for g, gd in zip(gen_row, gold_row, strict=False)
                     ):
                         matching_rows += 1
-                except:
+                except Exception:
                     pass
             row_match_pct = matching_rows / len(gold_result)
 
-    except Exception as e:
+    except Exception:
         # If comparison fails, mark as no match
         execution_match = False
         row_match_pct = 0.0
@@ -168,7 +167,7 @@ def score_execution_accuracy_dry_run(
     bq_client : bigquery.Client
         BigQuery client
 
-    Returns
+    Returns:
     -------
     dict
         Dry run results:
