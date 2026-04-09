@@ -55,7 +55,7 @@ class EvalSample:
     context_recall: float | None = None
     object_recall: float | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate archetype."""
         valid_archetypes = {
             "simple_lookup",

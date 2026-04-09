@@ -1,3 +1,5 @@
+"""RDBMS data model nodes and relationships."""
+
 from .core import (
     Column,
     Database,

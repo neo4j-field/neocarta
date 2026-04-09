@@ -1,3 +1,5 @@
+"""Example: load BigQuery query log data from a local file into the semantic graph."""
+
 import asyncio
 import os
 
@@ -8,6 +10,7 @@ from semantic_graph.connectors.query_log import QueryLogConnector
 
 
 async def main() -> None:
+    """Run the query log connector to load query log data from a local file."""
     load_dotenv()
     print("Starting connector...")
     print("Creating drivers and clients...")

@@ -58,6 +58,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["name", "description", "service", "platform"],
     ) -> dict:
+        """Load Database nodes into Neo4j."""
         _validate_properties_list(Database, properties_list)
         self._write_node_constraint(node_labels=["Database"])
         query = _build_node_ingest_query("Database", overwrite_existing, properties_list)
@@ -77,6 +78,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["name", "description"],
     ) -> dict:
+        """Load Schema nodes into Neo4j."""
         _validate_properties_list(Schema, properties_list)
 
         self._write_node_constraint(node_labels=["Schema"])
@@ -96,6 +98,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["name", "description"],
     ) -> dict:
+        """Load Table nodes into Neo4j."""
         _validate_properties_list(Table, properties_list)
 
         self._write_node_constraint(node_labels=["Table"])
@@ -122,6 +125,7 @@ class Neo4jRDBMSLoader:
             "is_foreign_key",
         ],
     ) -> dict:
+        """Load Column nodes into Neo4j."""
         _validate_properties_list(Column, properties_list)
 
         self._write_node_constraint(node_labels=["Column"])
@@ -161,6 +165,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load HAS_SCHEMA relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(HasSchema, properties_list)
 
@@ -188,6 +193,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load HAS_TABLE relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(HasTable, properties_list)
 
@@ -215,6 +221,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load HAS_COLUMN relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(HasColumn, properties_list)
 
@@ -242,6 +249,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["criteria"],
     ) -> dict:
+        """Load REFERENCES relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(References, properties_list)
 
@@ -269,6 +277,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["name", "description"],
     ) -> dict:
+        """Load Glossary nodes into Neo4j."""
         _validate_properties_list(Glossary, properties_list)
 
         self._write_node_constraint(node_labels=["Glossary"])
@@ -288,6 +297,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["name", "description"],
     ) -> dict:
+        """Load Category nodes into Neo4j."""
         _validate_properties_list(Category, properties_list)
 
         self._write_node_constraint(node_labels=["Category"])
@@ -307,6 +317,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["name", "description"],
     ) -> dict:
+        """Load BusinessTerm nodes into Neo4j."""
         _validate_properties_list(BusinessTerm, properties_list)
 
         self._write_node_constraint(node_labels=["BusinessTerm"])
@@ -326,6 +337,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load HAS_CATEGORY relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(HasCategory, properties_list)
 
@@ -353,6 +365,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load HAS_BUSINESS_TERM relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(HasBusinessTerm, properties_list)
 
@@ -380,6 +393,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load HAS_VALUE relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(HasValue, properties_list)
 
@@ -407,6 +421,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = ["content"],
     ) -> dict:
+        """Load Query nodes into Neo4j."""
         _validate_properties_list(Query, properties_list)
 
         self._write_node_constraint(node_labels=["Query"])
@@ -426,6 +441,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load USES_TABLE relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(UsesTable, properties_list)
 
@@ -453,6 +469,7 @@ class Neo4jRDBMSLoader:
         overwrite_existing: bool = False,
         properties_list: list[str] = [],
     ) -> dict:
+        """Load USES_COLUMN relationships into Neo4j."""
         if properties_list:
             _validate_properties_list(UsesColumn, properties_list)
 

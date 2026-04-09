@@ -1,3 +1,5 @@
+"""Models for Dataplex metadata extraction."""
+
 from typing import TypedDict
 
 import pandas as pd
@@ -5,6 +7,8 @@ from pydantic import Field
 
 
 class BigQueryMetadataInfoResponse(TypedDict):
+    """Row returned by the Dataplex BigQuery metadata extraction query."""
+
     project_id: str = Field(..., description="The project ID")
     project_number: str = Field(..., description="The project number")
     dataset_id: str = Field(..., description="The dataset ID")
@@ -26,6 +30,8 @@ class BigQueryMetadataInfoResponse(TypedDict):
 
 
 class GlossaryInfoResponse(TypedDict):
+    """Row returned by the Dataplex glossary term extraction query."""
+
     term_id: str = Field(..., description="The term ID")
     term_name: str = Field(..., description="The term name")
     term_description: str = Field(..., description="The term description")

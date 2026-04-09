@@ -26,6 +26,7 @@ class DataplexTransformer:
     """
 
     def __init__(self) -> None:
+        """Initialize empty node and relationship caches."""
         self._nodes_cache: NodesCache = NodesCache()
         self._relationships_cache: RelationshipsCache = RelationshipsCache()
 

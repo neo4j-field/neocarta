@@ -1,3 +1,5 @@
+"""Query log connector."""
+
 from neo4j import Driver
 
 from ...ingest.rdbms import Neo4jRDBMSLoader

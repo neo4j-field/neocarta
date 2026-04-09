@@ -1,3 +1,5 @@
+"""Example: load Dataplex metadata into the semantic graph."""
+
 import argparse
 import os
 
@@ -15,6 +17,7 @@ def main(
     include_schema: bool = True,
     include_glossary: bool = True,
 ) -> None:
+    """Run the Dataplex connector and optionally compute embeddings."""
     load_dotenv()
     print("Starting Dataplex connector...")
     print("Creating drivers and clients...")

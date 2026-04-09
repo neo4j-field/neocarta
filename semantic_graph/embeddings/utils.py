@@ -1,3 +1,5 @@
+"""Utilities for computing and storing node embeddings in Neo4j."""
+
 import asyncio
 from collections.abc import Callable
 from math import ceil

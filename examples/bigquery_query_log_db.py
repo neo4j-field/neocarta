@@ -47,6 +47,7 @@ async def main(
     region: str = "region-us",
     drop_failed_queries: bool = True,
 ) -> None:
+    """Run the BigQuery query log connector to load query logs from BigQuery."""
     load_dotenv()
     print("Starting BigQuery Logs connector...")
 

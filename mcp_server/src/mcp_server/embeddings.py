@@ -1,3 +1,5 @@
+"""Embedding utilities for the MCP server."""
+
 from openai import AsyncOpenAI
 
 from .settings import mcp_server_settings

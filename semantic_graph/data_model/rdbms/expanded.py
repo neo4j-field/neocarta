@@ -1,3 +1,5 @@
+"""Expanded RDBMS data model nodes and relationships (glossary, queries, values)."""
+
 from typing import Any
 
 from pandas import isna

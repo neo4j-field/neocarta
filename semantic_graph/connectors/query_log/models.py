@@ -1,3 +1,5 @@
+"""Models for query log extraction."""
+
 from typing import TypedDict
 
 import pandas as pd

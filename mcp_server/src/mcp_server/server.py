@@ -1,3 +1,5 @@
+"""FastMCP server exposing semantic layer metadata tools."""
+
 import asyncio
 
 from dotenv import load_dotenv
@@ -13,6 +15,7 @@ from .settings import mcp_server_settings
 def create_mcp_server(
     neo4j_driver: AsyncDriver, neo4j_database: str, embedding_client: AsyncOpenAI
 ) -> FastMCP:
+    """Create and configure the FastMCP server with all semantic layer tools."""
     server = FastMCP("Semantic Layer MCP Server")
 
     @server.tool()
@@ -302,6 +305,7 @@ ORDER BY table.name
 
 
 async def main() -> None:
+    """Initialize drivers, create the MCP server, and run it over stdio."""
     neo4j_driver = AsyncGraphDatabase.driver(
         uri=mcp_server_settings.neo4j_uri,
         auth=(mcp_server_settings.neo4j_username, mcp_server_settings.neo4j_password),
@@ -314,6 +318,7 @@ async def main() -> None:
 
 
 def run() -> None:
+    """Load environment variables and run the MCP server."""
     load_dotenv()
     asyncio.run(main())
 

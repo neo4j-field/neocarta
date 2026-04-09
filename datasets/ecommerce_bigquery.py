@@ -1,3 +1,5 @@
+"""BigQuery ecommerce dataset creation scripts."""
+
 from pathlib import Path
 
 from google.cloud import bigquery

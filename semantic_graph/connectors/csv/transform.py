@@ -82,6 +82,7 @@ class CSVTransformer:
     """
 
     def __init__(self) -> None:
+        """Initialize empty node/relationship caches and properties map."""
         self._node_cache: NodesCache = NodesCache()
         self._relationships_cache: RelationshipsCache = RelationshipsCache()
         # Derived from the columns present in each source CSV file.
@@ -107,38 +108,47 @@ class CSVTransformer:
 
     @property
     def database_nodes(self) -> list[Database]:
+        """Return cached Database nodes."""
         return self._node_cache.get("database_nodes", [])
 
     @property
     def schema_nodes(self) -> list[Schema]:
+        """Return cached Schema nodes."""
         return self._node_cache.get("schema_nodes", [])
 
     @property
     def table_nodes(self) -> list[Table]:
+        """Return cached Table nodes."""
         return self._node_cache.get("table_nodes", [])
 
     @property
     def column_nodes(self) -> list[Column]:
+        """Return cached Column nodes."""
         return self._node_cache.get("column_nodes", [])
 
     @property
     def value_nodes(self) -> list[Value]:
+        """Return cached Value nodes."""
         return self._node_cache.get("value_nodes", [])
 
     @property
     def query_nodes(self) -> list[Query]:
+        """Return cached Query nodes."""
         return self._node_cache.get("query_nodes", [])
 
     @property
     def glossary_nodes(self) -> list[Glossary]:
+        """Return cached Glossary nodes."""
         return self._node_cache.get("glossary_nodes", [])
 
     @property
     def category_nodes(self) -> list[Category]:
+        """Return cached Category nodes."""
         return self._node_cache.get("category_nodes", [])
 
     @property
     def business_term_nodes(self) -> list[BusinessTerm]:
+        """Return cached BusinessTerm nodes."""
         return self._node_cache.get("business_term_nodes", [])
 
     # ------------------------------------------------------------------
@@ -147,38 +157,47 @@ class CSVTransformer:
 
     @property
     def has_schema_relationships(self) -> list[HasSchema]:
+        """Return cached HAS_SCHEMA relationships."""
         return self._relationships_cache.get("has_schema_relationships", [])
 
     @property
     def has_table_relationships(self) -> list[HasTable]:
+        """Return cached HAS_TABLE relationships."""
         return self._relationships_cache.get("has_table_relationships", [])
 
     @property
     def has_column_relationships(self) -> list[HasColumn]:
+        """Return cached HAS_COLUMN relationships."""
         return self._relationships_cache.get("has_column_relationships", [])
 
     @property
     def has_value_relationships(self) -> list[HasValue]:
+        """Return cached HAS_VALUE relationships."""
         return self._relationships_cache.get("has_value_relationships", [])
 
     @property
     def has_category_relationships(self) -> list[HasCategory]:
+        """Return cached HAS_CATEGORY relationships."""
         return self._relationships_cache.get("has_category_relationships", [])
 
     @property
     def has_business_term_relationships(self) -> list[HasBusinessTerm]:
+        """Return cached HAS_BUSINESS_TERM relationships."""
         return self._relationships_cache.get("has_business_term_relationships", [])
 
     @property
     def references_relationships(self) -> list[References]:
+        """Return cached REFERENCES relationships."""
         return self._relationships_cache.get("references_relationships", [])
 
     @property
     def uses_table_relationships(self) -> list[UsesTable]:
+        """Return cached USES_TABLE relationships."""
         return self._relationships_cache.get("uses_table_relationships", [])
 
     @property
     def uses_column_relationships(self) -> list[UsesColumn]:
+        """Return cached USES_COLUMN relationships."""
         return self._relationships_cache.get("uses_column_relationships", [])
 
     # ------------------------------------------------------------------
@@ -186,6 +205,7 @@ class CSVTransformer:
     # ------------------------------------------------------------------
 
     def transform_to_database_nodes(self, df: pd.DataFrame) -> list[Database]:
+        """Transform database info DataFrame to Database nodes."""
         if df is None or df.empty:
             return []
 
@@ -206,6 +226,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_schema_nodes(self, df: pd.DataFrame) -> list[Schema]:
+        """Transform schema info DataFrame to Schema nodes."""
         if df is None or df.empty:
             return []
 
@@ -224,6 +245,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_table_nodes(self, df: pd.DataFrame) -> list[Table]:
+        """Transform table info DataFrame to Table nodes."""
         if df is None or df.empty:
             return []
 
@@ -242,6 +264,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_column_nodes(self, df: pd.DataFrame) -> list[Column]:
+        """Transform column info DataFrame to Column nodes."""
         if df is None or df.empty:
             return []
 
@@ -269,6 +292,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_value_nodes(self, df: pd.DataFrame) -> list[Value]:
+        """Transform value info DataFrame to Value nodes."""
         if df is None or df.empty:
             return []
 
@@ -290,6 +314,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_query_nodes(self, df: pd.DataFrame) -> list[Query]:
+        """Transform query info DataFrame to Query nodes."""
         if df is None or df.empty:
             return []
 
@@ -308,6 +333,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_glossary_nodes(self, df: pd.DataFrame) -> list[Glossary]:
+        """Transform glossary info DataFrame to Glossary nodes."""
         if df is None or df.empty:
             return []
 
@@ -326,6 +352,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_category_nodes(self, df: pd.DataFrame) -> list[Category]:
+        """Transform category info DataFrame to Category nodes."""
         if df is None or df.empty:
             return []
 
@@ -344,6 +371,7 @@ class CSVTransformer:
         return nodes
 
     def transform_to_business_term_nodes(self, df: pd.DataFrame) -> list[BusinessTerm]:
+        """Transform business term info DataFrame to BusinessTerm nodes."""
         if df is None or df.empty:
             return []
 
@@ -366,6 +394,7 @@ class CSVTransformer:
     # ------------------------------------------------------------------
 
     def transform_to_has_schema_relationships(self, df: pd.DataFrame) -> list[HasSchema]:
+        """Transform schema info DataFrame to HAS_SCHEMA relationships."""
         if df is None or df.empty:
             return []
 
@@ -380,6 +409,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_has_table_relationships(self, df: pd.DataFrame) -> list[HasTable]:
+        """Transform table info DataFrame to HAS_TABLE relationships."""
         if df is None or df.empty:
             return []
 
@@ -394,6 +424,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_has_column_relationships(self, df: pd.DataFrame) -> list[HasColumn]:
+        """Transform column info DataFrame to HAS_COLUMN relationships."""
         if df is None or df.empty:
             return []
 
@@ -410,6 +441,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_has_value_relationships(self, df: pd.DataFrame) -> list[HasValue]:
+        """Transform value info DataFrame to HAS_VALUE relationships."""
         if df is None or df.empty:
             return []
 
@@ -428,6 +460,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_has_category_relationships(self, df: pd.DataFrame) -> list[HasCategory]:
+        """Transform category info DataFrame to HAS_CATEGORY relationships."""
         if df is None or df.empty:
             return []
 
@@ -444,6 +477,7 @@ class CSVTransformer:
     def transform_to_has_business_term_relationships(
         self, df: pd.DataFrame
     ) -> list[HasBusinessTerm]:
+        """Transform business term info DataFrame to HAS_BUSINESS_TERM relationships."""
         if df is None or df.empty:
             return []
 
@@ -458,6 +492,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_references_relationships(self, df: pd.DataFrame) -> list[References]:
+        """Transform column references DataFrame to REFERENCES relationships."""
         if df is None or df.empty:
             return []
 
@@ -483,6 +518,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_uses_table_relationships(self, df: pd.DataFrame) -> list[UsesTable]:
+        """Transform query-table mapping DataFrame to USES_TABLE relationships."""
         if df is None or df.empty:
             return []
 
@@ -497,6 +533,7 @@ class CSVTransformer:
         return relationships
 
     def transform_to_uses_column_relationships(self, df: pd.DataFrame) -> list[UsesColumn]:
+        """Transform query-column mapping DataFrame to USES_COLUMN relationships."""
         if df is None or df.empty:
             return []
 

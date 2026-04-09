@@ -39,6 +39,7 @@ def main(
     node_labels: list[str] = ["Table", "Column"],
     batch_size: int = 100,
 ) -> None:
+    """Compute and store embeddings for specified node labels synchronously."""
     load_dotenv()
     print("Starting sync embeddings workflow...")
     print("Creating drivers and clients...")

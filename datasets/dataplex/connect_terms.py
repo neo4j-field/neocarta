@@ -1,7 +1,4 @@
-"""
-Link BigQuery table columns to Dataplex Universal Catalog glossary terms
-using the google-cloud-dataplex Python client.
-"""
+"""Link BigQuery table columns to Dataplex Universal Catalog glossary terms using the google-cloud-dataplex Python client."""
 
 import uuid
 

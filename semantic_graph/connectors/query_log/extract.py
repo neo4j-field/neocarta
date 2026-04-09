@@ -1,3 +1,5 @@
+"""Query log extractor for local JSON files."""
+
 import pandas as pd
 
 from .models import QueryLogExtractorCache
@@ -8,6 +10,7 @@ class QueryLogExtractor:
     """Extractor class for query log files."""
 
     def __init__(self) -> None:
+        """Initialize an empty extractor cache."""
         self._cache: QueryLogExtractorCache = QueryLogExtractorCache()
 
     @property

@@ -1,3 +1,5 @@
+"""Text2SQL agent factory."""
+
 from langchain.agents import create_agent
 from langchain.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
@@ -15,6 +17,7 @@ Rules:
 
 
 def create_text2sql_agent(mcp_tools: list[BaseTool]) -> CompiledStateGraph:
+    """Create a Text2SQL LangGraph agent with the provided MCP tools."""
     return create_agent(
         model="openai:gpt-4o-mini",
         tools=mcp_tools,

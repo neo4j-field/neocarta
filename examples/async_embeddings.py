@@ -40,6 +40,7 @@ async def main(
     node_labels: list[str] = ["Table", "Column"],
     batch_size: int = 100,
 ) -> None:
+    """Compute and store embeddings for specified node labels asynchronously."""
     load_dotenv()
     print("Starting async embeddings process...")
     print("Creating drivers and clients...")

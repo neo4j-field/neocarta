@@ -1,3 +1,5 @@
+"""Utility functions for parsing and processing query log data."""
+
 import json
 from pathlib import Path
 

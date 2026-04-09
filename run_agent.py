@@ -1,3 +1,5 @@
+"""Entry point for running the Text2SQL agent with MCP server."""
+
 import asyncio
 import os
 
@@ -14,10 +16,14 @@ load_dotenv()
 
 # Custom auth class for Google Cloud
 class GoogleAuth(httpx.Auth):
+    """Custom httpx auth handler that injects Google Cloud bearer tokens."""
+
     def __init__(self) -> None:
+        """Initialize credentials using the application default credentials."""
         self.credentials, _ = default()
 
-    def auth_flow(self, request):
+    def auth_flow(self, request):  # noqa: ANN001, ANN201
+        """Refresh the token and inject it into the request."""
         self.credentials.refresh(Request())
         request.headers["Authorization"] = f"Bearer {self.credentials.token}"
         yield request
@@ -56,6 +62,7 @@ CONFIG = {"configurable": {"thread_id": "1"}}
 
 # run the agent with MCP server using stdio transport
 async def main() -> None:
+    """Connect to MCP servers, build the agent, and run an interactive chat loop."""
     # Get tools
     mcp_tools = await client.get_tools()
 

@@ -1,3 +1,5 @@
+"""Pydantic models for the MCP server."""
+
 from pydantic import BaseModel, Field
 
 

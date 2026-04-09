@@ -85,6 +85,7 @@ ignore = [
     "C90",     # McCabe complexity
     "COM812",  # Conflicts with the formatter
     "CPY",     # No copyright
+    "D205",    # Blank line after summary — multiline summaries add clarity
     "D212",    # Conflicts with Google convention (D213)
     "FIX002",  # Line contains TODO
     "PERF203", # Rarely useful

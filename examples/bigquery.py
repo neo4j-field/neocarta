@@ -1,3 +1,5 @@
+"""Example: load BigQuery schema metadata into the semantic graph."""
+
 import argparse
 import os
 
@@ -11,6 +13,7 @@ from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnecto
 
 
 def main(with_embeddings: bool = True) -> None:
+    """Run the BigQuery schema connector and optionally compute embeddings."""
     load_dotenv()
     print("Starting connector...")
     print("Creating drivers and clients...")

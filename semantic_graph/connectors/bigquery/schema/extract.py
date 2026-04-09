@@ -1,3 +1,5 @@
+"""BigQuery schema extractor."""
+
 import hashlib
 
 import pandas as pd

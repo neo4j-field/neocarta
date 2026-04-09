@@ -1,3 +1,5 @@
+"""Models for BigQuery schema extraction."""
+
 from typing import TypedDict
 
 import pandas as pd

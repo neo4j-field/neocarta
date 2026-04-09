@@ -121,50 +121,62 @@ class CSVExtractor:
 
     @property
     def database_info(self) -> pd.DataFrame:
+        """Return cached database info DataFrame."""
         return self._cache.get("database_info", pd.DataFrame())
 
     @property
     def schema_info(self) -> pd.DataFrame:
+        """Return cached schema info DataFrame."""
         return self._cache.get("schema_info", pd.DataFrame())
 
     @property
     def table_info(self) -> pd.DataFrame:
+        """Return cached table info DataFrame."""
         return self._cache.get("table_info", pd.DataFrame())
 
     @property
     def column_info(self) -> pd.DataFrame:
+        """Return cached column info DataFrame."""
         return self._cache.get("column_info", pd.DataFrame())
 
     @property
     def column_references_info(self) -> pd.DataFrame:
+        """Return cached column references info DataFrame."""
         return self._cache.get("column_references_info", pd.DataFrame())
 
     @property
     def value_info(self) -> pd.DataFrame:
+        """Return cached value info DataFrame."""
         return self._cache.get("value_info", pd.DataFrame())
 
     @property
     def query_info(self) -> pd.DataFrame:
+        """Return cached query info DataFrame."""
         return self._cache.get("query_info", pd.DataFrame())
 
     @property
     def query_table_info(self) -> pd.DataFrame:
+        """Return cached query-to-table mapping DataFrame."""
         return self._cache.get("query_table_info", pd.DataFrame())
 
     @property
     def query_column_info(self) -> pd.DataFrame:
+        """Return cached query-to-column mapping DataFrame."""
         return self._cache.get("query_column_info", pd.DataFrame())
 
     @property
     def glossary_info(self) -> pd.DataFrame:
+        """Return cached glossary info DataFrame."""
         return self._cache.get("glossary_info", pd.DataFrame())
 
     @property
     def category_info(self) -> pd.DataFrame:
+        """Return cached category info DataFrame."""
         return self._cache.get("category_info", pd.DataFrame())
 
     @property
     def business_term_info(self) -> pd.DataFrame:
+        """Return cached business term info DataFrame."""
         return self._cache.get("business_term_info", pd.DataFrame())
 
     # ------------------------------------------------------------------
@@ -238,39 +250,51 @@ class CSVExtractor:
     # ------------------------------------------------------------------
 
     def extract_database_info(self) -> pd.DataFrame | None:
+        """Extract and cache database info from CSV."""
         return self._extract("database", "database_info")
 
     def extract_schema_info(self) -> pd.DataFrame | None:
+        """Extract and cache schema info from CSV."""
         return self._extract("schema", "schema_info")
 
     def extract_table_info(self) -> pd.DataFrame | None:
+        """Extract and cache table info from CSV."""
         return self._extract("table", "table_info")
 
     def extract_column_info(self) -> pd.DataFrame | None:
+        """Extract and cache column info from CSV."""
         return self._extract("column", "column_info")
 
     def extract_column_references_info(self) -> pd.DataFrame | None:
+        """Extract and cache column references info from CSV."""
         return self._extract("column_references", "column_references_info")
 
     def extract_value_info(self) -> pd.DataFrame | None:
+        """Extract and cache value info from CSV."""
         return self._extract("value", "value_info")
 
     def extract_query_info(self) -> pd.DataFrame | None:
+        """Extract and cache query info from CSV."""
         return self._extract("query", "query_info")
 
     def extract_query_table_info(self) -> pd.DataFrame | None:
+        """Extract and cache query-to-table mapping from CSV."""
         return self._extract("query_table", "query_table_info")
 
     def extract_query_column_info(self) -> pd.DataFrame | None:
+        """Extract and cache query-to-column mapping from CSV."""
         return self._extract("query_column", "query_column_info")
 
     def extract_glossary_info(self) -> pd.DataFrame | None:
+        """Extract and cache glossary info from CSV."""
         return self._extract("glossary", "glossary_info")
 
     def extract_category_info(self) -> pd.DataFrame | None:
+        """Extract and cache category info from CSV."""
         return self._extract("category", "category_info")
 
     def extract_business_term_info(self) -> pd.DataFrame | None:
+        """Extract and cache business term info from CSV."""
         return self._extract("business_term", "business_term_info")
 
     def extract_all(

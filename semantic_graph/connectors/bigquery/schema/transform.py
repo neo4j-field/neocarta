@@ -1,3 +1,5 @@
+"""Transform BigQuery schema metadata into graph nodes and relationships."""
+
 import pandas as pd
 
 from ....data_model.rdbms import (

@@ -28,15 +28,15 @@ def build_delta_report(samples: list[EvalSample]) -> dict[str, Any]:
         Report with summary and per-archetype breakdowns
     """
 
-    def safe_mean(vals):
+    def safe_mean(vals: list) -> float | None:
         vals = [v for v in vals if v is not None]
         return mean(vals) if vals else None
 
-    def safe_stdev(vals):
+    def safe_stdev(vals: list) -> float:
         vals = [v for v in vals if v is not None and not isinstance(v, bool)]
         return stdev(vals) if len(vals) > 1 else 0.0
 
-    def get_nested(sample, condition, *keys):
+    def get_nested(sample: Any, condition: str, *keys: str) -> Any:
         """Safely get nested value from results."""
         try:
             d = sample.results_by_condition.get(condition, {})
@@ -215,7 +215,7 @@ def print_report(report: dict[str, Any]) -> None:
     print("SUCCESS GATES")
     print("-" * 80)
 
-    def status(passed) -> str:
+    def status(passed: bool) -> str:
         return "✓ PASS" if passed else "✗ FAIL"
 
     print(

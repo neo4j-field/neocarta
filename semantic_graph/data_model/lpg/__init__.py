@@ -1,3 +1,5 @@
+"""LPG (Labeled Property Graph) data model nodes and relationships."""
+
 from .core import (
     Database,
     HasNode,
