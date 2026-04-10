@@ -32,10 +32,10 @@ load-ecommerce-dataset:
 	uv run datasets/ecommerce_bigquery.py
 
 fmt:
-	uvx ruff format .
+	uv run ruff format .
 
 lint:
-	uvx ruff check .
+	uv run ruff check .
 
 install:
 	uv sync --all-groups

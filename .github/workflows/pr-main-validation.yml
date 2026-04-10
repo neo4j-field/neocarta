@@ -30,6 +30,12 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --all-groups
+      
+      - name: Run format
+        run: make fmt
+
+      - name: Run lint
+        run: make lint
 
       - name: Run unit tests
         run: uv run pytest tests/unit -v
