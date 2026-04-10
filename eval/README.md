@@ -1,6 +1,3 @@
 # Evaluation Suite
 
-## Context Retrieval Evaluation
-
-Evaluate the context retrieved by MCP server tools for query generation.
-
+> **Work in progress.** The evaluation suite is not yet complete and should not be used as a reference.

@@ -8,10 +8,15 @@ This project uses [uv](https://docs.astral.sh/uv/) for dependency management and
 
 ### Prerequisites
 
-Install uv if you haven't already:
+**[uv](https://docs.astral.sh/uv/)** — Python dependency manager:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
+
+**Neo4j** — a running Neo4j instance is required. Options:
+- [Neo4j AuraDB](https://neo4j.com/product/auradb/) — managed cloud (free tier available)
+- [Neo4j Desktop](https://neo4j.com/download/) — local GUI-based instance
+- [Docker image](https://hub.docker.com/_/neo4j) — lightweight instance
 
 ### Install All Dependencies (Recommended)
 
@@ -321,7 +326,7 @@ This allows you to compare declared schema vs. actual usage patterns.
 
 #### **GCP Dataplex Universal Catalog**
 
-Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./connectors/dataplex/README.md) for more information and caveats of using this connector.
+Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./semantic_graph/connectors/dataplex/README.md) for more information and caveats of using this connector.
 
 ##### Connector Architecture 
 
@@ -366,7 +371,7 @@ graph LR
 
 #### **Query Logs**
 
-Connector for parsing query log JSON files into Neo4j. Please see the [Query Logs README](./connectors/query_log/README.md) for more information and caveats of using this connector.
+Connector for parsing query log JSON files into Neo4j. Please see the [Query Logs README](./semantic_graph/connectors/query_log/README.md) for more information and caveats of using this connector.
 
 ##### Connector Architecture
 
@@ -573,7 +578,7 @@ import asyncio
 import os
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -733,17 +738,14 @@ Enable use of the [Bigquery MCP server](https://docs.cloud.google.com/bigquery/d
 
 Additional information may be found [here](https://docs.cloud.google.com/bigquery/docs/use-bigquery-mcp).
 
-PROJECT_ID=Google Cloud project ID
-SERVICE=bigquery.googleapis.com
-
 ```bash
-gcloud beta services mcp enable SERVICE --project=PROJECT_ID
+gcloud beta services mcp enable bigquery.googleapis.com --project=PROJECT_ID
 ```
 
-To disable again run
+To disable again run:
 
 ```bash
-gcloud beta services mcp disable SERVICE --project=PROJECT_ID
+gcloud beta services mcp disable bigquery.googleapis.com --project=PROJECT_ID
 ```
 
 You can test the BigQuery server connection with the following curl command

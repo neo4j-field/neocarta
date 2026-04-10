@@ -1,5 +1,7 @@
 # Semantic Layer Evaluation - Usage Guide
 
+> **Work in progress.** The evaluation suite is not yet complete and should not be used as a reference.
+
 This guide shows how to run the semantic layer evaluation to measure whether MCP-retrieved context produces equivalent SQL generation quality compared to full schema exposure, at reduced token cost.
 
 ## Quick Start
@@ -49,7 +51,7 @@ Results are saved to `eval/results/eval_results.json` with detailed metrics for 
 The evaluation gates on:
 1. **Token reduction ≥ 50%**: Semantic layer uses at least 50% fewer tokens
 2. **Object recall ≥ 90%**: Semantic layer retrieves 90%+ of required schema objects
-3. **Accuracy delta ≤ ±5%**: SQL correctness within 5% of full schema baseline
+3. **Accuracy delta ≥ 5%**: SQL correctness within 5% of full schema baseline
 
 All three gates must pass for the semantic layer to be considered successful.
 

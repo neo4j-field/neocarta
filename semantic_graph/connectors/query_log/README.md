@@ -50,7 +50,7 @@ The Query Log connector orchestrates the extraction, transformation, and loading
 ```python
 import os
 from neo4j import GraphDatabase
-from connectors.query_log.connector import QueryLogConnector
+from semantic_graph.connectors.query_log import QueryLogConnector
 
 # Initialize Neo4j connection
 neo4j_driver = GraphDatabase.driver(
