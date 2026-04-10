@@ -3,7 +3,11 @@ name = "semantic-graph"
 version = "0.1.0"
 description = "Library that facilitates the creation of semantic layer metadata graph in Neo4j."
 readme = "README.md"
-requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Alex Gilmore" }
+]
+requires-python = ">=3.10"
 dependencies = [
     "google-cloud-bigquery[pandas]>=3.40.0",
     "openai>=2.15.0",
@@ -16,7 +20,6 @@ dependencies = [
     "google-cloud-bigquery-storage>=2.36.2",
 ]
 
-
 [dependency-groups]
 # Development tools
 dev = [
@@ -24,20 +27,6 @@ dev = [
     "pytest>=9.0.2",
     "testcontainers[neo4j]>=4.14.2",
     "ruff>=0.15.10",
-]
-
-# BigQuery metadata extraction and Neo4j loading
-# Overlaps: openai, pydantic, python-dotenv (with mcp-server)
-metadata-graph = [
-    "google-cloud-bigquery[pandas]>=3.40.0",
-    "openai>=2.15.0",
-    "pydantic>=2.12.5",
-    "python-dotenv>=1.2.1",
-    "neo4j>=6.1.0",
-    "pandas>=3.0.0",
-    "google-cloud-dataplex>=2.16.0",
-    "sqlglot>=28.10.1",
-    "google-cloud-bigquery-storage>=2.36.2",
 ]
 
 # Local MCP server for SQL metadata retrieval
