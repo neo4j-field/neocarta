@@ -176,7 +176,7 @@ LIMIT {limit};
             query_info_df = query_info_df[query_info_df["error_result"].isnull()]
 
         # Add query_id as hash of the query text
-        query_info_df["query_id"] = query_info_df["query"].apply(lambda q: create_query_id(q))
+        query_info_df["query_id"] = query_info_df["query"].apply(create_query_id)
 
         # Parse queries to extract table and column information
         table_info = []

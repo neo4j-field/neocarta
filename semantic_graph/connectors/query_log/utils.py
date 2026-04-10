@@ -123,8 +123,8 @@ def parse_sql_query(
             table_alias = t.alias
 
             # Use the catalog/project and database/dataset from the table reference, or fall back to defaults
-            project_id = t.catalog if t.catalog else default_project_id
-            dataset_name = t.db if t.db else default_schema_id
+            project_id = t.catalog or default_project_id
+            dataset_name = t.db or default_schema_id
 
             # Validate required identifiers
             if not project_id or project_id == "":

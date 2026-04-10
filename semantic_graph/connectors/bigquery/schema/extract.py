@@ -382,9 +382,11 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 
         # Hash the unique value and append to column_id for value_id
         result["value_id"] = result.apply(
-            lambda row: row["column_id"]
-            + "."
-            + hashlib.md5(row["unique_value"].encode(), usedforsecurity=False).hexdigest(),
+            lambda row: (
+                row["column_id"]
+                + "."
+                + hashlib.md5(row["unique_value"].encode(), usedforsecurity=False).hexdigest()
+            ),
             axis=1,
         )
 

@@ -82,7 +82,7 @@ async def main() -> None:
     print("\n===================================== Chat =====================================\n")
 
     while True:
-        user_input = input("> ")
+        user_input = input("> ")  # noqa: ASYNC250
         if user_input.lower() in {"exit", "quit", "q"}:
             break
 
