@@ -694,8 +694,11 @@ This project uses two MCP servers for the Text2SQL agent.
 This is a custom SQL metadata retrieval MCP server that provides tools to query the Neo4j database for relevant RDBMS schema information using semantic similarity search.
 
 **Tools**
-* `get_metadata_schema_by_semantic_similarity` - Retrieves table metadata using vector similarity search on column embeddings and graph traversal. Returns the most relevant tables and column subset with their references, and example values.
-* `get_full_metadata_schema` - Retrieves complete metadata schema for all tables in the database. Returns the tables and columns with their references, and example values.
+* `list_schemas` - Lists all schemas and their associated databases.
+* `list_tables_by_schema` - Lists all tables for a given schema name.
+* `get_metadata_schema_by_column_semantic_similarity` - Retrieves table metadata using vector similarity search on column embeddings and graph traversal. Returns the most relevant tables and column subset with their references and example values.
+* `get_metadata_schema_by_schema_and_table_semantic_similarity` - Retrieves table metadata using embedding similarity at the schema and table level. Filters tables whose similarity score is close to their parent schema score and returns results ordered by relevance. Accepts an optional `max_tables` parameter (default: 5).
+* `get_full_metadata_schema` - Retrieves complete metadata schema for all tables in the database. Returns tables and columns with their references and example values. **Warning:** expensive query — use only for debugging.
 
 
 **Environment Variables**
