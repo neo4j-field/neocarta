@@ -1,5 +1,6 @@
 """Neo4j constraint definitions for the RDBMS data model."""
 
+from ...enums import NodeLabel
 from semantic_graph.ingest.constraints import (
     database_id_key_constraint,
     database_id_unique_constraint,
@@ -53,25 +54,25 @@ FOR (q:Query) REQUIRE q.id IS UNIQUE;
 query_id_key_constraint = query_id_unique_constraint.replace("UNIQUE", "NODE KEY")
 
 UNIQUE_CONSTRAINTS_LOOKUP = {
-    "Database": database_id_unique_constraint,
-    "Schema": schema_id_unique_constraint,
-    "Table": table_id_unique_constraint,
-    "Column": column_id_unique_constraint,
-    "Value": value_id_unique_constraint,
-    "Glossary": glossary_id_unique_constraint,
-    "Category": category_id_unique_constraint,
-    "BusinessTerm": business_term_id_unique_constraint,
-    "Query": query_id_unique_constraint,
+    NodeLabel.DATABASE: database_id_unique_constraint,
+    NodeLabel.SCHEMA: schema_id_unique_constraint,
+    NodeLabel.TABLE: table_id_unique_constraint,
+    NodeLabel.COLUMN: column_id_unique_constraint,
+    NodeLabel.VALUE: value_id_unique_constraint,
+    NodeLabel.GLOSSARY: glossary_id_unique_constraint,
+    NodeLabel.CATEGORY: category_id_unique_constraint,
+    NodeLabel.BUSINESS_TERM: business_term_id_unique_constraint,
+    NodeLabel.QUERY: query_id_unique_constraint,
 }
 
 KEY_CONSTRAINTS_LOOKUP = {
-    "Database": database_id_key_constraint,
-    "Schema": schema_id_key_constraint,
-    "Table": table_id_key_constraint,
-    "Column": column_id_key_constraint,
-    "Value": value_id_key_constraint,
-    "Glossary": glossary_id_key_constraint,
-    "Category": category_id_key_constraint,
-    "BusinessTerm": business_term_id_key_constraint,
-    "Query": query_id_key_constraint,
+    NodeLabel.DATABASE: database_id_key_constraint,
+    NodeLabel.SCHEMA: schema_id_key_constraint,
+    NodeLabel.TABLE: table_id_key_constraint,
+    NodeLabel.COLUMN: column_id_key_constraint,
+    NodeLabel.VALUE: value_id_key_constraint,
+    NodeLabel.GLOSSARY: glossary_id_key_constraint,
+    NodeLabel.CATEGORY: category_id_key_constraint,
+    NodeLabel.BUSINESS_TERM: business_term_id_key_constraint,
+    NodeLabel.QUERY: query_id_key_constraint,
 }

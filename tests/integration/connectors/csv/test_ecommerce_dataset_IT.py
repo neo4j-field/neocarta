@@ -1,6 +1,7 @@
 """Integration tests for CSV connector workflow."""
 
 from semantic_graph.connectors.csv import CSVConnector
+from semantic_graph.enums import NodeLabel, RelationshipType
 
 
 def test_run_workflow_loads_all_nodes(neo4j_driver, temp_csv_dir, all_sample_csvs):
@@ -134,8 +135,13 @@ def test_include_nodes_core_only(neo4j_driver, temp_csv_dir, all_sample_csvs):
 
     # Load only core entities
     workflow.run(
-        include_nodes=["database", "schema", "table", "column"],
-        include_relationships=["has_schema", "has_table", "has_column", "references"],
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN],
+        include_relationships=[
+            RelationshipType.HAS_SCHEMA,
+            RelationshipType.HAS_TABLE,
+            RelationshipType.HAS_COLUMN,
+            RelationshipType.REFERENCES,
+        ],
     )
 
     with neo4j_driver.session(database="neo4j") as session:
@@ -182,8 +188,8 @@ def test_include_nodes_queries_only(neo4j_driver, temp_csv_dir, all_sample_csvs)
 
     # Load queries and their target nodes (tables/columns) for lineage relationships
     workflow.run(
-        include_nodes=["query", "table", "column"],
-        include_relationships=["uses_table", "uses_column"],
+        include_nodes=[NodeLabel.QUERY, NodeLabel.TABLE, NodeLabel.COLUMN],
+        include_relationships=[RelationshipType.USES_TABLE, RelationshipType.USES_COLUMN],
     )
 
     with neo4j_driver.session(database="neo4j") as session:

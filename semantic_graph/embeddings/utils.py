@@ -8,10 +8,12 @@ from typing import Any
 import pandas as pd
 from neo4j import Driver, RoutingControl
 
+from ..enums import NodeLabel
+
 
 def get_nodes_to_embed(
     neo4j_driver: Driver,
-    node_label: str,
+    node_label: NodeLabel,
     min_length: int = 20,
     database_name: str = "neo4j",
 ) -> pd.DataFrame:
@@ -207,7 +209,7 @@ async def create_embeddings_in_batches_async(
 
 def write_embeddings_to_graph(
     embeddings_df: pd.DataFrame,
-    node_label: str,
+    node_label: NodeLabel,
     neo4j_driver: Driver,
     database_name: str = "neo4j",
 ) -> None:

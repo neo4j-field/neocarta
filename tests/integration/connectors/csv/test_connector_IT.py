@@ -1,6 +1,7 @@
 """Integration tests for CSV connector workflow."""
 
 from semantic_graph.connectors.csv import CSVConnector
+from semantic_graph.enums import NodeLabel, RelationshipType
 
 
 def test_load_database_nodes(neo4j_driver, temp_csv_dir, sample_database_csv):
@@ -9,7 +10,7 @@ def test_load_database_nodes(neo4j_driver, temp_csv_dir, sample_database_csv):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database"])
+    connector.run(include_nodes=[NodeLabel.DATABASE])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -33,7 +34,7 @@ def test_database_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database"])
+    connector.run(include_nodes=[NodeLabel.DATABASE])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (d:Database) RETURN properties(d) as props")
@@ -53,7 +54,7 @@ def test_load_schema_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, samp
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema"])
+    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (s:Schema) RETURN s.name as name ORDER BY s.name")
@@ -75,7 +76,7 @@ def test_schema_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema"])
+    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (s:Schema) RETURN properties(s) as props")
@@ -94,7 +95,10 @@ def test_load_has_schema_relationships(
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema"], include_relationships=["has_schema"])
+    connector.run(
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA],
+        include_relationships=[RelationshipType.HAS_SCHEMA],
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -116,7 +120,7 @@ def test_load_table_nodes(
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema", "table"])
+    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (t:Table) RETURN t.name as name ORDER BY t.name")
@@ -141,7 +145,7 @@ def test_load_column_nodes(
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema", "table", "column"])
+    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -172,7 +176,7 @@ def test_column_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema", "table", "column"])
+    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (c:Column) RETURN properties(c) as props")
@@ -204,7 +208,7 @@ def test_column_properties_correct_values(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema", "table", "column"])
+    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -242,8 +246,13 @@ def test_load_references_relationships(neo4j_driver, temp_csv_dir):
     )
 
     connector.run(
-        include_nodes=["database", "schema", "table", "column"],
-        include_relationships=["has_schema", "has_table", "has_column", "references"],
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN],
+        include_relationships=[
+            RelationshipType.HAS_SCHEMA,
+            RelationshipType.HAS_TABLE,
+            RelationshipType.HAS_COLUMN,
+            RelationshipType.REFERENCES,
+        ],
     )
 
     with neo4j_driver.session(database="neo4j") as session:
@@ -280,7 +289,9 @@ def test_load_value_nodes(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["database", "schema", "table", "column", "value"])
+    connector.run(
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN, NodeLabel.VALUE]
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (v:Value) RETURN v.value as value ORDER BY v.value")
@@ -299,7 +310,7 @@ def test_load_query_nodes(neo4j_driver, temp_csv_dir, sample_query_csv):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["query"])
+    connector.run(include_nodes=[NodeLabel.QUERY])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -320,7 +331,7 @@ def test_query_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=["query"])
+    connector.run(include_nodes=[NodeLabel.QUERY])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (q:Query) RETURN properties(q) as props")
@@ -348,8 +359,8 @@ def test_load_glossary_entities(neo4j_driver, temp_csv_dir):
     )
 
     connector.run(
-        include_nodes=["glossary", "category", "business_term"],
-        include_relationships=["has_category", "has_business_term"],
+        include_nodes=[NodeLabel.GLOSSARY, NodeLabel.CATEGORY, NodeLabel.BUSINESS_TERM],
+        include_relationships=[RelationshipType.HAS_CATEGORY, RelationshipType.HAS_BUSINESS_TERM],
     )
 
     with neo4j_driver.session(database="neo4j") as session:

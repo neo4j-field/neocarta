@@ -5,15 +5,16 @@ from typing import ClassVar
 
 import pandas as pd
 
+from ...enums import NodeLabel, RelationshipType
 from .models import CSVExtractorCache
 
 # Required columns per entity type
 REQUIRED_COLUMNS: dict[str, list[str]] = {
-    "database": ["database_id"],
-    "schema": ["database_id", "schema_id"],
-    "table": ["database_id", "schema_id", "table_name"],
-    "column": ["database_id", "schema_id", "table_name", "column_name"],
-    "column_references": [
+    NodeLabel.DATABASE: ["database_id"],
+    NodeLabel.SCHEMA: ["database_id", "schema_id"],
+    NodeLabel.TABLE: ["database_id", "schema_id", "table_name"],
+    NodeLabel.COLUMN: ["database_id", "schema_id", "table_name", "column_name"],
+    RelationshipType.REFERENCES: [
         "source_database_id",
         "source_schema_id",
         "source_table_name",
@@ -23,44 +24,44 @@ REQUIRED_COLUMNS: dict[str, list[str]] = {
         "target_table_name",
         "target_column_name",
     ],
-    "value": ["database_id", "schema_id", "table_name", "column_name", "value"],
-    "query": ["query_id", "content"],
-    "query_table": ["query_id", "table_id"],
-    "query_column": ["query_id", "column_id"],
-    "glossary": ["glossary_id"],
-    "category": ["glossary_id", "category_id"],
-    "business_term": ["category_id", "term_id"],
+    NodeLabel.VALUE: ["database_id", "schema_id", "table_name", "column_name", "value"],
+    NodeLabel.QUERY: ["query_id", "content"],
+    RelationshipType.USES_TABLE: ["query_id", "table_id"],
+    RelationshipType.USES_COLUMN: ["query_id", "column_id"],
+    NodeLabel.GLOSSARY: ["glossary_id"],
+    NodeLabel.CATEGORY: ["glossary_id", "category_id"],
+    NodeLabel.BUSINESS_TERM: ["category_id", "term_id"],
 }
 
 
 # Maps node/relationship type names (as passed by callers) to the internal
 # entity keys used by _extract() and csv_file_map. Defined at module level so
 # they are shared between extract_all() and any validation logic.
-NODE_ENTITIES: dict[str, str] = {
-    "database": "database",
-    "schema": "schema",
-    "table": "table",
-    "column": "column",
-    "value": "value",
-    "query": "query",
-    "glossary": "glossary",
-    "category": "category",
-    "business_term": "business_term",
+NODE_ENTITIES: dict[NodeLabel, str] = {
+    NodeLabel.DATABASE: "database",
+    NodeLabel.SCHEMA: "schema",
+    NodeLabel.TABLE: "table",
+    NodeLabel.COLUMN: "column",
+    NodeLabel.VALUE: "value",
+    NodeLabel.QUERY: "query",
+    NodeLabel.GLOSSARY: "glossary",
+    NodeLabel.CATEGORY: "category",
+    NodeLabel.BUSINESS_TERM: "business_term",
 }
 
 # Relationships that share a CSV with their parent node entity reuse that entity
 # key (e.g. has_schema is built from schema_info.csv). Cross-entity relationship
 # CSVs (column_references, query_table, query_column) have their own keys.
-REL_ENTITIES: dict[str, str] = {
-    "has_schema": "schema",
-    "has_table": "table",
-    "has_column": "column",
-    "has_value": "value",
-    "has_category": "category",
-    "has_business_term": "business_term",
-    "references": "column_references",
-    "uses_table": "query_table",
-    "uses_column": "query_column",
+REL_ENTITIES: dict[RelationshipType, str] = {
+    RelationshipType.HAS_SCHEMA: "schema",
+    RelationshipType.HAS_TABLE: "table",
+    RelationshipType.HAS_COLUMN: "column",
+    RelationshipType.HAS_VALUE: "value",
+    RelationshipType.HAS_CATEGORY: "category",
+    RelationshipType.HAS_BUSINESS_TERM: "business_term",
+    RelationshipType.REFERENCES: "column_references",
+    RelationshipType.USES_TABLE: "query_table",
+    RelationshipType.USES_COLUMN: "query_column",
 }
 
 
@@ -73,18 +74,18 @@ class CSVExtractor:
     """
 
     DEFAULT_FILE_MAP: ClassVar[dict[str, str]] = {
-        "database": "database_info.csv",
-        "schema": "schema_info.csv",
-        "table": "table_info.csv",
-        "column": "column_info.csv",
-        "value": "value_info.csv",
-        "query": "query_info.csv",
-        "query_table": "query_table_info.csv",
-        "query_column": "query_column_info.csv",
-        "glossary": "glossary_info.csv",
-        "category": "category_info.csv",
-        "business_term": "business_term_info.csv",
-        "column_references": "column_references_info.csv",
+        NodeLabel.DATABASE: "database_info.csv",
+        NodeLabel.SCHEMA: "schema_info.csv",
+        NodeLabel.TABLE: "table_info.csv",
+        NodeLabel.COLUMN: "column_info.csv",
+        NodeLabel.VALUE: "value_info.csv",
+        NodeLabel.QUERY: "query_info.csv",
+        RelationshipType.USES_TABLE: "query_table_info.csv",
+        RelationshipType.USES_COLUMN: "query_column_info.csv",
+        NodeLabel.GLOSSARY: "glossary_info.csv",
+        NodeLabel.CATEGORY: "category_info.csv",
+        NodeLabel.BUSINESS_TERM: "business_term_info.csv",
+        RelationshipType.REFERENCES: "column_references_info.csv",
     }
 
     def __init__(
@@ -251,56 +252,56 @@ class CSVExtractor:
 
     def extract_database_info(self) -> pd.DataFrame | None:
         """Extract and cache database info from CSV."""
-        return self._extract("database", "database_info")
+        return self._extract(NodeLabel.DATABASE, "database_info")
 
     def extract_schema_info(self) -> pd.DataFrame | None:
         """Extract and cache schema info from CSV."""
-        return self._extract("schema", "schema_info")
+        return self._extract(NodeLabel.SCHEMA, "schema_info")
 
     def extract_table_info(self) -> pd.DataFrame | None:
         """Extract and cache table info from CSV."""
-        return self._extract("table", "table_info")
+        return self._extract(NodeLabel.TABLE, "table_info")
 
     def extract_column_info(self) -> pd.DataFrame | None:
         """Extract and cache column info from CSV."""
-        return self._extract("column", "column_info")
+        return self._extract(NodeLabel.COLUMN, "column_info")
 
     def extract_column_references_info(self) -> pd.DataFrame | None:
         """Extract and cache column references info from CSV."""
-        return self._extract("column_references", "column_references_info")
+        return self._extract(RelationshipType.REFERENCES, "column_references_info")
 
     def extract_value_info(self) -> pd.DataFrame | None:
         """Extract and cache value info from CSV."""
-        return self._extract("value", "value_info")
+        return self._extract(NodeLabel.VALUE, "value_info")
 
     def extract_query_info(self) -> pd.DataFrame | None:
         """Extract and cache query info from CSV."""
-        return self._extract("query", "query_info")
+        return self._extract(NodeLabel.QUERY, "query_info")
 
     def extract_query_table_info(self) -> pd.DataFrame | None:
         """Extract and cache query-to-table mapping from CSV."""
-        return self._extract("query_table", "query_table_info")
+        return self._extract(RelationshipType.USES_TABLE, "query_table_info")
 
     def extract_query_column_info(self) -> pd.DataFrame | None:
         """Extract and cache query-to-column mapping from CSV."""
-        return self._extract("query_column", "query_column_info")
+        return self._extract(RelationshipType.USES_COLUMN, "query_column_info")
 
     def extract_glossary_info(self) -> pd.DataFrame | None:
         """Extract and cache glossary info from CSV."""
-        return self._extract("glossary", "glossary_info")
+        return self._extract(NodeLabel.GLOSSARY, "glossary_info")
 
     def extract_category_info(self) -> pd.DataFrame | None:
         """Extract and cache category info from CSV."""
-        return self._extract("category", "category_info")
+        return self._extract(NodeLabel.CATEGORY, "category_info")
 
     def extract_business_term_info(self) -> pd.DataFrame | None:
         """Extract and cache business term info from CSV."""
-        return self._extract("business_term", "business_term_info")
+        return self._extract(NodeLabel.BUSINESS_TERM, "business_term_info")
 
     def extract_all(
         self,
-        include_nodes: list[str] | None = None,
-        include_relationships: list[str] | None = None,
+        include_nodes: list[NodeLabel] | None = None,
+        include_relationships: list[RelationshipType] | None = None,
     ) -> None:
         """
         Extract and validate CSV files, caching results.
@@ -311,29 +312,26 @@ class CSVExtractor:
 
         Parameters
         ----------
-        include_nodes : list[str], optional
-            Node types to include. Allowed values:
-            "database", "schema", "table", "column", "value",
-            "query", "glossary", "category", "business_term".
-        include_relationships : list[str], optional
-            Relationship types to include. Allowed values:
-            "has_schema", "has_table", "has_column", "has_value",
-            "has_category", "has_business_term", "references",
-            "uses_table", "uses_column".
+        include_nodes : list[NodeLabel], optional
+            Node types to include. Allowed values are from the `NodeLabel` enum.
+        include_relationships : list[RelationshipType], optional
+            Relationship types to include. Allowed values are from the `RelationshipType` enum.
         """
         if include_nodes is not None:
-            unknown = sorted(set(include_nodes) - NODE_ENTITIES.keys())
+            unknown = sorted(set(include_nodes) - NODE_ENTITIES.keys(), key=str)
             if unknown:
+                valid = sorted(label.value for label in NODE_ENTITIES)
                 raise ValueError(
-                    f"Unknown node types: {unknown}. Valid values: {sorted(NODE_ENTITIES.keys())}"
+                    f"Unknown node types: {[str(x) for x in unknown]}. Valid values: {valid}"
                 )
 
         if include_relationships is not None:
-            unknown = sorted(set(include_relationships) - REL_ENTITIES.keys())
+            unknown = sorted(set(include_relationships) - REL_ENTITIES.keys(), key=str)
             if unknown:
+                valid = sorted(rel.value for rel in REL_ENTITIES)
                 raise ValueError(
-                    f"Unknown relationship types: {unknown}. "
-                    f"Valid values: {sorted(REL_ENTITIES.keys())}"
+                    f"Unknown relationship types: {[str(x) for x in unknown]}. "
+                    f"Valid values: {valid}"
                 )
 
         if include_nodes is None and include_relationships is None:

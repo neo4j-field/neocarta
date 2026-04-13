@@ -3,6 +3,7 @@
 from neo4j import Driver
 
 from ...ingest.rdbms import Neo4jRDBMSLoader
+from ...enums import NodeLabel, RelationshipType
 from .extract import CSVExtractor
 from .transform import CSVTransformer
 
@@ -45,17 +46,17 @@ class CSVConnector:
 
     def extract_metadata(
         self,
-        include_nodes: list[str] | None = None,
-        include_relationships: list[str] | None = None,
+        include_nodes: list[NodeLabel] | None = None,
+        include_relationships: list[RelationshipType] | None = None,
     ) -> None:
         """
         Read and validate CSV files from the configured directory.
 
         Parameters
         ----------
-        include_nodes : list[str], optional
+        include_nodes : list[NodeLabel], optional
             Node types to extract. If None, all node CSVs are read.
-        include_relationships : list[str], optional
+        include_relationships : list[RelationshipType], optional
             Relationship types to extract. If None, all relationship CSVs are read.
         """
         self.extractor.extract_all(include_nodes, include_relationships)
@@ -198,8 +199,8 @@ class CSVConnector:
 
     def run(
         self,
-        include_nodes: list[str] | None = None,
-        include_relationships: list[str] | None = None,
+        include_nodes: list[NodeLabel] | None = None,
+        include_relationships: list[RelationshipType] | None = None,
     ) -> None:
         """
         Run the complete CSV connector (extract → transform → load).
@@ -208,24 +209,19 @@ class CSVConnector:
 
         Parameters
         ----------
-        include_nodes : list[str], optional
-            Node types to load. If None, all available node CSVs are loaded.
-            Allowed values: "database", "schema", "table", "column", "value",
-            "query", "glossary", "category", "business_term".
-        include_relationships : list[str], optional
+        include_nodes : list[NodeLabel], optional
+            Node types to load. If None, all available node CSVs are loaded. Allowed values are from the `NodeLabel` enum.
+        include_relationships : list[RelationshipType], optional
             Relationship types to load. If None, all available relationship CSVs
-            are loaded.
-            Allowed values: "has_schema", "has_table", "has_column", "has_value",
-            "has_category", "has_business_term", "references", "uses_table",
-            "uses_column".
-
+            are loaded. Allowed values are from the `RelationshipType` enum.
+            
         Examples:
         --------
         Load only core schema entities:
 
         >>> connector.run(
-        ...     include_nodes=["database", "schema", "table", "column"],
-        ...     include_relationships=["has_schema", "has_table", "has_column"],
+        ...     include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN],
+        ...     include_relationships=[RelationshipType.HAS_SCHEMA, RelationshipType.HAS_TABLE, RelationshipType.HAS_COLUMN],
         ... )
 
         Load everything:

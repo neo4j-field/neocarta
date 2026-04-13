@@ -1,6 +1,7 @@
 import pytest
 
 from semantic_graph.connectors.csv.extract import NODE_ENTITIES, REL_ENTITIES, CSVExtractor
+from semantic_graph.enums import NodeLabel, RelationshipType
 
 # ---------------------------------------------------------------------------
 # Fix #1 — csv_directory validation
@@ -61,7 +62,7 @@ class TestIncludeValidation:
 
     def test_error_message_lists_valid_values(self, csv_dir):
         extractor = CSVExtractor(str(csv_dir))
-        with pytest.raises(ValueError, match="database"):
+        with pytest.raises(ValueError, match="Database"):
             extractor.extract_all(include_nodes=["bad"])
 
     def test_all_valid_node_types_accepted(self, csv_dir):
@@ -86,24 +87,55 @@ class TestIncludeValidation:
         assert extractor.schema_info.empty
 
     def test_selective_extract_only_reads_needed_files(self, csv_dir_with_files):
-        """Requesting only 'database' does not populate other caches."""
+        """Requesting only NodeLabel.DATABASE does not populate other caches."""
         extractor = CSVExtractor(str(csv_dir_with_files))
-        extractor.extract_all(include_nodes=["database"])
+        extractor.extract_all(include_nodes=[NodeLabel.DATABASE])
         assert not extractor.database_info.empty
         assert extractor.schema_info.empty  # not requested
         assert extractor.table_info.empty  # not requested
 
     def test_relationship_include_reads_shared_csv(self, csv_dir_with_files):
-        """has_schema reuses schema_info.csv, so schema_info cache is populated."""
+        """HAS_SCHEMA reuses schema_info.csv, so schema_info cache is populated."""
         extractor = CSVExtractor(str(csv_dir_with_files))
-        extractor.extract_all(include_relationships=["has_schema"])
+        extractor.extract_all(include_relationships=[RelationshipType.HAS_SCHEMA])
         assert not extractor.schema_info.empty
 
     def test_references_include_reads_column_references_csv(self, csv_dir_with_files):
         extractor = CSVExtractor(str(csv_dir_with_files))
-        extractor.extract_all(include_relationships=["references"])
+        extractor.extract_all(include_relationships=[RelationshipType.REFERENCES])
         assert not extractor.column_references_info.empty
         assert extractor.schema_info.empty  # not requested
+
+
+# ---------------------------------------------------------------------------
+# Raw string compatibility (exact enum value match)
+# ---------------------------------------------------------------------------
+
+
+class TestRawStringCompatibility:
+    def test_exact_node_label_value_accepted(self, csv_dir_with_files):
+        """Raw strings that exactly match NodeLabel.value work in place of the enum."""
+        extractor = CSVExtractor(str(csv_dir_with_files))
+        extractor.extract_all(include_nodes=["Database"])
+        assert not extractor.database_info.empty
+
+    def test_exact_relationship_type_value_accepted(self, csv_dir_with_files):
+        """Raw strings that exactly match RelationshipType.value work in place of the enum."""
+        extractor = CSVExtractor(str(csv_dir_with_files))
+        extractor.extract_all(include_relationships=["HAS_SCHEMA"])
+        assert not extractor.schema_info.empty
+
+    def test_lowercase_node_label_rejected(self, csv_dir):
+        """Lowercase strings do not match and raise ValueError."""
+        extractor = CSVExtractor(str(csv_dir))
+        with pytest.raises(ValueError, match="Unknown node types"):
+            extractor.extract_all(include_nodes=["database"])
+
+    def test_lowercase_relationship_type_rejected(self, csv_dir):
+        """Lowercase strings do not match and raise ValueError."""
+        extractor = CSVExtractor(str(csv_dir))
+        with pytest.raises(ValueError, match="Unknown relationship types"):
+            extractor.extract_all(include_relationships=["has_schema"])
 
 
 # ---------------------------------------------------------------------------

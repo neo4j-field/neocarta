@@ -1,6 +1,7 @@
 """Test custom CSV filename functionality."""
 
 from semantic_graph.connectors.csv import CSVConnector
+from semantic_graph.enums import NodeLabel, RelationshipType
 
 
 def test_custom_filename_in_constructor(neo4j_driver, temp_csv_dir):
@@ -11,10 +12,10 @@ def test_custom_filename_in_constructor(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j",
-        csv_file_map={"database": "custom_databases.csv"},
+        csv_file_map={NodeLabel.DATABASE: "custom_databases.csv"},
     )
 
-    connector.run(include_nodes=["database"])
+    connector.run(include_nodes=[NodeLabel.DATABASE])
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (d:Database) RETURN count(d) as count")
@@ -33,10 +34,13 @@ def test_custom_filename_partial_override(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir),
         neo4j_driver=neo4j_driver,
         database_name="neo4j",
-        csv_file_map={"database": "alt_databases.csv"},
+        csv_file_map={NodeLabel.DATABASE: "alt_databases.csv"},
     )
 
-    connector.run(include_nodes=["database", "schema"], include_relationships=["has_schema"])
+    connector.run(
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA],
+        include_relationships=[RelationshipType.HAS_SCHEMA],
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
         assert session.run("MATCH (d:Database) RETURN count(d) as count").single()["count"] == 1
