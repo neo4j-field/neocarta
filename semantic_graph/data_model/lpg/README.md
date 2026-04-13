@@ -4,6 +4,8 @@ This module contains the graph data model components for a Labeled Property Grap
 
 **The data model components defined in this document are subject to change throughout development.**
 
+> **Warning:** Importing this module raises a `UserWarning`: *"LPG data model components are an in-progress feature. There is no application in the current library version."*
+
 ## Core Data Model **(Not Implemented)**
 
 The core data model represents the metadata structure of a Labeled Property Graph database. It consists of five nodes and seven relationships.

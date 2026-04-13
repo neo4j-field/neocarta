@@ -328,6 +328,8 @@ This allows you to compare declared schema vs. actual usage patterns.
 
 Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./semantic_graph/connectors/dataplex/README.md) for more information and caveats of using this connector.
 
+> **Warning:** Importing this module raises a `UserWarning`: *"The Dataplex connector is an incomplete feature. Current limitations of the Dataplex API prevent relationships between business terms and their tagged entities."*
+
 ##### Connector Architecture 
 
 ```mermaid
