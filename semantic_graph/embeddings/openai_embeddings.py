@@ -4,6 +4,7 @@ import pandas as pd
 from neo4j import Driver
 from openai import AsyncOpenAI, OpenAI
 
+from ..enums import NodeLabel
 from ..ingest.indexes import create_vector_index
 from .utils import (
     create_embeddings_in_batches_async,
@@ -170,7 +171,7 @@ class OpenAIEmbeddingsConnector:
 
     def run(
         self,
-        node_labels: list[str] = ["Table", "Column"],
+        node_labels: list[NodeLabel] = [NodeLabel.TABLE, NodeLabel.COLUMN],
         batch_size: int = 100,
     ) -> None:
         """
@@ -222,7 +223,7 @@ class OpenAIEmbeddingsConnector:
 
     async def arun(
         self,
-        node_labels: list[str] = ["Table", "Column"],
+        node_labels: list[NodeLabel] = [NodeLabel.TABLE, NodeLabel.COLUMN],
         batch_size: int = 100,
     ) -> None:
         """

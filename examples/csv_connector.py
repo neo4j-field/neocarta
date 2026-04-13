@@ -12,6 +12,7 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+from semantic_graph import NodeLabel, RelationshipType
 from semantic_graph.connectors.csv import CSVConnector
 
 
@@ -28,11 +29,11 @@ def main() -> None:
 
     # if using non-default CSV file map, pass it to the connector
     file_map = {
-        "database": "database_info.csv",
-        "schema": "schema_info.csv",
-        "table": "table_info.csv",
-        "column": "column_info.csv",
-        "value": "value_info.csv",
+        NodeLabel.DATABASE: "database_info.csv",
+        NodeLabel.SCHEMA: "schema_info.csv",
+        NodeLabel.TABLE: "table_info.csv",
+        NodeLabel.COLUMN: "column_info.csv",
+        NodeLabel.VALUE: "value_info.csv",
         # ...
     }
 
@@ -49,9 +50,10 @@ def main() -> None:
     # * sql query nodes and relationships
     # * terminology nodes and relationships
 
-    # Here we define which nodes and relationships to load
-    include_nodes = ["database", "schema", "table", "column", "value"]
-    include_relationships = ["has_schema", "has_table", "has_column", "has_value", "references"]
+    # Here we define which nodes and relationships to load.
+    # Enum members are recommended, but exact string values (e.g. "Database", "HAS_SCHEMA") also work.
+    include_nodes = [NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN, NodeLabel.VALUE]
+    include_relationships = [RelationshipType.HAS_SCHEMA, RelationshipType.HAS_TABLE, RelationshipType.HAS_COLUMN, RelationshipType.HAS_VALUE, RelationshipType.REFERENCES]
     # Run the connector to load all CSV files
     connector.run(include_nodes=include_nodes, include_relationships=include_relationships)
 

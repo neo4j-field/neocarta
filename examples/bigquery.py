@@ -8,6 +8,7 @@ from google.cloud import bigquery
 from neo4j import GraphDatabase
 from openai import OpenAI
 
+from semantic_graph import NodeLabel
 from semantic_graph.connectors.bigquery import BigQuerySchemaConnector
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
@@ -25,7 +26,8 @@ def main(with_embeddings: bool = True) -> None:
     embedding_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     bigquery_client = bigquery.Client(project=os.getenv("GCP_PROJECT_ID"))
 
-    node_labels = ["Database", "Schema", "Table", "Column"]
+    # Enum members are recommended, but exact string values (e.g. "Table", "Column") also work.
+    node_labels = [NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN]
 
     print("Extracting, transforming, and loading BigQuery data into Neo4j...")
     # extract, transform, and load BigQuery data into Neo4j

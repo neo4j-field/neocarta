@@ -355,12 +355,22 @@ All other files are optional and can be added to enrich the graph with additiona
 You can customize CSV file names by providing a `csv_file_map` parameter:
 
 ```python
+from semantic_graph import NodeLabel
+
+# Enum members are recommended, but exact string values (e.g. "Database", "Schema") also work.
 custom_file_map = {
-    "database": "my_database.csv",
-    "schema": "my_schemas.csv",
-    "table": "my_tables.csv",
+    NodeLabel.DATABASE: "my_database.csv",
+    NodeLabel.SCHEMA: "my_schemas.csv",
+    NodeLabel.TABLE: "my_tables.csv",
     # ... other custom filenames
 }
+
+# Exact string values also work:
+# custom_file_map = {
+#     "Database": "my_database.csv",
+#     "Schema": "my_schemas.csv",
+#     "Table": "my_tables.csv",
+# }
 
 connector = CSVConnector(
     csv_directory="datasets/csv",
@@ -389,16 +399,20 @@ Default file names (if not overridden):
 You can choose which nodes and relationships to load:
 
 ```python
+from semantic_graph import NodeLabel as nl, RelationshipType as rt
+
+# Enum members are recommended, but exact string values (e.g. "Database", "HAS_SCHEMA") also work.
+
 # Load only core schema entities
 connector.run(
-    include_nodes=["database", "schema", "table", "column"],
-    include_relationships=["has_schema", "has_table", "has_column"]
+    include_nodes=[nl.DATABASE, nl.SCHEMA, nl.TABLE, nl.COLUMN],
+    include_relationships=[rt.HAS_SCHEMA, rt.HAS_TABLE, rt.HAS_COLUMN]
 )
 
 # Load schema + column values
 connector.run(
-    include_nodes=["database", "schema", "table", "column", "value"],
-    include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
+    include_nodes=[nl.DATABASE, nl.SCHEMA, nl.TABLE, nl.COLUMN, nl.VALUE],
+    include_relationships=[rt.HAS_SCHEMA, rt.HAS_TABLE, rt.HAS_COLUMN, rt.HAS_VALUE, rt.REFERENCES]
 )
 
 # Load everything including queries and glossary
@@ -438,10 +452,13 @@ neo4j_driver.close()
 ### Advanced Usage with Custom Configuration
 
 ```python
+from semantic_graph import NodeLabel as nl, RelationshipType as rt
+
 # Custom file mapping and selective loading
+# Enum members are recommended, but exact string values (e.g. "Table", "HAS_TABLE") also work.
 custom_file_map = {
-    "table": "custom_tables.csv",
-    "column": "custom_columns.csv"
+    nl.TABLE: "custom_tables.csv",
+    nl.COLUMN: "custom_columns.csv",
 }
 
 connector = CSVConnector(
@@ -453,8 +470,8 @@ connector = CSVConnector(
 
 # Load only specific entities
 connector.run(
-    include_nodes=["database", "schema", "table", "column", "value"],
-    include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
+    include_nodes=[nl.DATABASE, nl.SCHEMA, nl.TABLE, nl.COLUMN, nl.VALUE],
+    include_relationships=[rt.HAS_SCHEMA, rt.HAS_TABLE, rt.HAS_COLUMN, rt.HAS_VALUE, rt.REFERENCES]
 )
 ```
 

@@ -33,11 +33,12 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
 
+from semantic_graph import NodeLabel
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 async def main(
-    node_labels: list[str] = ["Table", "Column"],
+    node_labels: list[NodeLabel] = [NodeLabel.TABLE, NodeLabel.COLUMN],
     batch_size: int = 100,
 ) -> None:
     """Compute and store embeddings for specified node labels asynchronously."""
@@ -78,8 +79,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--node-labels",
         nargs="+",
-        default=["Table", "Column"],
-        help="Node labels to generate embeddings for (default: Database Schema Table Column)",
+        default=[NodeLabel.TABLE, NodeLabel.COLUMN],
+        # Enum members are recommended, but exact string values (e.g. "Table", "Column") also work.
+        help="Node labels to generate embeddings for (default: Table Column)",
     )
     parser.add_argument(
         "--batch-size",

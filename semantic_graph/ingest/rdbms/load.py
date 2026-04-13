@@ -24,6 +24,7 @@ from ...data_model.rdbms import (
     UsesTable,
     Value,
 )
+from ...enums import NodeLabel, RelationshipType
 from ..utils import (
     _build_node_ingest_query,
     _build_relationship_ingest_query,
@@ -60,8 +61,8 @@ class Neo4jRDBMSLoader:
     ) -> dict:
         """Load Database nodes into Neo4j."""
         _validate_properties_list(Database, properties_list)
-        self._write_node_constraint(node_labels=["Database"])
-        query = _build_node_ingest_query("Database", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.DATABASE])
+        query = _build_node_ingest_query(NodeLabel.DATABASE, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -81,8 +82,8 @@ class Neo4jRDBMSLoader:
         """Load Schema nodes into Neo4j."""
         _validate_properties_list(Schema, properties_list)
 
-        self._write_node_constraint(node_labels=["Schema"])
-        query = _build_node_ingest_query("Schema", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.SCHEMA])
+        query = _build_node_ingest_query(NodeLabel.SCHEMA, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -101,8 +102,8 @@ class Neo4jRDBMSLoader:
         """Load Table nodes into Neo4j."""
         _validate_properties_list(Table, properties_list)
 
-        self._write_node_constraint(node_labels=["Table"])
-        query = _build_node_ingest_query("Table", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.TABLE])
+        query = _build_node_ingest_query(NodeLabel.TABLE, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -128,8 +129,8 @@ class Neo4jRDBMSLoader:
         """Load Column nodes into Neo4j."""
         _validate_properties_list(Column, properties_list)
 
-        self._write_node_constraint(node_labels=["Column"])
-        query = _build_node_ingest_query("Column", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.COLUMN])
+        query = _build_node_ingest_query(NodeLabel.COLUMN, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -148,8 +149,8 @@ class Neo4jRDBMSLoader:
         """Load Value nodes into Neo4j."""
         _validate_properties_list(Value, properties_list)
 
-        self._write_node_constraint(node_labels=["Value"])
-        query = _build_node_ingest_query("Value", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.VALUE])
+        query = _build_node_ingest_query(NodeLabel.VALUE, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -170,9 +171,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(HasSchema, properties_list)
 
         query = _build_relationship_ingest_query(
-            "HAS_SCHEMA",
-            "Database",
-            "Schema",
+            RelationshipType.HAS_SCHEMA,
+            NodeLabel.DATABASE,
+            NodeLabel.SCHEMA,
             "database_id",
             "schema_id",
             overwrite_existing,
@@ -198,9 +199,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(HasTable, properties_list)
 
         query = _build_relationship_ingest_query(
-            "HAS_TABLE",
-            "Schema",
-            "Table",
+            RelationshipType.HAS_TABLE,
+            NodeLabel.SCHEMA,
+            NodeLabel.TABLE,
             "schema_id",
             "table_id",
             overwrite_existing,
@@ -226,9 +227,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(HasColumn, properties_list)
 
         query = _build_relationship_ingest_query(
-            "HAS_COLUMN",
-            "Table",
-            "Column",
+            RelationshipType.HAS_COLUMN,
+            NodeLabel.TABLE,
+            NodeLabel.COLUMN,
             "table_id",
             "column_id",
             overwrite_existing,
@@ -254,9 +255,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(References, properties_list)
 
         query = _build_relationship_ingest_query(
-            "REFERENCES",
-            "Column",
-            "Column",
+            RelationshipType.REFERENCES,
+            NodeLabel.COLUMN,
+            NodeLabel.COLUMN,
             "source_column_id",
             "target_column_id",
             overwrite_existing,
@@ -280,8 +281,8 @@ class Neo4jRDBMSLoader:
         """Load Glossary nodes into Neo4j."""
         _validate_properties_list(Glossary, properties_list)
 
-        self._write_node_constraint(node_labels=["Glossary"])
-        query = _build_node_ingest_query("Glossary", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.GLOSSARY])
+        query = _build_node_ingest_query(NodeLabel.GLOSSARY, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -300,8 +301,8 @@ class Neo4jRDBMSLoader:
         """Load Category nodes into Neo4j."""
         _validate_properties_list(Category, properties_list)
 
-        self._write_node_constraint(node_labels=["Category"])
-        query = _build_node_ingest_query("Category", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.CATEGORY])
+        query = _build_node_ingest_query(NodeLabel.CATEGORY, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -320,8 +321,10 @@ class Neo4jRDBMSLoader:
         """Load BusinessTerm nodes into Neo4j."""
         _validate_properties_list(BusinessTerm, properties_list)
 
-        self._write_node_constraint(node_labels=["BusinessTerm"])
-        query = _build_node_ingest_query("BusinessTerm", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.BUSINESS_TERM])
+        query = _build_node_ingest_query(
+            NodeLabel.BUSINESS_TERM, overwrite_existing, properties_list
+        )
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -342,9 +345,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(HasCategory, properties_list)
 
         query = _build_relationship_ingest_query(
-            "HAS_CATEGORY",
-            "Glossary",
-            "Category",
+            RelationshipType.HAS_CATEGORY,
+            NodeLabel.GLOSSARY,
+            NodeLabel.CATEGORY,
             "glossary_id",
             "category_id",
             overwrite_existing,
@@ -370,9 +373,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(HasBusinessTerm, properties_list)
 
         query = _build_relationship_ingest_query(
-            "HAS_BUSINESS_TERM",
-            "Category",
-            "BusinessTerm",
+            RelationshipType.HAS_BUSINESS_TERM,
+            NodeLabel.CATEGORY,
+            NodeLabel.BUSINESS_TERM,
             "category_id",
             "business_term_id",
             overwrite_existing,
@@ -398,9 +401,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(HasValue, properties_list)
 
         query = _build_relationship_ingest_query(
-            "HAS_VALUE",
-            "Column",
-            "Value",
+            RelationshipType.HAS_VALUE,
+            NodeLabel.COLUMN,
+            NodeLabel.VALUE,
             "column_id",
             "value_id",
             overwrite_existing,
@@ -424,8 +427,8 @@ class Neo4jRDBMSLoader:
         """Load Query nodes into Neo4j."""
         _validate_properties_list(Query, properties_list)
 
-        self._write_node_constraint(node_labels=["Query"])
-        query = _build_node_ingest_query("Query", overwrite_existing, properties_list)
+        self._write_node_constraint(node_labels=[NodeLabel.QUERY])
+        query = _build_node_ingest_query(NodeLabel.QUERY, overwrite_existing, properties_list)
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
@@ -446,9 +449,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(UsesTable, properties_list)
 
         query = _build_relationship_ingest_query(
-            "USES_TABLE",
-            "Query",
-            "Table",
+            RelationshipType.USES_TABLE,
+            NodeLabel.QUERY,
+            NodeLabel.TABLE,
             "query_id",
             "table_id",
             overwrite_existing,
@@ -474,9 +477,9 @@ class Neo4jRDBMSLoader:
             _validate_properties_list(UsesColumn, properties_list)
 
         query = _build_relationship_ingest_query(
-            "USES_COLUMN",
-            "Query",
-            "Column",
+            RelationshipType.USES_COLUMN,
+            NodeLabel.QUERY,
+            NodeLabel.COLUMN,
             "query_id",
             "column_id",
             overwrite_existing,

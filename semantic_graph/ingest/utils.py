@@ -3,6 +3,8 @@
 from neo4j import Driver, RoutingControl
 from pydantic import BaseModel
 
+from ..enums import NodeLabel, RelationshipType
+
 
 def is_enterprise_edition(neo4j_driver: Driver, database_name: str = "neo4j") -> bool:
     """
@@ -40,9 +42,9 @@ return name, versions, edition
 
 def write_neo4j_constraints(
     neo4j_driver: Driver,
-    node_labels: list[str],
-    key_constraints: dict[str, str],
-    unique_constraints: dict[str, str],
+    node_labels: list[NodeLabel],
+    key_constraints: dict[NodeLabel, str],
+    unique_constraints: dict[NodeLabel, str],
     database_name: str = "neo4j",
 ) -> dict:
     """
@@ -125,7 +127,7 @@ def _validate_properties_list(model: BaseModel, properties_list: list[str]) -> N
 
 
 def _build_node_ingest_query(
-    node_label: str, overwrite_existing: bool, properties_list: list[str]
+    node_label: NodeLabel, overwrite_existing: bool, properties_list: list[str]
 ) -> str:
     """
     Build a node ingest query for a given node label, overwrite existing flag, and properties list.
@@ -171,9 +173,9 @@ MERGE (n:{node_label} {{id: row.id}})
 
 
 def _build_relationship_ingest_query(
-    relationship_type: str,
-    source_node_label: str,
-    target_node_label: str,
+    relationship_type: RelationshipType,
+    source_node_label: NodeLabel,
+    target_node_label: NodeLabel,
     source_id_column_name: str,
     target_id_column_name: str,
     overwrite_existing: bool,
