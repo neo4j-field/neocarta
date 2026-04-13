@@ -478,6 +478,7 @@ graph LR
 ```python
 import os
 from neo4j import GraphDatabase
+from semantic_graph import NodeLabel as nl, RelationshipType as rt
 from semantic_graph.connectors.csv import CSVConnector
 
 # Initialize clients
@@ -498,15 +499,16 @@ connector = CSVConnector(
 connector.run()
 
 # Alternatively, load specific nodes and relationships
+# Enum members are recommended, but exact string values (e.g. "Database", "HAS_SCHEMA") also work.
 connector.run(
-    include_nodes=["database", "schema", "table", "column", "value"],
-    include_relationships=["has_schema", "has_table", "has_column", "has_value", "references"]
+    include_nodes=[nl.DATABASE, nl.SCHEMA, nl.TABLE, nl.COLUMN, nl.VALUE],
+    include_relationships=[rt.HAS_SCHEMA, rt.HAS_TABLE, rt.HAS_COLUMN, rt.HAS_VALUE, rt.REFERENCES]
 )
 
 # Or use a custom file mapping (configured at construction time)
 custom_file_map = {
-    "database": "my_database.csv",
-    "schema": "my_schema.csv",
+    NodeLabel.DATABASE: "my_database.csv",
+    NodeLabel.SCHEMA: "my_schema.csv",
     # ... other custom filenames
 }
 connector = CSVConnector(
@@ -578,6 +580,7 @@ import asyncio
 import os
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
+from semantic_graph import NodeLabel as nl
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 # Initialize clients
@@ -598,7 +601,8 @@ connector = OpenAIEmbeddingsConnector(
 )
 
 # The node labels to generate embeddings for
-node_labels = ["Database", "Table", "Column"]
+# Enum members are recommended, but exact string values (e.g. "Database", "Table") also work.
+node_labels = [nl.DATABASE, nl.TABLE, nl.COLUMN]
 
 # Run the connector to create embeddings for the nodes
 await connector.arun(node_labels=node_labels)

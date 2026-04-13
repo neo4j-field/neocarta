@@ -33,6 +33,7 @@ Use `OpenAI` (sync client) and call `run()`:
 ```python
 from openai import OpenAI
 from neo4j import GraphDatabase
+from semantic_graph import NodeLabel
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
@@ -45,7 +46,8 @@ connector = OpenAIEmbeddingsConnector(
     dimensions=768,
     database_name="neo4j",
 )
-connector.run(node_labels=["Table", "Column"], batch_size=100)
+# Enum members are recommended, but exact string values (e.g. "Table", "Column") also work.
+connector.run(node_labels=[NodeLabel.TABLE, NodeLabel.COLUMN], batch_size=100)
 ```
 
 ### Async
@@ -55,6 +57,7 @@ Use `AsyncOpenAI` and call `arun()`. Within each batch, all embedding API calls 
 ```python
 from openai import AsyncOpenAI
 from neo4j import GraphDatabase
+from semantic_graph import NodeLabel
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
@@ -66,7 +69,8 @@ connector = OpenAIEmbeddingsConnector(
     embedding_model="text-embedding-3-small",
     dimensions=768,
 )
-await connector.arun(node_labels=["Table", "Column"], batch_size=100)
+# Enum members are recommended, but exact string values (e.g. "Table", "Column") also work.
+await connector.arun(node_labels=[NodeLabel.TABLE, NodeLabel.COLUMN], batch_size=100)
 ```
 
 See [examples/sync_embeddings.py](../../examples/sync_embeddings.py) and [examples/async_embeddings.py](../../examples/async_embeddings.py) for runnable scripts with CLI argument support.
@@ -78,7 +82,7 @@ See [examples/sync_embeddings.py](../../examples/sync_embeddings.py) and [exampl
 | `embedding_model` | `"text-embedding-3-small"` | OpenAI model to use |
 | `dimensions` | `768` | Vector dimensions (must match the vector index) |
 | `database_name` | `"neo4j"` | Target Neo4j database |
-| `node_labels` | `["Table", "Column"]` | Node labels to embed |
+| `node_labels` | `[NodeLabel.TABLE, NodeLabel.COLUMN]` | Node labels to embed |
 | `batch_size` | `100` | Nodes processed per batch |
 
 **Required environment variable:** `OPENAI_API_KEY`
