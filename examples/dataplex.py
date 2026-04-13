@@ -8,6 +8,7 @@ from google.cloud import dataplex_v1
 from neo4j import GraphDatabase
 from openai import OpenAI
 
+from semantic_graph import NodeLabel
 from semantic_graph.connectors.dataplex import DataplexConnector
 from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
@@ -31,12 +32,13 @@ def main(
     catalog_client = dataplex_v1.CatalogServiceClient()
     glossary_client = dataplex_v1.BusinessGlossaryServiceClient()
 
-    # Node labels to embed — filtered to what was actually ingested
-    node_labels = []
+    # Node labels to embed — filtered to what was actually ingested.
+    # Enum members are recommended, but exact string values (e.g. "Table", "BusinessTerm") also work.
+    node_labels: list[NodeLabel] = []
     if include_schema:
-        node_labels += ["Table", "Column"]
+        node_labels += [NodeLabel.TABLE, NodeLabel.COLUMN]
     if include_glossary:
-        node_labels += ["BusinessTerm"]
+        node_labels += [NodeLabel.BUSINESS_TERM]
 
     print("Extracting, transforming, and loading Dataplex metadata into Neo4j...")
     connector = DataplexConnector(
