@@ -1,5 +1,12 @@
 """LPG (Labeled Property Graph) data model nodes and relationships."""
 
+import warnings
+
+warnings.warn(
+    "LPG data model components are an in-progress feature. There is no application in the current library version.",
+    stacklevel=2,
+)
+
 from .core import (
     Database,
     HasNode,
