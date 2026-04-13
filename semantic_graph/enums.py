@@ -17,9 +17,11 @@ class NodeLabel(str, Enum):
     QUERY = "Query"
 
     def __str__(self) -> str:
+        """Return the enum value as a plain string."""
         return self.value
 
     def __format__(self, format_spec: str) -> str:
+        """Format the enum value, ensuring consistent behaviour across Python versions."""
         return self.value.__format__(format_spec)
 
 
@@ -37,7 +39,9 @@ class RelationshipType(str, Enum):
     USES_COLUMN = "USES_COLUMN"
 
     def __str__(self) -> str:
+        """Return the enum value as a plain string."""
         return self.value
 
     def __format__(self, format_spec: str) -> str:
+        """Format the enum value, ensuring consistent behaviour across Python versions."""
         return self.value.__format__(format_spec)

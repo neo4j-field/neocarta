@@ -2,8 +2,8 @@
 
 from neo4j import Driver
 
-from ...ingest.rdbms import Neo4jRDBMSLoader
 from ...enums import NodeLabel, RelationshipType
+from ...ingest.rdbms import Neo4jRDBMSLoader
 from .extract import CSVExtractor
 from .transform import CSVTransformer
 
@@ -214,14 +214,23 @@ class CSVConnector:
         include_relationships : list[RelationshipType], optional
             Relationship types to load. If None, all available relationship CSVs
             are loaded. Allowed values are from the `RelationshipType` enum.
-            
+
         Examples:
         --------
         Load only core schema entities:
 
         >>> connector.run(
-        ...     include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN],
-        ...     include_relationships=[RelationshipType.HAS_SCHEMA, RelationshipType.HAS_TABLE, RelationshipType.HAS_COLUMN],
+        ...     include_nodes=[
+        ...         NodeLabel.DATABASE,
+        ...         NodeLabel.SCHEMA,
+        ...         NodeLabel.TABLE,
+        ...         NodeLabel.COLUMN,
+        ...     ],
+        ...     include_relationships=[
+        ...         RelationshipType.HAS_SCHEMA,
+        ...         RelationshipType.HAS_TABLE,
+        ...         RelationshipType.HAS_COLUMN,
+        ...     ],
         ... )
 
         Load everything:

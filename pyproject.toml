@@ -124,6 +124,7 @@ ignore = [
     "S101",    # assert is idiomatic in pytest
     "ANN",     # Type hints optional in tests
     "D",       # Docstrings optional in tests
+    "N999",    # _IT suffix is a deliberate integration-test naming convention
     "PLC0415", # Lazy imports acceptable in tests
 ]
 "eval/retrievers/bigquery_schema_retriever.py" = [

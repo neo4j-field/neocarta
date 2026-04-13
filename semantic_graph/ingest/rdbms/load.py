@@ -4,7 +4,6 @@ from functools import partial
 
 from neo4j import Driver, RoutingControl
 
-from ...enums import NodeLabel, RelationshipType
 from ...data_model.rdbms import (
     BusinessTerm,
     Category,
@@ -25,6 +24,7 @@ from ...data_model.rdbms import (
     UsesTable,
     Value,
 )
+from ...enums import NodeLabel, RelationshipType
 from ..utils import (
     _build_node_ingest_query,
     _build_relationship_ingest_query,
@@ -322,7 +322,9 @@ class Neo4jRDBMSLoader:
         _validate_properties_list(BusinessTerm, properties_list)
 
         self._write_node_constraint(node_labels=[NodeLabel.BUSINESS_TERM])
-        query = _build_node_ingest_query(NodeLabel.BUSINESS_TERM, overwrite_existing, properties_list)
+        query = _build_node_ingest_query(
+            NodeLabel.BUSINESS_TERM, overwrite_existing, properties_list
+        )
 
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,

@@ -1,6 +1,5 @@
 """Neo4j constraint definitions for the RDBMS data model."""
 
-from ...enums import NodeLabel
 from semantic_graph.ingest.constraints import (
     database_id_key_constraint,
     database_id_unique_constraint,
@@ -9,6 +8,8 @@ from semantic_graph.ingest.constraints import (
     value_id_key_constraint,
     value_id_unique_constraint,
 )
+
+from ...enums import NodeLabel
 
 table_id_unique_constraint = """
 CREATE CONSTRAINT table_id_constraint IF NOT EXISTS

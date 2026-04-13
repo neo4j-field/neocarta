@@ -145,7 +145,9 @@ def test_load_column_nodes(
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
+    connector.run(
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN]
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -176,7 +178,9 @@ def test_column_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
+    connector.run(
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN]
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run("MATCH (c:Column) RETURN properties(c) as props")
@@ -208,7 +212,9 @@ def test_column_properties_correct_values(neo4j_driver, temp_csv_dir):
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
     )
 
-    connector.run(include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
+    connector.run(
+        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN]
+    )
 
     with neo4j_driver.session(database="neo4j") as session:
         result = session.run(
@@ -290,7 +296,13 @@ def test_load_value_nodes(neo4j_driver, temp_csv_dir):
     )
 
     connector.run(
-        include_nodes=[NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN, NodeLabel.VALUE]
+        include_nodes=[
+            NodeLabel.DATABASE,
+            NodeLabel.SCHEMA,
+            NodeLabel.TABLE,
+            NodeLabel.COLUMN,
+            NodeLabel.VALUE,
+        ]
     )
 
     with neo4j_driver.session(database="neo4j") as session:
