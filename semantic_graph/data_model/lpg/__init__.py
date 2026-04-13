@@ -2,11 +2,6 @@
 
 import warnings
 
-warnings.warn(
-    "LPG data model components are an in-progress feature. There is no application in the current library version.",
-    stacklevel=2,
-)
-
 from .core import (
     Database,
     HasNode,
@@ -24,6 +19,11 @@ from .core import (
 from .expanded import (
     HasValue,
     Value,
+)
+
+warnings.warn(
+    "LPG data model components are an in-progress feature. There is no application in the current library version.",
+    stacklevel=2,
 )
 
 __all__ = [

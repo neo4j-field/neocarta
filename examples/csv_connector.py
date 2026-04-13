@@ -52,8 +52,20 @@ def main() -> None:
 
     # Here we define which nodes and relationships to load.
     # Enum members are recommended, but exact string values (e.g. "Database", "HAS_SCHEMA") also work.
-    include_nodes = [NodeLabel.DATABASE, NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN, NodeLabel.VALUE]
-    include_relationships = [RelationshipType.HAS_SCHEMA, RelationshipType.HAS_TABLE, RelationshipType.HAS_COLUMN, RelationshipType.HAS_VALUE, RelationshipType.REFERENCES]
+    include_nodes = [
+        NodeLabel.DATABASE,
+        NodeLabel.SCHEMA,
+        NodeLabel.TABLE,
+        NodeLabel.COLUMN,
+        NodeLabel.VALUE,
+    ]
+    include_relationships = [
+        RelationshipType.HAS_SCHEMA,
+        RelationshipType.HAS_TABLE,
+        RelationshipType.HAS_COLUMN,
+        RelationshipType.HAS_VALUE,
+        RelationshipType.REFERENCES,
+    ]
     # Run the connector to load all CSV files
     connector.run(include_nodes=include_nodes, include_relationships=include_relationships)
 
