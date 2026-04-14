@@ -1,5 +1,6 @@
 """Pydantic models for the MCP server."""
 
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -15,10 +16,10 @@ class ColumnContext(BaseModel):
 
     column_name: str = Field(..., description="The name of the column")
     column_description: str | None = Field(default=None, description="The description of the column")
-    data_type: str | None = Field(default=None, description="The data type of the column")
-    nullable: bool | None = Field(default=None, description="Whether the column can be null")
-    examples: list[str] | None = Field(default=None, description="Example values for the column")
-    key_type: str | None = Field(default=None, description="The key type of the column")
+    data_type: Optional[str] = Field(default=None, description="The data type of the column")
+    nullable: Optional[bool] = Field(default=None, description="Whether the column can be null")
+    examples: Optional[list[str]] = Field(default=None, description="Example values for the column")
+    key_type: Optional[str] = Field(default=None, description="The key type of the column")
     references: list[str] = Field(
         default=[],
         description="The referenced columns from another table of the column. Have format of 'table_name.column_name'",
@@ -29,7 +30,7 @@ class TableContext(BaseModel):
     """Model representing context for a table."""
 
     table_name: str = Field(..., description="The name of the table")
-    table_description: str | None = Field(default=None, description="The description of the table")
+    table_description: Optional[str] = Field(default=None, description="The description of the table")
     database_name: str = Field(..., description="The name of the database")
     schema_name: str = Field(..., description="The name of the schema")
     columns: list[ColumnContext] = Field(..., description="The relevant columns of the table")
