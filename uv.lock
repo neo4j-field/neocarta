@@ -16,7 +16,7 @@ resolution-markers = [
 [manifest]
 members = [
     "mcp-server",
-    "semantic-graph",
+    "neocarta",
 ]
 
 [[package]]
@@ -1426,6 +1426,81 @@ wheels = [
 ]
 
 [[package]]
+name = "neocarta"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "google-cloud-bigquery", extra = ["pandas"] },
+    { name = "google-cloud-bigquery-storage" },
+    { name = "google-cloud-dataplex" },
+    { name = "neo4j" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "sqlglot" },
+]
+
+[package.dev-dependencies]
+agent = [
+    { name = "google-cloud-bigquery" },
+    { name = "langchain" },
+    { name = "langchain-mcp-adapters" },
+    { name = "langchain-openai" },
+    { name = "langgraph" },
+    { name = "mcp-server" },
+]
+dev = [
+    { name = "ipykernel" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "testcontainers", extra = ["neo4j"] },
+]
+eval = [
+    { name = "fastmcp" },
+    { name = "mcp" },
+    { name = "tiktoken" },
+]
+mcp-server = [
+    { name = "mcp-server" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
+    { name = "google-cloud-bigquery-storage", specifier = ">=2.36.2" },
+    { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
+    { name = "neo4j", specifier = ">=6.1.0" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
+    { name = "sqlglot", specifier = ">=28.10.1" },
+]
+
+[package.metadata.requires-dev]
+agent = [
+    { name = "google-cloud-bigquery", specifier = ">=3.40.0" },
+    { name = "langchain", specifier = ">=1.2.7" },
+    { name = "langchain-mcp-adapters", specifier = ">=0.2.1" },
+    { name = "langchain-openai", specifier = ">=1.1.7" },
+    { name = "langgraph", specifier = ">=1.0.7" },
+    { name = "mcp-server", editable = "mcp_server" },
+]
+dev = [
+    { name = "ipykernel", specifier = ">=7.1.0" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "ruff", specifier = ">=0.15.10" },
+    { name = "testcontainers", extras = ["neo4j"], specifier = ">=4.14.2" },
+]
+eval = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "mcp", specifier = ">=1.26.0" },
+    { name = "tiktoken", specifier = ">=0.12.0" },
+]
+mcp-server = [{ name = "mcp-server", editable = "mcp_server" }]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2704,81 +2779,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/1c/03/e834bcd866f2f8a49
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/46/f5af3402b579fd5e11573ce652019a67074317e18c1935cc0b4ba9b35552/secretstorage-3.5.0-py3-none-any.whl", hash = "sha256:0ce65888c0725fcb2c5bc0fdb8e5438eece02c523557ea40ce0703c266248137", size = 15554 },
 ]
-
-[[package]]
-name = "semantic-graph"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "google-cloud-bigquery", extra = ["pandas"] },
-    { name = "google-cloud-bigquery-storage" },
-    { name = "google-cloud-dataplex" },
-    { name = "neo4j" },
-    { name = "openai" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "sqlglot" },
-]
-
-[package.dev-dependencies]
-agent = [
-    { name = "google-cloud-bigquery" },
-    { name = "langchain" },
-    { name = "langchain-mcp-adapters" },
-    { name = "langchain-openai" },
-    { name = "langgraph" },
-    { name = "mcp-server" },
-]
-dev = [
-    { name = "ipykernel" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "testcontainers", extra = ["neo4j"] },
-]
-eval = [
-    { name = "fastmcp" },
-    { name = "mcp" },
-    { name = "tiktoken" },
-]
-mcp-server = [
-    { name = "mcp-server" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
-    { name = "google-cloud-bigquery-storage", specifier = ">=2.36.2" },
-    { name = "google-cloud-dataplex", specifier = ">=2.16.0" },
-    { name = "neo4j", specifier = ">=6.1.0" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "python-dotenv", specifier = ">=1.2.1" },
-    { name = "sqlglot", specifier = ">=28.10.1" },
-]
-
-[package.metadata.requires-dev]
-agent = [
-    { name = "google-cloud-bigquery", specifier = ">=3.40.0" },
-    { name = "langchain", specifier = ">=1.2.7" },
-    { name = "langchain-mcp-adapters", specifier = ">=0.2.1" },
-    { name = "langchain-openai", specifier = ">=1.1.7" },
-    { name = "langgraph", specifier = ">=1.0.7" },
-    { name = "mcp-server", editable = "mcp_server" },
-]
-dev = [
-    { name = "ipykernel", specifier = ">=7.1.0" },
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "ruff", specifier = ">=0.15.10" },
-    { name = "testcontainers", extras = ["neo4j"], specifier = ">=4.14.2" },
-]
-eval = [
-    { name = "fastmcp", specifier = ">=2.14.4" },
-    { name = "mcp", specifier = ">=1.26.0" },
-    { name = "tiktoken", specifier = ">=0.12.0" },
-]
-mcp-server = [{ name = "mcp-server", editable = "mcp_server" }]
 
 [[package]]
 name = "setuptools"

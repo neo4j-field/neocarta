@@ -4,7 +4,7 @@ import importlib
 
 import pytest
 
-import semantic_graph.connectors.dataplex as dataplex_module
+import neocarta.connectors.dataplex as dataplex_module
 
 
 def test_dataplex_import_triggers_warning():

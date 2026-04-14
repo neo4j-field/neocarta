@@ -3,7 +3,7 @@ Cypher constraint queries for LPG metadata nodes.
 Constraints ensure uniqueness and data integrity in the graph database.
 """
 
-from semantic_graph.ingest.constraints import (
+from neocarta.ingest.constraints import (
     database_id_key_constraint,
     database_id_unique_constraint,
     schema_id_key_constraint,

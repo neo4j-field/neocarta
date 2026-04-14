@@ -1,6 +1,6 @@
-# Text2SQL Template
+# Neocarta
 
-End to end template for generating a RDBMS metadata knowledge graph for Text2SQL workflows.
+End to end library for generating metadata knowledge graphs in Neo4j for query generation and routing workflows.
 
 ## Installation
 
@@ -250,7 +250,7 @@ graph LR
 import os
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from semantic_graph.connectors.bigquery import BigQuerySchemaConnector
+from neocarta.connectors.bigquery import BigQuerySchemaConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -279,7 +279,7 @@ connector.run()
 import os
 from neo4j import GraphDatabase
 from google.cloud import bigquery
-from semantic_graph.connectors.bigquery import BigQueryLogsConnector
+from neocarta.connectors.bigquery import BigQueryLogsConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -326,7 +326,7 @@ This allows you to compare declared schema vs. actual usage patterns.
 
 #### **GCP Dataplex Universal Catalog**
 
-Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./semantic_graph/connectors/dataplex/README.md) for more information and caveats of using this connector.
+Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./neocarta/connectors/dataplex/README.md) for more information and caveats of using this connector.
 
 > **Warning:** Importing this module raises a `UserWarning`: *"The Dataplex connector is an incomplete feature. Current limitations of the Dataplex API prevent relationships between business terms and their tagged entities."*
 
@@ -373,7 +373,7 @@ graph LR
 
 #### **Query Logs**
 
-Connector for parsing query log JSON files into Neo4j. Please see the [Query Logs README](./semantic_graph/connectors/query_log/README.md) for more information and caveats of using this connector.
+Connector for parsing query log JSON files into Neo4j. Please see the [Query Logs README](./neocarta/connectors/query_log/README.md) for more information and caveats of using this connector.
 
 ##### Connector Architecture
 
@@ -480,8 +480,8 @@ graph LR
 ```python
 import os
 from neo4j import GraphDatabase
-from semantic_graph import NodeLabel as nl, RelationshipType as rt
-from semantic_graph.connectors.csv import CSVConnector
+from neocarta import NodeLabel as nl, RelationshipType as rt
+from neocarta.connectors.csv import CSVConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(
@@ -582,8 +582,8 @@ import asyncio
 import os
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
-from semantic_graph import NodeLabel as nl
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta import NodeLabel as nl
+from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(

@@ -1,7 +1,7 @@
 """Test custom CSV filename functionality."""
 
-from semantic_graph.connectors.csv import CSVConnector
-from semantic_graph.enums import NodeLabel, RelationshipType
+from neocarta.connectors.csv import CSVConnector
+from neocarta.enums import NodeLabel, RelationshipType
 
 
 def test_custom_filename_in_constructor(neo4j_driver, temp_csv_dir):

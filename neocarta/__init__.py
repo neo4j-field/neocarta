@@ -1,4 +1,4 @@
-"""Semantic Graph library root package."""
+"""Neocarta library root package."""
 
 from .enums import NodeLabel, RelationshipType
 

@@ -33,8 +33,8 @@ Use `OpenAI` (sync client) and call `run()`:
 ```python
 from openai import OpenAI
 from neo4j import GraphDatabase
-from semantic_graph import NodeLabel
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta import NodeLabel
+from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -57,8 +57,8 @@ Use `AsyncOpenAI` and call `arun()`. Within each batch, all embedding API calls 
 ```python
 from openai import AsyncOpenAI
 from neo4j import GraphDatabase
-from semantic_graph import NodeLabel
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta import NodeLabel
+from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -98,7 +98,7 @@ Failed individual embeddings (e.g. API errors) return `None` and are silently sk
 
 ## Vector Index
 
-`create_vector_index` (from `semantic_graph.ingest.indexes`) is called once per node label before embedding. It creates a Neo4j vector index using cosine similarity:
+`create_vector_index` (from `neocarta.ingest.indexes`) is called once per node label before embedding. It creates a Neo4j vector index using cosine similarity:
 
 ```
 {node_label.lower()}_vector_index  →  ON (n:{NodeLabel}).embedding

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
-from semantic_graph.connectors.bigquery.logs import BigQueryLogsExtractor
+from neocarta.connectors.bigquery.logs import BigQueryLogsExtractor
 
 
 def test_extractor_initialization(mock_bigquery_client):

@@ -3,11 +3,11 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
-from semantic_graph.connectors.bigquery.schema import (
+from neocarta.connectors.bigquery.schema import (
     BigQuerySchemaExtractor,
     BigQuerySchemaTransformer,
 )
-from semantic_graph.data_model.rdbms import (
+from neocarta.data_model.rdbms import (
     Column,
     Database,
     HasColumn,

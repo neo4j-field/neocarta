@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from semantic_graph.connectors.query_log import QueryLogExtractor, QueryLogTransformer
-from semantic_graph.data_model.rdbms import (
+from neocarta.connectors.query_log import QueryLogExtractor, QueryLogTransformer
+from neocarta.data_model.rdbms import (
     Column,
     Database,
     HasColumn,

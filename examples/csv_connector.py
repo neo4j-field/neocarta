@@ -12,8 +12,8 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
-from semantic_graph import NodeLabel, RelationshipType
-from semantic_graph.connectors.csv import CSVConnector
+from neocarta import NodeLabel, RelationshipType
+from neocarta.connectors.csv import CSVConnector
 
 
 def main() -> None:

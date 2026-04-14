@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from semantic_graph.data_model.lpg import HasValue, Value
+from neocarta.data_model.lpg import HasValue, Value
 
 
 def test_value_string():

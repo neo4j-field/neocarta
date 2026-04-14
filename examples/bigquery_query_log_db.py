@@ -37,7 +37,7 @@ from dotenv import load_dotenv
 from google.cloud import bigquery
 from neo4j import GraphDatabase
 
-from semantic_graph.connectors.bigquery import BigQueryLogsConnector
+from neocarta.connectors.bigquery import BigQueryLogsConnector
 
 
 async def main(

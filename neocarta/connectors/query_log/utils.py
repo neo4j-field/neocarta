@@ -7,7 +7,7 @@ import pandas as pd
 import sqlglot
 from sqlglot.expressions import Column, Join, Table
 
-from semantic_graph.connectors.utils.generate_id import (
+from neocarta.connectors.utils.generate_id import (
     create_query_id,
     generate_schema_id,
     generate_table_id,

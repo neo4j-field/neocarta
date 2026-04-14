@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
-from semantic_graph.connectors.query_log import QueryLogConnector
+from neocarta.connectors.query_log import QueryLogConnector
 
 
 async def main() -> None:

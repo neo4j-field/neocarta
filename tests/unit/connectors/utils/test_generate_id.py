@@ -1,4 +1,4 @@
-from semantic_graph.connectors.utils.generate_id import generate_value_id
+from neocarta.connectors.utils.generate_id import generate_value_id
 
 
 def test_generate_value_id_string():

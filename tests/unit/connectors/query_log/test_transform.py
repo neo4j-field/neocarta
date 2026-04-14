@@ -1,4 +1,4 @@
-from semantic_graph.connectors.query_log import QueryLogExtractor, QueryLogTransformer
+from neocarta.connectors.query_log import QueryLogExtractor, QueryLogTransformer
 
 
 def test_transform_to_database_nodes(

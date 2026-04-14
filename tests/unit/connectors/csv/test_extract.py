@@ -1,7 +1,7 @@
 import pytest
 
-from semantic_graph.connectors.csv.extract import NODE_ENTITIES, REL_ENTITIES, CSVExtractor
-from semantic_graph.enums import NodeLabel, RelationshipType
+from neocarta.connectors.csv.extract import NODE_ENTITIES, REL_ENTITIES, CSVExtractor
+from neocarta.enums import NodeLabel, RelationshipType
 
 # ---------------------------------------------------------------------------
 # Fix #1 — csv_directory validation

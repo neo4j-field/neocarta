@@ -355,7 +355,7 @@ All other files are optional and can be added to enrich the graph with additiona
 You can customize CSV file names by providing a `csv_file_map` parameter:
 
 ```python
-from semantic_graph import NodeLabel
+from neocarta import NodeLabel
 
 # Enum members are recommended, but exact string values (e.g. "Database", "Schema") also work.
 custom_file_map = {
@@ -399,7 +399,7 @@ Default file names (if not overridden):
 You can choose which nodes and relationships to load:
 
 ```python
-from semantic_graph import NodeLabel as nl, RelationshipType as rt
+from neocarta import NodeLabel as nl, RelationshipType as rt
 
 # Enum members are recommended, but exact string values (e.g. "Database", "HAS_SCHEMA") also work.
 
@@ -426,7 +426,7 @@ connector.run()  # No filters = load all available CSV files
 ```python
 import os
 from neo4j import GraphDatabase
-from semantic_graph.connectors.csv import CSVConnector
+from neocarta.connectors.csv import CSVConnector
 
 # Initialize Neo4j driver
 neo4j_driver = GraphDatabase.driver(
@@ -452,7 +452,7 @@ neo4j_driver.close()
 ### Advanced Usage with Custom Configuration
 
 ```python
-from semantic_graph import NodeLabel as nl, RelationshipType as rt
+from neocarta import NodeLabel as nl, RelationshipType as rt
 
 # Custom file mapping and selective loading
 # Enum members are recommended, but exact string values (e.g. "Table", "HAS_TABLE") also work.

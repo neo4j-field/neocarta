@@ -1,4 +1,4 @@
-from semantic_graph.connectors.bigquery import BigQuerySchemaExtractor, BigQuerySchemaTransformer
+from neocarta.connectors.bigquery import BigQuerySchemaExtractor, BigQuerySchemaTransformer
 
 
 def test_transform_to_database_nodes(

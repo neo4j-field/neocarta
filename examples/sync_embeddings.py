@@ -32,8 +32,8 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from openai import OpenAI
 
-from semantic_graph import NodeLabel
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta import NodeLabel
+from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 def main(

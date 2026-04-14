@@ -106,7 +106,7 @@ The Dataplex connector orchestrates the extraction, transformation, and loading 
 import os
 from neo4j import GraphDatabase
 from google.cloud import dataplex_v1
-from semantic_graph.connectors.dataplex import DataplexConnector
+from neocarta.connectors.dataplex import DataplexConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(

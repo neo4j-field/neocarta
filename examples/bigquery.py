@@ -8,9 +8,9 @@ from google.cloud import bigquery
 from neo4j import GraphDatabase
 from openai import OpenAI
 
-from semantic_graph import NodeLabel
-from semantic_graph.connectors.bigquery import BigQuerySchemaConnector
-from semantic_graph.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta import NodeLabel
+from neocarta.connectors.bigquery import BigQuerySchemaConnector
+from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
 
 
 def main(with_embeddings: bool = True) -> None:

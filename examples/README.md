@@ -16,7 +16,7 @@ python csv_connector.py
 
 This loads all CSV files from `datasets/csv/` including database, schema, table, column metadata, foreign keys, queries, and business glossary.
 
-See [semantic_graph/connectors/csv/README.md](../semantic_graph/connectors/csv/README.md) for CSV file format specifications.
+See [neocarta/connectors/csv/README.md](../neocarta/connectors/csv/README.md) for CSV file format specifications.
 
 #### `bigquery.py` - BigQuery Schema Extractor
 Extract metadata from BigQuery datasets and load into Neo4j.

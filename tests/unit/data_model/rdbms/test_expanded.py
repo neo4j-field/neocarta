@@ -1,6 +1,6 @@
 import numpy as np
 
-from semantic_graph.data_model.rdbms.expanded import Value
+from neocarta.data_model.rdbms.expanded import Value
 
 
 def test_value_string():

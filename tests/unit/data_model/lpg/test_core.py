@@ -5,7 +5,7 @@ import pytest
 from pandas import NA
 from pydantic import ValidationError
 
-from semantic_graph.data_model.lpg import (
+from neocarta.data_model.lpg import (
     Database,
     HasNode,
     HasRelationship,

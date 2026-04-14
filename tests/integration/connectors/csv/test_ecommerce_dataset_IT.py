@@ -1,7 +1,7 @@
 """Integration tests for CSV connector workflow."""
 
-from semantic_graph.connectors.csv import CSVConnector
-from semantic_graph.enums import NodeLabel, RelationshipType
+from neocarta.connectors.csv import CSVConnector
+from neocarta.enums import NodeLabel, RelationshipType
 
 
 def test_run_workflow_loads_all_nodes(neo4j_driver, temp_csv_dir, all_sample_csvs):

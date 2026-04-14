@@ -1,4 +1,4 @@
-from semantic_graph.connectors.query_log.utils import parse_bigquery_query_log_json, parse_sql_query
+from neocarta.connectors.query_log.utils import parse_bigquery_query_log_json, parse_sql_query
 
 
 def test_parse_bigquery_query_log_json():

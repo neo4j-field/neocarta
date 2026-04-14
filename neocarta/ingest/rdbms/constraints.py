@@ -1,6 +1,6 @@
 """Neo4j constraint definitions for the RDBMS data model."""
 
-from semantic_graph.ingest.constraints import (
+from neocarta.ingest.constraints import (
     database_id_key_constraint,
     database_id_unique_constraint,
     schema_id_key_constraint,
