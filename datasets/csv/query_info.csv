@@ -1,5 +1,5 @@
 query_id,content,description
-q001,SELECT c.customer_name, SUM(o.total_amount) as total_spend FROM demo_ecommerce.customers c JOIN demo_ecommerce.orders o ON c.customer_id = o.customer_id GROUP BY c.customer_name ORDER BY total_spend DESC,Calculate total spend per customer
-q002,SELECT p.category, COUNT(DISTINCT oi.order_id) as order_count FROM demo_ecommerce.products p JOIN demo_ecommerce.order_items oi ON p.product_id = oi.product_id GROUP BY p.category,Count orders by product category
-q003,SELECT DATE(o.order_date) as date, SUM(o.total_amount) as daily_revenue FROM demo_ecommerce.orders o GROUP BY DATE(o.order_date) ORDER BY date,Calculate daily revenue
-q004,SELECT p.product_name, SUM(oi.quantity) as total_quantity FROM demo_ecommerce.products p JOIN demo_ecommerce.order_items oi ON p.product_id = oi.product_id GROUP BY p.product_name ORDER BY total_quantity DESC LIMIT 10,Top 10 best selling products by quantity
+q001,"SELECT c.customer_name, SUM(o.total_amount) as total_spend FROM demo_ecommerce.customers c JOIN demo_ecommerce.orders o ON c.customer_id = o.customer_id GROUP BY c.customer_name ORDER BY total_spend DESC",Calculate total spend per customer
+q002,"SELECT p.category, COUNT(DISTINCT oi.order_id) as order_count FROM demo_ecommerce.products p JOIN demo_ecommerce.order_items oi ON p.product_id = oi.product_id GROUP BY p.category",Count orders by product category
+q003,"SELECT DATE(o.order_date) as date, SUM(o.total_amount) as daily_revenue FROM demo_ecommerce.orders o GROUP BY DATE(o.order_date) ORDER BY date",Calculate daily revenue
+q004,"SELECT p.product_name, SUM(oi.quantity) as total_quantity FROM demo_ecommerce.products p JOIN demo_ecommerce.order_items oi ON p.product_id = oi.product_id GROUP BY p.product_name ORDER BY total_quantity DESC LIMIT 10",Top 10 best selling products by quantity
