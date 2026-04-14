@@ -1,6 +1,13 @@
 import pytest
 
 from neocarta.connectors.csv.extract import NODE_ENTITIES, REL_ENTITIES, CSVExtractor
+from neocarta.connectors.utils.generate_id import (
+    generate_column_id,
+    generate_database_id,
+    generate_schema_id,
+    generate_table_id,
+    generate_value_id,
+)
 from neocarta.enums import NodeLabel, RelationshipType
 
 # ---------------------------------------------------------------------------
@@ -149,7 +156,7 @@ class TestExtraction:
         df = extractor.extract_database_info()
         assert df is not None
         assert len(df) == 1
-        assert extractor.database_info["database_id"].iloc[0] == "my_db"
+        assert extractor.database_info["database_name"].iloc[0] == "my_db"
 
     def test_extract_schema_info_row_count(self, csv_dir_with_files):
         extractor = CSVExtractor(str(csv_dir_with_files))
@@ -167,7 +174,7 @@ class TestExtraction:
     def test_extract_missing_required_column_raises(self, tmp_path):
         """A file present but missing required columns raises ValueError."""
         (tmp_path / "schema_info.csv").write_text(
-            "schema_id,name\nsales,Sales\n"  # missing database_id
+            "schema_name,description\nsales,Sales\n"  # missing database_name
         )
         extractor = CSVExtractor(str(tmp_path))
         with pytest.raises(ValueError, match="missing required columns"):
@@ -178,7 +185,7 @@ class TestExtraction:
         import pandas as pd
 
         (tmp_path / "database_info.csv").write_text(
-            "database_id,description\ndb1,NULL\ndb2,null\ndb3,NaN\ndb4,real description\n"
+            "database_name,description\ndb1,NULL\ndb2,null\ndb3,NaN\ndb4,real description\n"
         )
         extractor = CSVExtractor(str(tmp_path))
         df = extractor.extract_database_info()
@@ -186,3 +193,161 @@ class TestExtraction:
         assert pd.isna(df["description"].iloc[1])
         assert pd.isna(df["description"].iloc[2])
         assert df["description"].iloc[3] == "real description"
+
+
+# ---------------------------------------------------------------------------
+# ID column computation
+# ---------------------------------------------------------------------------
+
+
+class TestIdComputation:
+    """
+    Verify that extraction computes *_id columns from name columns when absent,
+    and preserves user-supplied *_id values when present.
+    """
+
+    # --- database ---
+
+    def test_database_id_auto_generated(self, tmp_path):
+        (tmp_path / "database_info.csv").write_text("database_name\nmy_db\n")
+        df = CSVExtractor(str(tmp_path)).extract_database_info()
+        assert "database_id" in df.columns
+        assert df["database_id"].iloc[0] == generate_database_id("my_db")
+
+    def test_database_id_explicit_preserved(self, tmp_path):
+        (tmp_path / "database_info.csv").write_text(
+            "database_name,database_id\nmy_db,custom-db-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_database_info()
+        assert df["database_id"].iloc[0] == "custom-db-id"
+
+    # --- schema ---
+
+    def test_schema_id_auto_generated(self, tmp_path):
+        (tmp_path / "schema_info.csv").write_text("database_name,schema_name\nmy_db,sales\n")
+        df = CSVExtractor(str(tmp_path)).extract_schema_info()
+        assert df["schema_id"].iloc[0] == generate_schema_id("my_db", "sales")
+
+    def test_schema_id_explicit_preserved(self, tmp_path):
+        (tmp_path / "schema_info.csv").write_text(
+            "database_name,schema_name,schema_id\nmy_db,sales,custom-schema-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_schema_info()
+        assert df["schema_id"].iloc[0] == "custom-schema-id"
+
+    def test_schema_database_id_auto_generated(self, tmp_path):
+        """database_id (parent FK) is also computed on schema_info for relationship use."""
+        (tmp_path / "schema_info.csv").write_text("database_name,schema_name\nmy_db,sales\n")
+        df = CSVExtractor(str(tmp_path)).extract_schema_info()
+        assert df["database_id"].iloc[0] == generate_database_id("my_db")
+
+    def test_schema_database_id_explicit_preserved(self, tmp_path):
+        (tmp_path / "schema_info.csv").write_text(
+            "database_name,schema_name,database_id\nmy_db,sales,custom-db-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_schema_info()
+        assert df["database_id"].iloc[0] == "custom-db-id"
+
+    # --- table ---
+
+    def test_table_id_auto_generated(self, tmp_path):
+        (tmp_path / "table_info.csv").write_text(
+            "database_name,schema_name,table_name\nmy_db,sales,orders\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_table_info()
+        assert df["table_id"].iloc[0] == generate_table_id("my_db", "sales", "orders")
+
+    def test_table_id_explicit_preserved(self, tmp_path):
+        (tmp_path / "table_info.csv").write_text(
+            "database_name,schema_name,table_name,table_id\nmy_db,sales,orders,custom-table-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_table_info()
+        assert df["table_id"].iloc[0] == "custom-table-id"
+
+    def test_table_schema_id_auto_generated(self, tmp_path):
+        """schema_id (parent FK) is computed on table_info for relationship use."""
+        (tmp_path / "table_info.csv").write_text(
+            "database_name,schema_name,table_name\nmy_db,sales,orders\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_table_info()
+        assert df["schema_id"].iloc[0] == generate_schema_id("my_db", "sales")
+
+    # --- column ---
+
+    def test_column_id_auto_generated(self, tmp_path):
+        (tmp_path / "column_info.csv").write_text(
+            "database_name,schema_name,table_name,column_name\nmy_db,sales,orders,order_id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_column_info()
+        assert df["column_id"].iloc[0] == generate_column_id("my_db", "sales", "orders", "order_id")
+
+    def test_column_id_explicit_preserved(self, tmp_path):
+        (tmp_path / "column_info.csv").write_text(
+            "database_name,schema_name,table_name,column_name,column_id\n"
+            "my_db,sales,orders,order_id,custom-col-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_column_info()
+        assert df["column_id"].iloc[0] == "custom-col-id"
+
+    def test_column_table_id_auto_generated(self, tmp_path):
+        """table_id (parent FK) is computed on column_info for relationship use."""
+        (tmp_path / "column_info.csv").write_text(
+            "database_name,schema_name,table_name,column_name\nmy_db,sales,orders,order_id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_column_info()
+        assert df["table_id"].iloc[0] == generate_table_id("my_db", "sales", "orders")
+
+    # --- value ---
+
+    def test_value_id_auto_generated(self, tmp_path):
+        (tmp_path / "value_info.csv").write_text(
+            "database_name,schema_name,table_name,column_name,value\n"
+            "my_db,sales,orders,status,active\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_value_info()
+        assert df["value_id"].iloc[0] == generate_value_id("my_db", "sales", "orders", "status", "active")
+
+    def test_value_id_explicit_preserved(self, tmp_path):
+        (tmp_path / "value_info.csv").write_text(
+            "database_name,schema_name,table_name,column_name,value,value_id\n"
+            "my_db,sales,orders,status,active,custom-val-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_value_info()
+        assert df["value_id"].iloc[0] == "custom-val-id"
+
+    def test_value_column_id_auto_generated(self, tmp_path):
+        """column_id (parent FK) is computed on value_info for relationship use."""
+        (tmp_path / "value_info.csv").write_text(
+            "database_name,schema_name,table_name,column_name,value\n"
+            "my_db,sales,orders,status,active\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_value_info()
+        assert df["column_id"].iloc[0] == generate_column_id("my_db", "sales", "orders", "status")
+
+    # --- column references ---
+
+    def test_references_source_column_id_auto_generated(self, tmp_path):
+        (tmp_path / "column_references_info.csv").write_text(
+            "source_database_name,source_schema_name,source_table_name,source_column_name,"
+            "target_database_name,target_schema_name,target_table_name,target_column_name\n"
+            "my_db,sales,orders,customer_id,my_db,sales,customers,customer_id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_column_references_info()
+        assert df["source_column_id"].iloc[0] == generate_column_id(
+            "my_db", "sales", "orders", "customer_id"
+        )
+        assert df["target_column_id"].iloc[0] == generate_column_id(
+            "my_db", "sales", "customers", "customer_id"
+        )
+
+    def test_references_explicit_ids_preserved(self, tmp_path):
+        (tmp_path / "column_references_info.csv").write_text(
+            "source_database_name,source_schema_name,source_table_name,source_column_name,"
+            "target_database_name,target_schema_name,target_table_name,target_column_name,"
+            "source_column_id,target_column_id\n"
+            "my_db,sales,orders,customer_id,my_db,sales,customers,customer_id,"
+            "custom-src-id,custom-tgt-id\n"
+        )
+        df = CSVExtractor(str(tmp_path)).extract_column_references_info()
+        assert df["source_column_id"].iloc[0] == "custom-src-id"
+        assert df["target_column_id"].iloc[0] == "custom-tgt-id"
