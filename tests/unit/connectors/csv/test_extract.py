@@ -305,7 +305,9 @@ class TestIdComputation:
             "my_db,sales,orders,status,active\n"
         )
         df = CSVExtractor(str(tmp_path)).extract_value_info()
-        assert df["value_id"].iloc[0] == generate_value_id("my_db", "sales", "orders", "status", "active")
+        assert df["value_id"].iloc[0] == generate_value_id(
+            "my_db", "sales", "orders", "status", "active"
+        )
 
     def test_value_id_explicit_preserved(self, tmp_path):
         (tmp_path / "value_info.csv").write_text(

@@ -41,7 +41,9 @@ def parse_bigquery_query_log_json(query_log_file: str) -> pd.DataFrame:
         )
         # format as table id
         for ref_table in ref_tables:
-            table_ids.add(generate_table_id(project_id, ref_table["datasetId"], ref_table["tableId"]))
+            table_ids.add(
+                generate_table_id(project_id, ref_table["datasetId"], ref_table["tableId"])
+            )
 
     ref_tables_metadata = []
     for tid in table_ids:

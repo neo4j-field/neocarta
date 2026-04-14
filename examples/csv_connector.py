@@ -58,7 +58,7 @@ def main() -> None:
         NodeLabel.TABLE,
         NodeLabel.COLUMN,
         NodeLabel.VALUE,
-        NodeLabel.QUERY
+        NodeLabel.QUERY,
     ]
     include_relationships = [
         RelationshipType.HAS_SCHEMA,

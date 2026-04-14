@@ -16,11 +16,11 @@ def test_run_workflow_loads_all_nodes(neo4j_driver, temp_csv_dir, all_sample_csv
     with neo4j_driver.session(database="neo4j") as session:
         # Verify Database node
         result = session.run(
-            "MATCH (d:Database {id: 'my-project'}) RETURN d.name as name, d.platform as platform"
+            "MATCH (d:Database {id: 'my_project'}) RETURN d.name as name, d.platform as platform"
         )
         record = result.single()
         assert record is not None
-        assert record["name"] == "My Project"
+        assert record["name"] == "my-project"
         assert record["platform"] == "GCP"
 
         # Verify Schema nodes
@@ -30,8 +30,8 @@ def test_run_workflow_loads_all_nodes(neo4j_driver, temp_csv_dir, all_sample_csv
         # Verify specific schemas exist
         result = session.run("MATCH (s:Schema) RETURN s.name as name ORDER BY name")
         schema_names = [record["name"] for record in result]
-        assert "Analytics" in schema_names
-        assert "Sales" in schema_names
+        assert "analytics" in schema_names
+        assert "sales" in schema_names
 
         # Verify Table nodes
         result = session.run("MATCH (t:Table) RETURN count(t) as count")

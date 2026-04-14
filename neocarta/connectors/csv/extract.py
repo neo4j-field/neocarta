@@ -87,10 +87,10 @@ class CSVExtractor:
       Omit all ``*_id`` columns. IDs are derived from the name columns using a
       deterministic dot-separated hierarchy::
 
-          database_id  = database_name
-          schema_id    = database_name.schema_name
-          table_id     = database_name.schema_name.table_name
-          column_id    = database_name.schema_name.table_name.column_name
+          database_id = database_name
+          schema_id = database_name.schema_name
+          table_id = database_name.schema_name.table_name
+          column_id = database_name.schema_name.table_name.column_name
 
     *Explicit*
       Supply every ``*_id`` column (``database_id``, ``schema_id``,
@@ -384,7 +384,11 @@ class CSVExtractor:
         if "value_id" not in df.columns:
             df["value_id"] = df.apply(
                 lambda r: generate_value_id(
-                    r["database_name"], r["schema_name"], r["table_name"], r["column_name"], r["value"]
+                    r["database_name"],
+                    r["schema_name"],
+                    r["table_name"],
+                    r["column_name"],
+                    r["value"],
                 ),
                 axis=1,
             )
