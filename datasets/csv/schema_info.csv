@@ -1,2 +1,2 @@
-database_id,schema_id,name,description
-demo-ecommerce,demo_ecommerce,Demo E-commerce,Demo e-commerce dataset with foreign key relationships for testing
+database_name,schema_name,description
+Demo E-commerce,demo_ecommerce,Demo e-commerce dataset with foreign key relationships for testing

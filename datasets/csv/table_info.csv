@@ -1,5 +1,5 @@
-database_id,schema_id,table_name,description
-demo-ecommerce,demo_ecommerce,customers,Customer master table containing all registered customers
-demo-ecommerce,demo_ecommerce,products,Product catalog containing all available products
-demo-ecommerce,demo_ecommerce,orders,"Orders placed by customers, links to customers via customer_id foreign key"
-demo-ecommerce,demo_ecommerce,order_items,"Individual line items for each order, links to orders and products via foreign keys"
+database_name,schema_name,table_name,description
+Demo E-commerce,demo_ecommerce,customers,Customer master table containing all registered customers
+Demo E-commerce,demo_ecommerce,products,Product catalog containing all available products
+Demo E-commerce,demo_ecommerce,orders,"Orders placed by customers, links to customers via customer_id foreign key"
+Demo E-commerce,demo_ecommerce,order_items,"Individual line items for each order, links to orders and products via foreign keys"

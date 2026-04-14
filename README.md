@@ -437,6 +437,10 @@ The connector expects CSV files in a specified directory with the following defa
 
 Custom file names can be specified using the `csv_file_map` parameter.
 
+**ID Strategy:**
+
+Entity IDs are automatically generated from name columns using a dot-separated hierarchy (e.g., `database_name.schema_name.table_name`). To use custom IDs instead, supply explicit `*_id` columns (`database_id`, `schema_id`, `table_id`, `column_id`, `value_id`) in every CSV file in the hierarchy. Do not mix strategies across files. See the [CSV Connector README](neocarta/connectors/csv/README.md) for full details.
+
 This connector requires the following variables to be set in the `.env` file:
 * NEO4J_USERNAME=neo4j-username
 * NEO4J_PASSWORD=neo4j-password

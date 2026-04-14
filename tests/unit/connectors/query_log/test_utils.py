@@ -97,11 +97,11 @@ def test_parse_sql_query_uses_default_project_id():
 
     for table in parsed["table_info"]:
         assert table["project_id"] == "my-gcp-project"
-        assert table["table_id"].startswith("my-gcp-project.")
+        assert table["table_id"].startswith("my_gcp_project.")
         assert not table["table_id"].startswith(".")
 
     for col in parsed["column_info"]:
-        assert col["column_id"].startswith("my-gcp-project.")
+        assert col["column_id"].startswith("my_gcp_project.")
         assert not col["column_id"].startswith(".")
 
 
@@ -117,4 +117,4 @@ def test_parse_sql_query_explicit_project_overrides_default():
     assert len(parsed["table_info"]) == 1
     table = parsed["table_info"][0]
     assert table["project_id"] == "example-project-id"
-    assert table["table_id"] == "example-project-id.demo_ecommerce.orders"
+    assert table["table_id"] == "example_project_id.demo_ecommerce.orders"

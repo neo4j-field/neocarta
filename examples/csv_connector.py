@@ -58,6 +58,7 @@ def main() -> None:
         NodeLabel.TABLE,
         NodeLabel.COLUMN,
         NodeLabel.VALUE,
+        NodeLabel.QUERY,
     ]
     include_relationships = [
         RelationshipType.HAS_SCHEMA,
@@ -65,6 +66,8 @@ def main() -> None:
         RelationshipType.HAS_COLUMN,
         RelationshipType.HAS_VALUE,
         RelationshipType.REFERENCES,
+        RelationshipType.USES_TABLE,
+        RelationshipType.USES_COLUMN,
     ]
     # Run the connector to load all CSV files
     connector.run(include_nodes=include_nodes, include_relationships=include_relationships)

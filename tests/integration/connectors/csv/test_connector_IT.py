@@ -19,16 +19,14 @@ def test_load_database_nodes(neo4j_driver, temp_csv_dir, sample_database_csv):
         records = list(result)
 
         assert len(records) == 1
-        assert records[0]["id"] == "my-project"
-        assert records[0]["name"] == "My Project"
+        assert records[0]["id"] == "my_project"
+        assert records[0]["name"] == "my-project"
         assert records[0]["platform"] == "GCP"
 
 
 def test_database_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     """Test that only CSV columns are loaded as properties, not all possible fields."""
-    (temp_csv_dir / "database_info.csv").write_text(
-        "database_id,name,platform\ntest-db,Test Database,AWS\n"
-    )
+    (temp_csv_dir / "database_info.csv").write_text("database_name,platform\ntest-db,AWS\n")
 
     connector = CSVConnector(
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
@@ -61,16 +59,14 @@ def test_load_schema_nodes(neo4j_driver, temp_csv_dir, sample_database_csv, samp
         records = list(result)
 
         assert len(records) == 2
-        assert records[0]["name"] == "Analytics"
-        assert records[1]["name"] == "Sales"
+        assert records[0]["name"] == "analytics"
+        assert records[1]["name"] == "sales"
 
 
 def test_schema_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     """Test that only CSV columns are loaded for schemas."""
-    (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
-    (temp_csv_dir / "schema_info.csv").write_text(
-        "database_id,schema_id,name\nmy-project,sales,Sales\n"
-    )
+    (temp_csv_dir / "database_info.csv").write_text("database_name\nmy-project\n")
+    (temp_csv_dir / "schema_info.csv").write_text("database_name,schema_name\nmy-project,sales\n")
 
     connector = CSVConnector(
         csv_directory=str(temp_csv_dir), neo4j_driver=neo4j_driver, database_name="neo4j"
@@ -108,8 +104,8 @@ def test_load_has_schema_relationships(
         records = list(result)
 
         assert len(records) == 2
-        assert records[0]["db_id"] == "my-project"
-        assert records[0]["schema_name"] == "Analytics"
+        assert records[0]["db_id"] == "my_project"
+        assert records[0]["schema_name"] == "analytics"
 
 
 def test_load_table_nodes(
@@ -164,13 +160,13 @@ def test_load_column_nodes(
 
 def test_column_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
     """Test that only CSV columns are loaded for columns."""
-    (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
-    (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
+    (temp_csv_dir / "database_info.csv").write_text("database_name\nmy-project\n")
+    (temp_csv_dir / "schema_info.csv").write_text("database_name,schema_name\nmy-project,sales\n")
     (temp_csv_dir / "table_info.csv").write_text(
-        "database_id,schema_id,table_name\nmy-project,sales,orders\n"
+        "database_name,schema_name,table_name\nmy-project,sales,orders\n"
     )
     (temp_csv_dir / "column_info.csv").write_text(
-        "database_id,schema_id,table_name,column_name,is_nullable,is_primary_key\n"
+        "database_name,schema_name,table_name,column_name,is_nullable,is_primary_key\n"
         "my-project,sales,orders,order_id,false,true\n"
     )
 
@@ -198,13 +194,13 @@ def test_column_only_loads_provided_columns(neo4j_driver, temp_csv_dir):
 
 def test_column_properties_correct_values(neo4j_driver, temp_csv_dir):
     """Test that column properties are set with correct values."""
-    (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
-    (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
+    (temp_csv_dir / "database_info.csv").write_text("database_name\nmy-project\n")
+    (temp_csv_dir / "schema_info.csv").write_text("database_name,schema_name\nmy-project,sales\n")
     (temp_csv_dir / "table_info.csv").write_text(
-        "database_id,schema_id,table_name\nmy-project,sales,orders\n"
+        "database_name,schema_name,table_name\nmy-project,sales,orders\n"
     )
     (temp_csv_dir / "column_info.csv").write_text(
-        "database_id,schema_id,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key\n"
+        "database_name,schema_name,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key\n"
         "my-project,sales,orders,order_id,STRING,false,true,false\n"
     )
 
@@ -230,19 +226,19 @@ def test_column_properties_correct_values(neo4j_driver, temp_csv_dir):
 
 def test_load_references_relationships(neo4j_driver, temp_csv_dir):
     """Test that REFERENCES relationships are created."""
-    (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
-    (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
+    (temp_csv_dir / "database_info.csv").write_text("database_name\nmy-project\n")
+    (temp_csv_dir / "schema_info.csv").write_text("database_name,schema_name\nmy-project,sales\n")
     (temp_csv_dir / "table_info.csv").write_text(
-        "database_id,schema_id,table_name\nmy-project,sales,orders\nmy-project,sales,customers\n"
+        "database_name,schema_name,table_name\nmy-project,sales,orders\nmy-project,sales,customers\n"
     )
     (temp_csv_dir / "column_info.csv").write_text(
-        "database_id,schema_id,table_name,column_name\n"
+        "database_name,schema_name,table_name,column_name\n"
         "my-project,sales,orders,customer_id\n"
         "my-project,sales,customers,customer_id\n"
     )
     (temp_csv_dir / "column_references_info.csv").write_text(
-        "source_database_id,source_schema_id,source_table_name,source_column_name,"
-        "target_database_id,target_schema_id,target_table_name,target_column_name,criteria\n"
+        "source_database_name,source_schema_name,source_table_name,source_column_name,"
+        "target_database_name,target_schema_name,target_table_name,target_column_name,criteria\n"
         "my-project,sales,orders,customer_id,my-project,sales,customers,customer_id,"
         "orders.customer_id = customers.customer_id\n"
     )
@@ -276,16 +272,16 @@ def test_load_references_relationships(neo4j_driver, temp_csv_dir):
 
 def test_load_value_nodes(neo4j_driver, temp_csv_dir):
     """Test that value nodes are loaded correctly."""
-    (temp_csv_dir / "database_info.csv").write_text("database_id,name\nmy-project,My Project\n")
-    (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nmy-project,sales\n")
+    (temp_csv_dir / "database_info.csv").write_text("database_name\nmy-project\n")
+    (temp_csv_dir / "schema_info.csv").write_text("database_name,schema_name\nmy-project,sales\n")
     (temp_csv_dir / "table_info.csv").write_text(
-        "database_id,schema_id,table_name\nmy-project,sales,orders\n"
+        "database_name,schema_name,table_name\nmy-project,sales,orders\n"
     )
     (temp_csv_dir / "column_info.csv").write_text(
-        "database_id,schema_id,table_name,column_name\nmy-project,sales,orders,status\n"
+        "database_name,schema_name,table_name,column_name\nmy-project,sales,orders,status\n"
     )
     (temp_csv_dir / "value_info.csv").write_text(
-        "database_id,schema_id,table_name,column_name,value\n"
+        "database_name,schema_name,table_name,column_name,value\n"
         "my-project,sales,orders,status,pending\n"
         "my-project,sales,orders,status,completed\n"
         "my-project,sales,orders,status,cancelled\n"
@@ -443,13 +439,13 @@ def test_run_complete_workflow(neo4j_driver, temp_csv_dir, all_sample_csvs):
 
 def test_minimal_csv_with_only_required_fields(neo4j_driver, temp_csv_dir):
     """Test that CSV with only required fields works correctly."""
-    (temp_csv_dir / "database_info.csv").write_text("database_id\nminimal-db\n")
-    (temp_csv_dir / "schema_info.csv").write_text("database_id,schema_id\nminimal-db,schema1\n")
+    (temp_csv_dir / "database_info.csv").write_text("database_name\nminimal-db\n")
+    (temp_csv_dir / "schema_info.csv").write_text("database_name,schema_name\nminimal-db,schema1\n")
     (temp_csv_dir / "table_info.csv").write_text(
-        "database_id,schema_id,table_name\nminimal-db,schema1,table1\n"
+        "database_name,schema_name,table_name\nminimal-db,schema1,table1\n"
     )
     (temp_csv_dir / "column_info.csv").write_text(
-        "database_id,schema_id,table_name,column_name\nminimal-db,schema1,table1,col1\n"
+        "database_name,schema_name,table_name,column_name\nminimal-db,schema1,table1,col1\n"
     )
 
     connector = CSVConnector(

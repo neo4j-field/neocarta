@@ -6,25 +6,32 @@ from typing import ClassVar
 import pandas as pd
 
 from ...enums import NodeLabel, RelationshipType
+from ..utils.generate_id import (
+    generate_column_id,
+    generate_database_id,
+    generate_schema_id,
+    generate_table_id,
+    generate_value_id,
+)
 from .models import CSVExtractorCache
 
 # Required columns per entity type
 REQUIRED_COLUMNS: dict[str, list[str]] = {
-    NodeLabel.DATABASE: ["database_id"],
-    NodeLabel.SCHEMA: ["database_id", "schema_id"],
-    NodeLabel.TABLE: ["database_id", "schema_id", "table_name"],
-    NodeLabel.COLUMN: ["database_id", "schema_id", "table_name", "column_name"],
+    NodeLabel.DATABASE: ["database_name"],
+    NodeLabel.SCHEMA: ["database_name", "schema_name"],
+    NodeLabel.TABLE: ["database_name", "schema_name", "table_name"],
+    NodeLabel.COLUMN: ["database_name", "schema_name", "table_name", "column_name"],
     RelationshipType.REFERENCES: [
-        "source_database_id",
-        "source_schema_id",
+        "source_database_name",
+        "source_schema_name",
         "source_table_name",
         "source_column_name",
-        "target_database_id",
-        "target_schema_id",
+        "target_database_name",
+        "target_schema_name",
         "target_table_name",
         "target_column_name",
     ],
-    NodeLabel.VALUE: ["database_id", "schema_id", "table_name", "column_name", "value"],
+    NodeLabel.VALUE: ["database_name", "schema_name", "table_name", "column_name", "value"],
     NodeLabel.QUERY: ["query_id", "content"],
     RelationshipType.USES_TABLE: ["query_id", "table_id"],
     RelationshipType.USES_COLUMN: ["query_id", "column_id"],
@@ -70,7 +77,30 @@ class CSVExtractor:
     Extractor for reading CSV files from a directory and caching their contents.
 
     Reads each CSV file, validates that required columns are present,
-    and stores the resulting DataFrames in an internal cache.
+    and stores the resulting DataFrames in an internal cache. After loading,
+    each DataFrame is augmented with resolved ``*_id`` columns used for node
+    identity and relationship foreign keys.
+
+    **ID strategy — choose one, apply consistently across all files:**
+
+    *Auto-generated (recommended)*
+      Omit all ``*_id`` columns. IDs are derived from the name columns using a
+      deterministic dot-separated hierarchy::
+
+          database_id = database_name
+          schema_id = database_name.schema_name
+          table_id = database_name.schema_name.table_name
+          column_id = database_name.schema_name.table_name.column_name
+
+    *Explicit*
+      Supply every ``*_id`` column (``database_id``, ``schema_id``,
+      ``table_id``, ``column_id``, ``value_id``) in **every** CSV file in the
+      hierarchy. Explicit IDs are used as-is and must be consistent across
+      files — e.g. the ``database_id`` value in ``schema_info.csv`` must match
+      the ``database_id`` in ``database_info.csv``.
+
+    Mixing explicit and auto-generated IDs across files in the same hierarchy
+    is not supported and will produce inconsistent node references.
     """
 
     DEFAULT_FILE_MAP: ClassVar[dict[str, str]] = {
@@ -252,27 +282,118 @@ class CSVExtractor:
 
     def extract_database_info(self) -> pd.DataFrame | None:
         """Extract and cache database info from CSV."""
-        return self._extract(NodeLabel.DATABASE, "database_info")
+        df = self._extract(NodeLabel.DATABASE, "database_info")
+        if df is None:
+            return None
+        if "database_id" not in df.columns:
+            df["database_id"] = df["database_name"].apply(generate_database_id)
+        self._cache["database_info"] = df
+        return df
 
     def extract_schema_info(self) -> pd.DataFrame | None:
         """Extract and cache schema info from CSV."""
-        return self._extract(NodeLabel.SCHEMA, "schema_info")
+        df = self._extract(NodeLabel.SCHEMA, "schema_info")
+        if df is None:
+            return None
+        if "database_id" not in df.columns:
+            df["database_id"] = df["database_name"].apply(generate_database_id)
+        if "schema_id" not in df.columns:
+            df["schema_id"] = df.apply(
+                lambda r: generate_schema_id(r["database_name"], r["schema_name"]), axis=1
+            )
+        self._cache["schema_info"] = df
+        return df
 
     def extract_table_info(self) -> pd.DataFrame | None:
         """Extract and cache table info from CSV."""
-        return self._extract(NodeLabel.TABLE, "table_info")
+        df = self._extract(NodeLabel.TABLE, "table_info")
+        if df is None:
+            return None
+        if "schema_id" not in df.columns:
+            df["schema_id"] = df.apply(
+                lambda r: generate_schema_id(r["database_name"], r["schema_name"]), axis=1
+            )
+        if "table_id" not in df.columns:
+            df["table_id"] = df.apply(
+                lambda r: generate_table_id(r["database_name"], r["schema_name"], r["table_name"]),
+                axis=1,
+            )
+        self._cache["table_info"] = df
+        return df
 
     def extract_column_info(self) -> pd.DataFrame | None:
         """Extract and cache column info from CSV."""
-        return self._extract(NodeLabel.COLUMN, "column_info")
+        df = self._extract(NodeLabel.COLUMN, "column_info")
+        if df is None:
+            return None
+        if "table_id" not in df.columns:
+            df["table_id"] = df.apply(
+                lambda r: generate_table_id(r["database_name"], r["schema_name"], r["table_name"]),
+                axis=1,
+            )
+        if "column_id" not in df.columns:
+            df["column_id"] = df.apply(
+                lambda r: generate_column_id(
+                    r["database_name"], r["schema_name"], r["table_name"], r["column_name"]
+                ),
+                axis=1,
+            )
+        self._cache["column_info"] = df
+        return df
 
     def extract_column_references_info(self) -> pd.DataFrame | None:
         """Extract and cache column references info from CSV."""
-        return self._extract(RelationshipType.REFERENCES, "column_references_info")
+        df = self._extract(RelationshipType.REFERENCES, "column_references_info")
+        if df is None:
+            return None
+        if "source_column_id" not in df.columns:
+            df["source_column_id"] = df.apply(
+                lambda r: generate_column_id(
+                    r["source_database_name"],
+                    r["source_schema_name"],
+                    r["source_table_name"],
+                    r["source_column_name"],
+                ),
+                axis=1,
+            )
+        if "target_column_id" not in df.columns:
+            df["target_column_id"] = df.apply(
+                lambda r: generate_column_id(
+                    r["target_database_name"],
+                    r["target_schema_name"],
+                    r["target_table_name"],
+                    r["target_column_name"],
+                ),
+                axis=1,
+            )
+        self._cache["column_references_info"] = df
+        return df
 
     def extract_value_info(self) -> pd.DataFrame | None:
         """Extract and cache value info from CSV."""
-        return self._extract(NodeLabel.VALUE, "value_info")
+        df = self._extract(NodeLabel.VALUE, "value_info")
+        if df is None:
+            return None
+        if "column_id" not in df.columns:
+            df["column_id"] = df.apply(
+                lambda r: generate_column_id(
+                    r["database_name"], r["schema_name"], r["table_name"], r["column_name"]
+                ),
+                axis=1,
+            )
+        if "value_id" not in df.columns:
+            df["value_id"] = df.apply(
+                lambda r: generate_value_id(
+                    r["database_name"],
+                    r["schema_name"],
+                    r["table_name"],
+                    r["column_name"],
+                    r["value"],
+                ),
+                axis=1,
+            )
+        self._cache["value_info"] = df
+        return df
 
     def extract_query_info(self) -> pd.DataFrame | None:
         """Extract and cache query info from CSV."""

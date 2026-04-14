@@ -9,6 +9,7 @@ from sqlglot.expressions import Column, Join, Table
 
 from neocarta.connectors.utils.generate_id import (
     create_query_id,
+    generate_column_id,
     generate_schema_id,
     generate_table_id,
 )
@@ -40,7 +41,9 @@ def parse_bigquery_query_log_json(query_log_file: str) -> pd.DataFrame:
         )
         # format as table id
         for ref_table in ref_tables:
-            table_ids.add(f"{project_id}.{ref_table['datasetId']}.{ref_table['tableId']}")
+            table_ids.add(
+                generate_table_id(project_id, ref_table["datasetId"], ref_table["tableId"])
+            )
 
     ref_tables_metadata = []
     for tid in table_ids:
@@ -175,13 +178,14 @@ def parse_sql_query(
                 continue
 
             column_name = c.name
+            db, schema, tbl = table_id.split(".")
             column_info.append(
                 {
                     "table_alias": table_alias,
                     "table_name": table_name,
                     "column_name": column_name,
                     "table_id": table_id,
-                    "column_id": f"{table_id}.{column_name}",
+                    "column_id": generate_column_id(db, schema, tbl, column_name),
                     "query_id": query_id,
                 }
             )
@@ -227,13 +231,17 @@ def parse_sql_query(
                 if hasattr(join_condition, "expression") and join_condition.expression:
                     left_column_name = getattr(join_condition.expression, "name", None)
                     if left_column_name and left_table_alias:
-                        left_column_id = f"{left_table_id}.{getattr(join_condition.expression, 'this', left_column_name)}"
+                        left_col = str(getattr(join_condition.expression, "this", left_column_name))
+                        db, schema, tbl = left_table_id.split(".")
+                        left_column_id = generate_column_id(db, schema, tbl, left_col)
 
                 # Try to extract right column (this side)
                 if hasattr(join_condition, "this") and join_condition.this:
                     right_column_name = getattr(join_condition.this, "name", None)
                     if right_column_name and right_table_alias:
-                        right_column_id = f"{right_table_id}.{getattr(join_condition.this, 'this', right_column_name)}"
+                        right_col = str(getattr(join_condition.this, "this", right_column_name))
+                        db, schema, tbl = right_table_id.split(".")
+                        right_column_id = generate_column_id(db, schema, tbl, right_col)
 
             to_add = {
                 "left_table_name": left_table_name,
