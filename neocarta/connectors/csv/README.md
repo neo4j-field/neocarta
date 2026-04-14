@@ -6,24 +6,26 @@ This document describes the required CSV file formats for ingesting metadata int
 
 The CSV connector accepts normalized CSV files representing database metadata entities and their relationships. Files can be provided for core database entities (databases, schemas, tables, columns), extended entities (values, glossaries, business terms, queries), and their relationships.
 
-## Terminology Note
+## ID Strategy
 
-**Database and Schema:**
-- Column names use generic terminology (`database_id`, `schema_id`) for compatibility across different database systems
-- For BigQuery users: **database = GCP project** and **schema = dataset**
-- The graph data model uses generic terminology (Database, Schema nodes) to support multiple database platforms
+The connector automatically computes all entity IDs from the name columns. **Choose one strategy and apply it consistently across all files in the hierarchy.**
 
-## ID Construction
+### Auto-generated (recommended)
 
-**IDs are automatically constructed by the connector.** You do not need to provide pre-formatted IDs in your CSV files.
+Omit all `*_id` columns. The connector builds deterministic, dot-separated IDs from the name columns:
 
-The connector builds hierarchical, dot-separated IDs:
-- Database ID: `{database_id}`
-- Schema ID: `{database_id}.{schema_id}`
-- Table ID: `{database_id}.{schema_id}.{table_name}`
-- Column ID: `{database_id}.{schema_id}.{table_name}.{column_name}`
+| Entity | ID |
+|---|---|
+| Database | `{database_name}` |
+| Schema | `{database_name}.{schema_name}` |
+| Table | `{database_name}.{schema_name}.{table_name}` |
+| Column | `{database_name}.{schema_name}.{table_name}.{column_name}` |
 
-**Important:** Relationships between entities are NOT derived by parsing IDs. All relationships must be explicitly defined either through parent identifier columns (e.g., `database_id` in `schema_info.csv`) or through dedicated relationship CSV files (e.g., `column_references_info.csv`).
+### Explicit IDs
+
+Supply the corresponding `*_id` column (`database_id`, `schema_id`, `table_id`, `column_id`, `value_id`) in **every** CSV file in the hierarchy. Explicit IDs are used as-is and must be consistent across files — for example, the `database_id` value in `schema_info.csv` must match the `database_id` in `database_info.csv`.
+
+> **Warning:** Mixing explicit and auto-generated IDs across files in the same hierarchy is not supported and will produce inconsistent node references.
 
 ## CSV File Formats
 
@@ -34,18 +36,18 @@ The connector builds hierarchical, dot-separated IDs:
 Creates `:Database` nodes in the graph.
 
 **Required columns:**
-- `database_id` (string): Unique identifier for the database
+- `database_name` (string): Database name — used as the node's `name` property and to auto-generate `database_id`
 
 **Optional columns:**
-- `name` (string): Display name for the database (defaults to `database_id`)
-- `service` (string): Database service (e.g., "BIGQUERY", "POSTGRES")
-- `platform` (string): Cloud platform (e.g., "GCP", "AWS", "AZURE")
+- `database_id` (string): Explicit ID override (see [ID Strategy](#id-strategy))
+- `service` (string): Database service (e.g., `"BIGQUERY"`, `"POSTGRES"`)
+- `platform` (string): Cloud platform (e.g., `"GCP"`, `"AWS"`, `"AZURE"`)
 - `description` (string): Database description
 
 **Example:**
 ```csv
-database_id,name,platform,service,description
-my-project,My Project,GCP,BIGQUERY,Production data warehouse
+database_name,platform,service,description
+my-project,GCP,BIGQUERY,Production data warehouse
 ```
 
 ---
@@ -55,22 +57,19 @@ my-project,My Project,GCP,BIGQUERY,Production data warehouse
 Creates `:Schema` nodes and `(:Database)-[:HAS_SCHEMA]->(:Schema)` relationships.
 
 **Required columns:**
-- `database_id` (string): Parent database identifier
-- `schema_id` (string): Schema identifier
+- `database_name` (string): Parent database name
+- `schema_name` (string): Schema name — used as the node's `name` property and to auto-generate `schema_id`
 
 **Optional columns:**
-- `name` (string): Display name (defaults to `schema_id`)
+- `database_id` (string): Explicit parent database ID override
+- `schema_id` (string): Explicit schema ID override
 - `description` (string): Schema description
-
-**Derived by connector:**
-- Full Schema ID: `{database_id}.{schema_id}`
-- HAS_SCHEMA relationship: `(database_id)-[:HAS_SCHEMA]->(database_id.schema_id)`
 
 **Example:**
 ```csv
-database_id,schema_id,name,description
-my-project,analytics,Analytics,Analytics dataset for reporting
-my-project,sales,Sales,Sales transaction data
+database_name,schema_name,description
+my-project,analytics,Analytics dataset for reporting
+my-project,sales,Sales transaction data
 ```
 
 ---
@@ -80,21 +79,19 @@ my-project,sales,Sales,Sales transaction data
 Creates `:Table` nodes and `(:Schema)-[:HAS_TABLE]->(:Table)` relationships.
 
 **Required columns:**
-- `database_id` (string): Database identifier
-- `schema_id` (string): Schema identifier
-- `table_name` (string): Table name
+- `database_name` (string): Database name
+- `schema_name` (string): Schema name
+- `table_name` (string): Table name — used as the node's `name` property and to auto-generate `table_id`
 
 **Optional columns:**
-- `name` (string): Display name (defaults to `table_name`)
+- `database_id` (string): Explicit database ID override
+- `schema_id` (string): Explicit schema ID override
+- `table_id` (string): Explicit table ID override
 - `description` (string): Table description
-
-**Derived by connector:**
-- Table ID: `{database_id}.{schema_id}.{table_name}`
-- HAS_TABLE relationship: `(database_id.schema_id)-[:HAS_TABLE]->(database_id.schema_id.table_name)`
 
 **Example:**
 ```csv
-database_id,schema_id,table_name,description
+database_name,schema_name,table_name,description
 my-project,analytics,customer_summary,Aggregated customer metrics
 my-project,sales,orders,Order transactions
 ```
@@ -106,29 +103,25 @@ my-project,sales,orders,Order transactions
 Creates `:Column` nodes and `(:Table)-[:HAS_COLUMN]->(:Column)` relationships.
 
 **Required columns:**
-- `database_id` (string): Database identifier
-- `schema_id` (string): Schema identifier
+- `database_name` (string): Database name
+- `schema_name` (string): Schema name
 - `table_name` (string): Table name
-- `column_name` (string): Column name
+- `column_name` (string): Column name — used as the node's `name` property and to auto-generate `column_id`
 
 **Optional columns:**
-- `name` (string): Display name (defaults to `column_name`)
+- `database_id` (string): Explicit database ID override
+- `schema_id` (string): Explicit schema ID override
+- `table_id` (string): Explicit table ID override
+- `column_id` (string): Explicit column ID override
 - `description` (string): Column description
-- `data_type` (string): Data type (e.g., "STRING", "INTEGER", "TIMESTAMP")
+- `data_type` (string): Data type (e.g., `"STRING"`, `"INTEGER"`, `"TIMESTAMP"`)
 - `is_nullable` (boolean): Whether column accepts NULL values (default: `true`)
 - `is_primary_key` (boolean): Whether column is a primary key (default: `false`)
 - `is_foreign_key` (boolean): Whether column is a foreign key (default: `false`)
 
-**Validation:**
-- A column cannot be both a primary key and a foreign key
-
-**Derived by connector:**
-- Column ID: `{database_id}.{schema_id}.{table_name}.{column_name}`
-- HAS_COLUMN relationship: `(table_id)-[:HAS_COLUMN]->(column_id)`
-
 **Example:**
 ```csv
-database_id,schema_id,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key,description
+database_name,schema_name,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key,description
 my-project,sales,orders,order_id,STRING,false,true,false,Unique order identifier
 my-project,sales,orders,customer_id,STRING,false,false,true,Customer reference
 my-project,sales,orders,order_date,TIMESTAMP,false,false,false,Order creation timestamp
@@ -141,28 +134,26 @@ my-project,sales,orders,total_amount,FLOAT64,true,false,false,Total order amount
 
 #### 5. `column_references_info.csv` (References relationships)
 
-Creates `(:Column)-[:REFERENCES]->(:Column)` relationships representing foreign key constraints and join conditions discovered from query logs or schema analysis.
+Creates `(:Column)-[:REFERENCES]->(:Column)` relationships representing foreign key constraints and join conditions.
 
 **Required columns:**
-- `source_database_id` (string): Source database identifier
-- `source_schema_id` (string): Source schema identifier
+- `source_database_name` (string): Source database name
+- `source_schema_name` (string): Source schema name
 - `source_table_name` (string): Source table name
 - `source_column_name` (string): Source column name (foreign key column)
-- `target_database_id` (string): Target database identifier
-- `target_schema_id` (string): Target schema identifier
+- `target_database_name` (string): Target database name
+- `target_schema_name` (string): Target schema name
 - `target_table_name` (string): Target table name
 - `target_column_name` (string): Target column name (referenced primary key column)
 
 **Optional columns:**
-- `criteria` (string): Join condition or constraint criteria (e.g., `"orders.customer_id = customers.customer_id"`)
-
-**Derived by connector:**
-- Source column ID: `source_database_id.source_schema_id.source_table_name.source_column_name`
-- Target column ID: `target_database_id.target_schema_id.target_table_name.target_column_name`
+- `source_column_id` (string): Explicit source column ID override
+- `target_column_id` (string): Explicit target column ID override
+- `criteria` (string): Join condition (e.g., `"orders.customer_id = customers.customer_id"`)
 
 **Example:**
 ```csv
-source_database_id,source_schema_id,source_table_name,source_column_name,target_database_id,target_schema_id,target_table_name,target_column_name,criteria
+source_database_name,source_schema_name,source_table_name,source_column_name,target_database_name,target_schema_name,target_table_name,target_column_name,criteria
 my-project,sales,orders,customer_id,my-project,sales,customers,customer_id,orders.customer_id = customers.customer_id
 my-project,sales,order_items,order_id,my-project,sales,orders,order_id,order_items.order_id = orders.order_id
 my-project,sales,order_items,product_id,my-project,sales,products,product_id,order_items.product_id = products.product_id
@@ -174,22 +165,24 @@ my-project,sales,order_items,product_id,my-project,sales,products,product_id,ord
 
 #### 6. `value_info.csv` (Value nodes)
 
-Creates `:Value` nodes and `(:Column)-[:HAS_VALUE]->(:Value)` relationships representing unique/sample values in columns.
+Creates `:Value` nodes and `(:Column)-[:HAS_VALUE]->(:Value)` relationships representing unique or sample values in columns.
 
 **Required columns:**
-- `database_id` (string): Database identifier
-- `schema_id` (string): Schema identifier
+- `database_name` (string): Database name
+- `schema_name` (string): Schema name
 - `table_name` (string): Table name
 - `column_name` (string): Column name
-- `value` (string): The actual value as a string
+- `value` (string): The actual value
 
-**Derived by connector:**
-- Value ID: `{database_id}.{schema_id}.{table_name}.{column_name}.{value_hash}`
-- HAS_VALUE relationship: `(column_id)-[:HAS_VALUE]->(value_id)`
+**Optional columns:**
+- `database_id` (string): Explicit database ID override
+- `schema_id` (string): Explicit schema ID override
+- `column_id` (string): Explicit column ID override
+- `value_id` (string): Explicit value ID override (auto-generated IDs include a hash of the value)
 
 **Example:**
 ```csv
-database_id,schema_id,table_name,column_name,value
+database_name,schema_name,table_name,column_name,value
 my-project,sales,orders,status,pending
 my-project,sales,orders,status,completed
 my-project,sales,orders,status,cancelled
@@ -225,7 +218,7 @@ Creates `(:Query)-[:USES_TABLE]->(:Table)` relationships.
 
 **Required columns:**
 - `query_id` (string): Query identifier
-- `table_id` (string): Table full ID (must match ID constructed from `table_info.csv`)
+- `table_id` (string): Full table ID — must match the ID computed from `table_info.csv`
 
 **Example:**
 ```csv
@@ -242,7 +235,7 @@ Creates `(:Query)-[:USES_COLUMN]->(:Column)` relationships.
 
 **Required columns:**
 - `query_id` (string): Query identifier
-- `column_id` (string): Column full ID (must match ID constructed from `column_info.csv`)
+- `column_id` (string): Full column ID — must match the ID computed from `column_info.csv`
 
 **Example:**
 ```csv
@@ -288,9 +281,6 @@ Creates `:Category` nodes and `(:Glossary)-[:HAS_CATEGORY]->(:Category)` relatio
 - `name` (string): Display name (defaults to `category_id`)
 - `description` (string): Category description
 
-**Derived by connector:**
-- HAS_CATEGORY relationship: `(glossary_id)-[:HAS_CATEGORY]->(category_id)`
-
 **Example:**
 ```csv
 glossary_id,category_id,name,description
@@ -311,9 +301,6 @@ Creates `:BusinessTerm` nodes and `(:Category)-[:HAS_BUSINESS_TERM]->(:BusinessT
 **Optional columns:**
 - `name` (string): Display name (defaults to `term_id`)
 - `description` (string): Business term description
-
-**Derived by connector:**
-- HAS_BUSINESS_TERM relationship: `(category_id)-[:HAS_BUSINESS_TERM]->(term_id)`
 
 **Example:**
 ```csv
@@ -337,16 +324,12 @@ All other files are optional and can be added to enrich the graph with additiona
 
 ## Data Quality Notes
 
-1. **NULL Handling**: Empty cells or cells containing "NaN", "NULL", or "null" will be treated as `None` in the data model
+1. **NULL Handling**: Empty cells or cells containing `"NaN"`, `"NULL"`, or `"null"` are treated as `None`
 2. **Boolean Values**: Accepted formats: `true/false`, `True/False`, `1/0`
-3. **String Normalization**:
-   - `service` and `platform` fields are automatically converted to uppercase
-   - Leading/trailing whitespace is trimmed
+3. **String Normalization**: `service` and `platform` fields are automatically converted to uppercase
 4. **ID Uniqueness**: All IDs must be unique within their entity type
-5. **Referential Integrity**:
-   - Parent identifier columns (e.g., `database_id` in `schema_info.csv`) must reference existing entities in parent CSV files
-   - Relationship CSV files must reference valid entity IDs that match the connector-constructed IDs
-6. **ID Format**: When providing IDs in relationship CSVs, use the fully qualified format: `database_id.schema_id.table_name.column_name`
+5. **Referential Integrity**: Parent name columns (e.g., `database_name` in `schema_info.csv`) must use values consistent with those in the parent CSV file so that auto-generated IDs match across files
+6. **Query/Glossary ID references**: `query_table_info.csv` and `query_column_info.csv` reference IDs by their fully-qualified dot-separated form (e.g., `my-project.sales.orders`)
 
 ## Connector Configuration
 
@@ -364,13 +347,6 @@ custom_file_map = {
     NodeLabel.TABLE: "my_tables.csv",
     # ... other custom filenames
 }
-
-# Exact string values also work:
-# custom_file_map = {
-#     "Database": "my_database.csv",
-#     "Schema": "my_schemas.csv",
-#     "Table": "my_tables.csv",
-# }
 
 connector = CSVConnector(
     csv_directory="datasets/csv",
@@ -485,10 +461,10 @@ connector = CSVConnector(
     csv_directory="path/to/csv/files",
     neo4j_driver=neo4j_driver,
     database_name="neo4j",
-    csv_file_map={"table": "alternative_tables.csv"},
+    csv_file_map={NodeLabel.TABLE: "alternative_tables.csv"},
 )
 connector.run(
-    include_nodes=["table"],
-    include_relationships=["has_table"]
+    include_nodes=[nl.TABLE],
+    include_relationships=[rt.HAS_TABLE]
 )
 ```
