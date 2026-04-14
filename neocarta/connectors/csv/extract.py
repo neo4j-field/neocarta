@@ -77,7 +77,30 @@ class CSVExtractor:
     Extractor for reading CSV files from a directory and caching their contents.
 
     Reads each CSV file, validates that required columns are present,
-    and stores the resulting DataFrames in an internal cache.
+    and stores the resulting DataFrames in an internal cache. After loading,
+    each DataFrame is augmented with resolved ``*_id`` columns used for node
+    identity and relationship foreign keys.
+
+    **ID strategy — choose one, apply consistently across all files:**
+
+    *Auto-generated (recommended)*
+      Omit all ``*_id`` columns. IDs are derived from the name columns using a
+      deterministic dot-separated hierarchy::
+
+          database_id  = database_name
+          schema_id    = database_name.schema_name
+          table_id     = database_name.schema_name.table_name
+          column_id    = database_name.schema_name.table_name.column_name
+
+    *Explicit*
+      Supply every ``*_id`` column (``database_id``, ``schema_id``,
+      ``table_id``, ``column_id``, ``value_id``) in **every** CSV file in the
+      hierarchy. Explicit IDs are used as-is and must be consistent across
+      files — e.g. the ``database_id`` value in ``schema_info.csv`` must match
+      the ``database_id`` in ``database_info.csv``.
+
+    Mixing explicit and auto-generated IDs across files in the same hierarchy
+    is not supported and will produce inconsistent node references.
     """
 
     DEFAULT_FILE_MAP: ClassVar[dict[str, str]] = {

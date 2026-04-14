@@ -1,18 +1,18 @@
-database_id,schema_id,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key,description
-demo-ecommerce,demo_ecommerce,customers,customer_id,INT64,false,true,false,Unique identifier for the customer
-demo-ecommerce,demo_ecommerce,customers,customer_name,STRING,true,false,false,Full name of the customer
-demo-ecommerce,demo_ecommerce,customers,email,STRING,true,false,false,Customer's email address
-demo-ecommerce,demo_ecommerce,customers,created_at,TIMESTAMP,true,false,false,Timestamp when the customer record was created
-demo-ecommerce,demo_ecommerce,products,product_id,INT64,false,true,false,Unique identifier for the product
-demo-ecommerce,demo_ecommerce,products,product_name,STRING,true,false,false,Name of the product
-demo-ecommerce,demo_ecommerce,products,category,STRING,true,false,false,"Product category (e.g., Electronics, Clothing)"
-demo-ecommerce,demo_ecommerce,products,price,NUMERIC,true,false,false,Product price in USD
-demo-ecommerce,demo_ecommerce,orders,order_id,INT64,false,true,false,Unique identifier for the order
-demo-ecommerce,demo_ecommerce,orders,customer_id,INT64,false,false,true,Foreign key reference to customers table
-demo-ecommerce,demo_ecommerce,orders,order_date,TIMESTAMP,true,false,false,Timestamp when the order was placed
-demo-ecommerce,demo_ecommerce,orders,total_amount,NUMERIC,true,false,false,Total order amount in USD
-demo-ecommerce,demo_ecommerce,order_items,order_item_id,INT64,false,true,false,Unique identifier for the order line item
-demo-ecommerce,demo_ecommerce,order_items,order_id,INT64,false,false,true,Foreign key reference to orders table
-demo-ecommerce,demo_ecommerce,order_items,product_id,INT64,false,false,true,Foreign key reference to products table
-demo-ecommerce,demo_ecommerce,order_items,quantity,INT64,true,false,false,Quantity of the product ordered
-demo-ecommerce,demo_ecommerce,order_items,price,NUMERIC,true,false,false,Price per unit at time of order in USD
+database_name,schema_name,table_name,column_name,data_type,is_nullable,is_primary_key,is_foreign_key,description
+Demo E-commerce,demo_ecommerce,customers,customer_id,INT64,false,true,false,Unique identifier for the customer
+Demo E-commerce,demo_ecommerce,customers,customer_name,STRING,true,false,false,Full name of the customer
+Demo E-commerce,demo_ecommerce,customers,email,STRING,true,false,false,Customer's email address
+Demo E-commerce,demo_ecommerce,customers,created_at,TIMESTAMP,true,false,false,Timestamp when the customer record was created
+Demo E-commerce,demo_ecommerce,products,product_id,INT64,false,true,false,Unique identifier for the product
+Demo E-commerce,demo_ecommerce,products,product_name,STRING,true,false,false,Name of the product
+Demo E-commerce,demo_ecommerce,products,category,STRING,true,false,false,"Product category (e.g., Electronics, Clothing)"
+Demo E-commerce,demo_ecommerce,products,price,NUMERIC,true,false,false,Product price in USD
+Demo E-commerce,demo_ecommerce,orders,order_id,INT64,false,true,false,Unique identifier for the order
+Demo E-commerce,demo_ecommerce,orders,customer_id,INT64,false,false,true,Foreign key reference to customers table
+Demo E-commerce,demo_ecommerce,orders,order_date,TIMESTAMP,true,false,false,Timestamp when the order was placed
+Demo E-commerce,demo_ecommerce,orders,total_amount,NUMERIC,true,false,false,Total order amount in USD
+Demo E-commerce,demo_ecommerce,order_items,order_item_id,INT64,false,true,false,Unique identifier for the order line item
+Demo E-commerce,demo_ecommerce,order_items,order_id,INT64,false,false,true,Foreign key reference to orders table
+Demo E-commerce,demo_ecommerce,order_items,product_id,INT64,false,false,true,Foreign key reference to products table
+Demo E-commerce,demo_ecommerce,order_items,quantity,INT64,true,false,false,Quantity of the product ordered
+Demo E-commerce,demo_ecommerce,order_items,price,NUMERIC,true,false,false,Price per unit at time of order in USD

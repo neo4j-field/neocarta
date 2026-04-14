@@ -1,2 +1,2 @@
-database_id,name,platform,service,description
-demo-ecommerce,Demo E-commerce,GCP,BIGQUERY,Demo e-commerce dataset with foreign key relationships for testing
+database_name,platform,service,description
+Demo E-commerce,GCP,BIGQUERY,Demo e-commerce dataset with foreign key relationships for testing
