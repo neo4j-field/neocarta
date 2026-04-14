@@ -14,8 +14,10 @@ class ColumnContext(BaseModel):
     """Model representing context for a column."""
 
     column_name: str = Field(..., description="The name of the column")
-    column_description: str = Field(..., description="The description of the column")
-    data_type: str = Field(..., description="The data type of the column")
+    column_description: str | None = Field(
+        default=None, description="The description of the column"
+    )
+    data_type: str | None = Field(default=None, description="The data type of the column")
     nullable: bool | None = Field(default=None, description="Whether the column can be null")
     examples: list[str] | None = Field(default=None, description="Example values for the column")
     key_type: str | None = Field(default=None, description="The key type of the column")
@@ -29,7 +31,7 @@ class TableContext(BaseModel):
     """Model representing context for a table."""
 
     table_name: str = Field(..., description="The name of the table")
-    table_description: str = Field(..., description="The description of the table")
+    table_description: str | None = Field(default=None, description="The description of the table")
     database_name: str = Field(..., description="The name of the database")
     schema_name: str = Field(..., description="The name of the schema")
     columns: list[ColumnContext] = Field(..., description="The relevant columns of the table")
