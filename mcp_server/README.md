@@ -1,6 +1,6 @@
 # Semantic Layer MCP Server
 
-An MCP server for semantic layer context retrieval, built to be compatible with the semantic graph library. It connects to a Neo4j graph database containing your schema metadata and exposes tools for LLM agents to discover and retrieve relevant table and column context for text-to-SQL tasks.
+An MCP server for semantic layer context retrieval, built to be compatible with the neocarta library. It connects to a Neo4j graph database containing your schema metadata and exposes tools for LLM agents to discover and retrieve relevant table and column context for text-to-SQL tasks.
 
 ## Installation
 

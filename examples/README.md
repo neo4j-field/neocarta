@@ -1,6 +1,6 @@
 # Examples
 
-Example implementations of the Semantic Graph library for Neo4j.
+Example implementations of the neocarta library for Neo4j.
 
 ## Available Examples
 
