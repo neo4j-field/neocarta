@@ -32,7 +32,7 @@ class GoogleAuth(httpx.Auth):
 sql_metadata_graph_mcp_params = {
     "transport": "stdio",
     "command": "uv",
-    "args": ["run", "mcp_server/src/server.py"],
+    "args": ["--directory", "mcp_server/", "run", "mcp-server"],
     "env": {
         "NEO4J_URI": os.getenv("NEO4J_URI"),
         "NEO4J_USERNAME": os.getenv("NEO4J_USERNAME"),
@@ -68,7 +68,10 @@ async def main() -> None:
 
     tool_names = {
         # From SQL Metadata Graph MCP Server
-        "get_metadata_schema_by_semantic_similarity",
+        "list_schemas",
+        "list_tables_by_schema",
+        "get_metadata_schema_by_column_semantic_similarity",
+        "get_metadata_schema_by_schema_and_table_semantic_similarity",
         "get_full_metadata_schema",
         # From BigQuery MCP Server
         "execute_sql",
