@@ -4,6 +4,11 @@ import hashlib
 from typing import Any
 
 
+def _normalize(s: str) -> str:
+    """Normalize an ID segment: lowercase, spaces → _, hyphens → _."""
+    return s.lower().replace(" ", "_").replace("-", "_")
+
+
 def generate_database_id(database: str) -> str:
     """
     Generate a database ID.
@@ -21,9 +26,9 @@ def generate_database_id(database: str) -> str:
     Examples:
     --------
     >>> generate_database_id("my-project")
-    'my-project'
+    'my_project'
     """
-    return database
+    return _normalize(database)
 
 
 def generate_schema_id(database: str, schema: str) -> str:
@@ -45,9 +50,9 @@ def generate_schema_id(database: str, schema: str) -> str:
     Examples:
     --------
     >>> generate_schema_id("my-project", "sales")
-    'my-project.sales'
+    'my_project.sales'
     """
-    return f"{database}.{schema}"
+    return f"{_normalize(database)}.{_normalize(schema)}"
 
 
 def generate_table_id(database: str, schema: str, table: str) -> str:
@@ -71,9 +76,9 @@ def generate_table_id(database: str, schema: str, table: str) -> str:
     Examples:
     --------
     >>> generate_table_id("my-project", "sales", "orders")
-    'my-project.sales.orders'
+    'my_project.sales.orders'
     """
-    return f"{database}.{schema}.{table}"
+    return f"{_normalize(database)}.{_normalize(schema)}.{_normalize(table)}"
 
 
 def generate_column_id(database: str, schema: str, table: str, column: str) -> str:
@@ -99,9 +104,9 @@ def generate_column_id(database: str, schema: str, table: str, column: str) -> s
     Examples:
     --------
     >>> generate_column_id("my-project", "sales", "orders", "order_id")
-    'my-project.sales.orders.order_id'
+    'my_project.sales.orders.order_id'
     """
-    return f"{database}.{schema}.{table}.{column}"
+    return f"{_normalize(database)}.{_normalize(schema)}.{_normalize(table)}.{_normalize(column)}"
 
 
 def generate_value_id(database: str, schema: str, table: str, column: str, value: Any) -> str:
@@ -131,11 +136,11 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
     Examples:
     --------
     >>> generate_value_id("my-project", "sales", "orders", "status", "completed")
-    'my-project.sales.orders.status.9cdfb439c7876e703e307864c9167a15'
+    'my_project.sales.orders.status.9cdfb439c7876e703e307864c9167a15'
     """
     # Generate a short hash of the value (first 32 characters of MD5)
     value_hash = hashlib.md5(str(value).encode(), usedforsecurity=False).hexdigest()[:32]
-    return f"{database}.{schema}.{table}.{column}.{value_hash}"
+    return f"{_normalize(database)}.{_normalize(schema)}.{_normalize(table)}.{_normalize(column)}.{value_hash}"
 
 
 def create_query_id(query: str) -> str:
