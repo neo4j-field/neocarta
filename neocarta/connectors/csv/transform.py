@@ -25,13 +25,6 @@ from ...data_model.rdbms.expanded import (
     Value,
 )
 from ..models import NodesCache, RelationshipsCache
-from ..utils.generate_id import (
-    generate_column_id,
-    generate_database_id,
-    generate_schema_id,
-    generate_table_id,
-    generate_value_id,
-)
 
 
 def _available_properties(
@@ -43,23 +36,37 @@ def _available_properties(
     """
     Derive the list of model property names to write based on CSV columns present.
 
-    Excludes ID-generating columns and maps CSV names to model names where needed.
-    This controls which properties are written to Neo4j, preventing None from
+    Controls which properties are written to Neo4j, preventing None from
     overwriting existing values for columns absent in the CSV.
+
+    Columns are excluded from the result in three ways:
+    - The literal ``"id"`` column is always excluded.
+    - Any column whose name ends with ``"_id"`` is automatically excluded (these
+      are structural identity/foreign-key columns computed during extraction and
+      should not be written as node properties).
+    - Columns listed in ``exclude`` are excluded explicitly (used for non-ID
+      structural columns such as ``database_name`` or ``schema_name`` that belong
+      to a parent entity rather than the current node).
 
     Parameters
     ----------
     df : pd.DataFrame
-        The source DataFrame.
+        The source DataFrame, which may contain computed ``*_id`` columns added
+        during extraction in addition to the original CSV columns.
     exclude : list[str]
-        CSV column names to exclude (typically the ID-generating columns).
+        CSV column names to exclude explicitly. Typically used for parent-scope
+        name columns (e.g. ``"database_name"`` in a schema DataFrame) that are
+        not properties of the current node type.
     column_mapping : dict[str, str], optional
-        Maps CSV column names to model property names (e.g. {"data_type": "type"}).
+        Maps CSV column names to model property names (e.g. ``{"data_type": "type"}``).
+        Applied after exclusion; unmapped columns retain their original name.
     always_include : list[str], optional
-        Model property names that must always appear in the result.
+        Model property names that must always appear in the result, appended if
+        not already present. Useful for required properties whose source column is
+        handled via ``column_mapping`` (e.g. ``"name"`` mapped from ``"schema_name"``).
     """
     all_excluded = {"id"} | set(exclude)
-    csv_cols = [c for c in df.columns if c not in all_excluded]
+    csv_cols = [c for c in df.columns if c not in all_excluded and not c.endswith("_id")]
 
     properties = [column_mapping.get(c, c) for c in csv_cols] if column_mapping else list(csv_cols)
 
@@ -211,8 +218,8 @@ class CSVTransformer:
 
         nodes = [
             Database(
-                id=generate_database_id(row.database_id),
-                name=getattr(row, "name", row.database_id) or row.database_id,
+                id=row.database_id,
+                name=row.database_name,
                 platform=getattr(row, "platform", None),
                 service=getattr(row, "service", None),
                 description=getattr(row, "description", None),
@@ -221,7 +228,7 @@ class CSVTransformer:
         ]
         self._node_cache["database_nodes"] = nodes
         self._properties["database_nodes"] = _available_properties(
-            df, exclude=["database_id"], always_include=["name"]
+            df, exclude=[], column_mapping={"database_name": "name"}
         )
         return nodes
 
@@ -232,15 +239,15 @@ class CSVTransformer:
 
         nodes = [
             Schema(
-                id=generate_schema_id(row.database_id, row.schema_id),
-                name=getattr(row, "name", row.schema_id) or row.schema_id,
+                id=row.schema_id,
+                name=row.schema_name,
                 description=getattr(row, "description", None),
             )
             for row in df.itertuples(index=False)
         ]
         self._node_cache["schema_nodes"] = nodes
         self._properties["schema_nodes"] = _available_properties(
-            df, exclude=["database_id", "schema_id"], always_include=["name"]
+            df, exclude=["database_name"], column_mapping={"schema_name": "name"}
         )
         return nodes
 
@@ -251,15 +258,15 @@ class CSVTransformer:
 
         nodes = [
             Table(
-                id=generate_table_id(row.database_id, row.schema_id, row.table_name),
-                name=getattr(row, "name", row.table_name) or row.table_name,
+                id=row.table_id,
+                name=row.table_name,
                 description=getattr(row, "description", None),
             )
             for row in df.itertuples(index=False)
         ]
         self._node_cache["table_nodes"] = nodes
         self._properties["table_nodes"] = _available_properties(
-            df, exclude=["database_id", "schema_id", "table_name"], always_include=["name"]
+            df, exclude=["database_name", "schema_name"], column_mapping={"table_name": "name"}
         )
         return nodes
 
@@ -270,10 +277,8 @@ class CSVTransformer:
 
         nodes = [
             Column(
-                id=generate_column_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name
-                ),
-                name=getattr(row, "name", row.column_name) or row.column_name,
+                id=row.column_id,
+                name=row.column_name,
                 description=getattr(row, "description", None),
                 type=getattr(row, "data_type", None),
                 nullable=getattr(row, "is_nullable", True),
@@ -285,9 +290,8 @@ class CSVTransformer:
         self._node_cache["column_nodes"] = nodes
         self._properties["column_nodes"] = _available_properties(
             df,
-            exclude=["database_id", "schema_id", "table_name", "column_name"],
-            column_mapping={"data_type": "type", "is_nullable": "nullable"},
-            always_include=["name"],
+            exclude=["database_name", "schema_name", "table_name"],
+            column_mapping={"column_name": "name", "data_type": "type", "is_nullable": "nullable"},
         )
         return nodes
 
@@ -298,9 +302,7 @@ class CSVTransformer:
 
         nodes = [
             Value(
-                id=generate_value_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name, row.value
-                ),
+                id=row.value_id,
                 value=row.value,
             )
             for row in df.itertuples(index=False)
@@ -308,7 +310,7 @@ class CSVTransformer:
         self._node_cache["value_nodes"] = nodes
         self._properties["value_nodes"] = _available_properties(
             df,
-            exclude=["database_id", "schema_id", "table_name", "column_name"],
+            exclude=["database_name", "schema_name", "table_name", "column_name"],
             always_include=["value"],
         )
         return nodes
@@ -366,7 +368,7 @@ class CSVTransformer:
         ]
         self._node_cache["category_nodes"] = nodes
         self._properties["category_nodes"] = _available_properties(
-            df, exclude=["glossary_id", "category_id"], always_include=["name"]
+            df, exclude=[], always_include=["name"]
         )
         return nodes
 
@@ -385,7 +387,7 @@ class CSVTransformer:
         ]
         self._node_cache["business_term_nodes"] = nodes
         self._properties["business_term_nodes"] = _available_properties(
-            df, exclude=["category_id", "term_id"], always_include=["name"]
+            df, exclude=[], always_include=["name"]
         )
         return nodes
 
@@ -400,8 +402,8 @@ class CSVTransformer:
 
         relationships = [
             HasSchema(
-                database_id=generate_database_id(row.database_id),
-                schema_id=generate_schema_id(row.database_id, row.schema_id),
+                database_id=row.database_id,
+                schema_id=row.schema_id,
             )
             for row in df.itertuples(index=False)
         ]
@@ -415,8 +417,8 @@ class CSVTransformer:
 
         relationships = [
             HasTable(
-                schema_id=generate_schema_id(row.database_id, row.schema_id),
-                table_id=generate_table_id(row.database_id, row.schema_id, row.table_name),
+                schema_id=row.schema_id,
+                table_id=row.table_id,
             )
             for row in df.itertuples(index=False)
         ]
@@ -430,10 +432,8 @@ class CSVTransformer:
 
         relationships = [
             HasColumn(
-                table_id=generate_table_id(row.database_id, row.schema_id, row.table_name),
-                column_id=generate_column_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name
-                ),
+                table_id=row.table_id,
+                column_id=row.column_id,
             )
             for row in df.itertuples(index=False)
         ]
@@ -447,12 +447,8 @@ class CSVTransformer:
 
         relationships = [
             HasValue(
-                column_id=generate_column_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name
-                ),
-                value_id=generate_value_id(
-                    row.database_id, row.schema_id, row.table_name, row.column_name, row.value
-                ),
+                column_id=row.column_id,
+                value_id=row.value_id,
             )
             for row in df.itertuples(index=False)
         ]
@@ -498,18 +494,8 @@ class CSVTransformer:
 
         relationships = [
             References(
-                source_column_id=generate_column_id(
-                    row.source_database_id,
-                    row.source_schema_id,
-                    row.source_table_name,
-                    row.source_column_name,
-                ),
-                target_column_id=generate_column_id(
-                    row.target_database_id,
-                    row.target_schema_id,
-                    row.target_table_name,
-                    row.target_column_name,
-                ),
+                source_column_id=row.source_column_id,
+                target_column_id=row.target_column_id,
                 criteria=getattr(row, "criteria", None),
             )
             for row in df.itertuples(index=False)
