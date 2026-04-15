@@ -10,7 +10,7 @@ from openai import OpenAI
 
 from neocarta import NodeLabel
 from neocarta.connectors.dataplex import DataplexConnector
-from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta.enrichment.embeddings import OpenAIEmbeddingsConnector
 
 
 def main(

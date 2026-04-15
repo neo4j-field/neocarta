@@ -34,7 +34,7 @@ Use `OpenAI` (sync client) and call `run()`:
 from openai import OpenAI
 from neo4j import GraphDatabase
 from neocarta import NodeLabel
-from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta.enrichment.embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -58,7 +58,7 @@ Use `AsyncOpenAI` and call `arun()`. Within each batch, all embedding API calls 
 from openai import AsyncOpenAI
 from neo4j import GraphDatabase
 from neocarta import NodeLabel
-from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta.enrichment.embeddings import OpenAIEmbeddingsConnector
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -73,7 +73,7 @@ connector = OpenAIEmbeddingsConnector(
 await connector.arun(node_labels=[NodeLabel.TABLE, NodeLabel.COLUMN], batch_size=100)
 ```
 
-See [examples/sync_embeddings.py](../../examples/sync_embeddings.py) and [examples/async_embeddings.py](../../examples/async_embeddings.py) for runnable scripts with CLI argument support.
+See [examples/sync_embeddings.py](../../../examples/sync_embeddings.py) and [examples/async_embeddings.py](../../../examples/async_embeddings.py) for runnable scripts with CLI argument support.
 
 ## Configuration
 
@@ -107,10 +107,3 @@ Failed individual embeddings (e.g. API errors) return `None` and are silently sk
 ```
 
 The index creation is idempotent (`IF NOT EXISTS`), so it is safe to call on every run.
-
-## Module Contents
-
-| File | Purpose |
-|---|---|
-| `openai_embeddings.py` | `OpenAIEmbeddingsConnector` class — orchestrates fetch, embed, and write |
-| `utils.py` | `get_nodes_to_embed`, batch embedding helpers, `write_embeddings_to_graph` |
