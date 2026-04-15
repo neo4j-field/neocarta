@@ -1,0 +1,8 @@
+name: Build and release neocarta to PyPI
+
+on:
+  push:
+    tags:
+      - neocarta-v*
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
