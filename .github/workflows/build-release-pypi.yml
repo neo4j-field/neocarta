@@ -1,14 +1,14 @@
 name: Build and release neocarta to PyPI
 
 on:
-  push:
-    tags:
-      - neocarta-v*
+  release:
+    types: [published]
   workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/neocarta-v')
     environment:
       name: pypi
       url: https://pypi.org/project/neocarta/
