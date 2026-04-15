@@ -587,7 +587,7 @@ import os
 from neo4j import GraphDatabase
 from openai import AsyncOpenAI
 from neocarta import NodeLabel as nl
-from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta.enrichment.embeddings import OpenAIEmbeddingsConnector
 
 # Initialize clients
 neo4j_driver = GraphDatabase.driver(

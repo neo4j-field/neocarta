@@ -10,7 +10,7 @@ from openai import OpenAI
 
 from neocarta import NodeLabel
 from neocarta.connectors.bigquery import BigQuerySchemaConnector
-from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta.enrichment.embeddings import OpenAIEmbeddingsConnector
 
 
 def main(with_embeddings: bool = True) -> None:
@@ -43,14 +43,14 @@ def main(with_embeddings: bool = True) -> None:
     if with_embeddings:
         print("Generating embeddings for nodes...")
         # create embeddings for the nodes
-        openai_embedding_connector = OpenAIEmbeddingsConnector(
+        openai_embeddings_connector = OpenAIEmbeddingsConnector(
             neo4j_driver=neo4j_driver,
             client=embedding_client,
             embedding_model="text-embedding-3-small",
             dimensions=768,
             database_name=neo4j_database,
         )
-        openai_embedding_connector.run(node_labels=node_labels)
+        openai_embeddings_connector.run(node_labels=node_labels)
 
     print("Connector completed successfully!")
 

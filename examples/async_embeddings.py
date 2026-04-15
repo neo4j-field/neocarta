@@ -34,7 +34,7 @@ from neo4j import GraphDatabase
 from openai import AsyncOpenAI
 
 from neocarta import NodeLabel
-from neocarta.embeddings.openai_embeddings import OpenAIEmbeddingsConnector
+from neocarta.enrichment.embeddings import OpenAIEmbeddingsConnector
 
 
 async def main(

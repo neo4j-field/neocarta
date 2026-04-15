@@ -4,8 +4,8 @@ import pandas as pd
 from neo4j import Driver
 from openai import AsyncOpenAI, OpenAI
 
-from ..enums import NodeLabel
-from ..ingest.indexes import create_vector_index
+from ...enums import NodeLabel
+from ...ingest.indexes import create_vector_index
 from .utils import (
     create_embeddings_in_batches_async,
     create_embeddings_in_batches_sync,

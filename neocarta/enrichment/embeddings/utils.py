@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 from neo4j import Driver, RoutingControl
 
-from ..enums import NodeLabel
+from ...enums import NodeLabel
 
 
 def get_nodes_to_embed(
