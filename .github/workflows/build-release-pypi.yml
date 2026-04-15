@@ -6,3 +6,27 @@ on:
       - neocarta-v*
   workflow_dispatch:  # Allows manual triggering of the workflow
 
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/neocarta/
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build
+        run: uv build
+
+      - name: Smoke test
+        run: uv run --isolated --no-project --with dist/*.whl --with pytest pytest tests/smoke/
+
+      - name: Publish
+        run: uv publish
