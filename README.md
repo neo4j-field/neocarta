@@ -637,7 +637,7 @@ make create-graph
 
 ### Dev Setup
 
-This project uses [uv](https://docs.astral.sh/uv/) for dependency management and requires Python 3.12 or higher.
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management and requires Python 3.10 or higher.
 
 **[uv](https://docs.astral.sh/uv/)** — Python dependency manager:
 ```bash
