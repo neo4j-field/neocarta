@@ -1,7 +1,7 @@
 """Smoke tests — verify the installed wheel exposes all expected public symbols."""
 
 
-def test_root_exports():
+def test_root_imports():
     import neocarta
 
     assert hasattr(neocarta, "NodeLabel")
