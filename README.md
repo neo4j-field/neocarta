@@ -4,60 +4,14 @@ End to end library for generating metadata knowledge graphs in Neo4j for query g
 
 ## Installation
 
-This project uses [uv](https://docs.astral.sh/uv/) for dependency management and requires Python 3.12 or higher.
-
-### Prerequisites
-
-**[uv](https://docs.astral.sh/uv/)** — Python dependency manager:
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+pip install neocarta
 ```
 
-**Neo4j** — a running Neo4j instance is required. Options:
+Requires Python 3.10 or higher and a running Neo4j instance. Options:
 - [Neo4j AuraDB](https://neo4j.com/product/auradb/) — managed cloud (free tier available)
 - [Neo4j Desktop](https://neo4j.com/download/) — local GUI-based instance
-- [Docker image](https://hub.docker.com/_/neo4j) — lightweight instance
-
-### Install All Dependencies (Recommended)
-
-For most users, install all dependencies to run the complete workflow:
-```bash
-make install
-```
-
-This installs all dependency groups and allows you to:
-- Create the metadata graph from BigQuery
-- Run the MCP server
-- Run the Text2SQL agent
-
-### Install Specific Components
-
-If you only need specific components, you can install individual dependency groups:
-
-**Metadata Graph Only** (BigQuery ETL + embeddings)
-```bash
-make install-metadata-graph
-```
-
-**MCP Server Only** (SQL metadata retrieval server)
-```bash
-make install-mcp-server
-```
-
-**Agent Only** (Text2SQL agent with MCP servers)
-```bash
-make install-agent
-```
-*Note: The agent group automatically includes mcp-server dependencies*
-
-### Dependency Groups
-
-The project is organized into the following dependency groups:
-
-- **metadata-graph**: BigQuery metadata extraction, Neo4j loading, and embedding generation
-- **mcp-server**: Local MCP server for SQL metadata retrieval from Neo4j
-- **agent**: Text2SQL agent with LangChain (includes mcp-server dependencies)
-- **dev**: Development tools (Jupyter notebooks)
+- [Docker image](https://hub.docker.com/_/neo4j) — lightweight local instance
 
 ## Metadata Graph
 
@@ -109,7 +63,7 @@ Nodes
 * `Value`
 
 Relationships
-* `(:Database)-[:HAS_Schema]->(:Schema)`
+* `(:Database)-[:HAS_SCHEMA]->(:Schema)`
 * `(:Schema)-[:HAS_TABLE]->(:Table)`
 * `(:Table)-[:HAS_COLUMN]->(:Column)`
 * `(:Column)-[:HAS_VALUE]->(:Value)`
@@ -157,13 +111,6 @@ class Connector:
         self.load_metadata()
 ```
 
-**Benefits of the class-based approach:**
-* **Modularity** - Each component (extractor, transformer, loader) is independently testable
-* **Reusability** - Components can be reused across different connectors
-* **Maintainability** - Clear separation of concerns makes the codebase easier to understand and modify
-* **Caching** - Intermediate results are cached as class properties, enabling step-by-step execution
-* **Flexibility** - Individual ETL steps can be run separately for debugging or custom connectors
-
 ### Connectors
 
 #### **BigQuery Schema Connector**
@@ -198,7 +145,7 @@ Connector for extracting **query logs** from BigQuery `INFORMATION_SCHEMA.JOBS_B
 
 **Graph schema additions:**
 * `Query` nodes with properties:
-  - `query` - The SQL text
+  - `content` - The query text
   - `query_id` - Hash of query text
 * `(:Query)-[:USES_TABLE]->(:Table)` relationships
 * `(:Query)-[:USES_COLUMN]->(:Column)` relationships
@@ -684,7 +631,66 @@ To run the full connector pipeline, use the following Make command:
 make create-graph
 ```
 
-## Sample Dataset
+---
+
+## Contributing
+
+### Dev Setup
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management and requires Python 3.12 or higher.
+
+**[uv](https://docs.astral.sh/uv/)** — Python dependency manager:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Neo4j** — a running Neo4j instance is required. Options:
+- [Neo4j AuraDB](https://neo4j.com/product/auradb/) — managed cloud (free tier available)
+- [Neo4j Desktop](https://neo4j.com/download/) — local GUI-based instance
+- [Docker image](https://hub.docker.com/_/neo4j) — lightweight instance
+
+### Install All Dependencies (Recommended)
+
+For most users, install all dependencies to run the complete workflow:
+```bash
+make install
+```
+
+This installs all dependency groups and allows you to:
+- Create the metadata graph from BigQuery
+- Run the MCP server
+- Run the Text2SQL agent
+
+### Install Specific Components
+
+If you only need specific components, you can install individual dependency groups:
+
+**Metadata Graph Only** (BigQuery ETL + embeddings)
+```bash
+make install-metadata-graph
+```
+
+**MCP Server Only** (SQL metadata retrieval server)
+```bash
+make install-mcp-server
+```
+
+**Agent Only** (Text2SQL agent with MCP servers)
+```bash
+make install-agent
+```
+*Note: The agent group automatically includes mcp-server dependencies*
+
+### Dependency Groups
+
+The project is organized into the following dependency groups:
+
+- **metadata-graph**: BigQuery metadata extraction, Neo4j loading, and embedding generation
+- **mcp-server**: Local MCP server for SQL metadata retrieval from Neo4j
+- **agent**: Text2SQL agent with LangChain (includes mcp-server dependencies)
+- **dev**: Development tools (Jupyter notebooks)
+
+### Sample Dataset
 
 This repository contains a sample dataset of ecommerce data.
 
@@ -892,6 +898,3 @@ Agent: Here are the total sales by product category:
 - Clothing: $8,912.30
 ...
 ```
-
-
-

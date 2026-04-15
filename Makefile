@@ -22,13 +22,13 @@ help:
 agent:
 	uv run run_agent.py
 
-create-graph:
+create-graph-from-bigquery:
 	uv run examples/bigquery.py
 
-create-graph-no-embeddings:
+create-graph-from-bigquery-no-embeddings:
 	uv run examples/bigquery.py --skip-embeddings
 
-load-ecommerce-dataset:
+load-ecommerce-dataset-into-bigquery:
 	uv run datasets/ecommerce_bigquery.py
 
 fmt:
