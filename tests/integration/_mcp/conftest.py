@@ -36,10 +36,10 @@ class MockEmbeddingsConnector(OpenAIEmbeddingsConnector):
             database_name=database_name,
         )
 
-    def _create_embedding_sync(self, _description: str) -> list[float]:
+    def _create_embedding_sync(self, description: str) -> list[float]:  # noqa: ARG002
         return list(_MOCK_EMBEDDING)
 
-    async def _create_embedding_async(self, _description: str) -> list[float]:
+    async def _create_embedding_async(self, description: str) -> list[float]:  # noqa: ARG002
         return list(_MOCK_EMBEDDING)
 
 
