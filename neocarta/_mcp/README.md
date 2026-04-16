@@ -25,13 +25,7 @@ The server is configured via environment variables (or a `.env` file):
 ## Running the server
 
 ```bash
-uvx "neocarta[mcp]" neocarta-mcp mcp serve
-```
-
-Or add it to Claude:
-
-```bash
-claude mcp add neocarta -- uvx "neocarta[mcp]" neocarta-mcp mcp serve --password <neo4j-password>
+uvx "neocarta[mcp]" neocarta-mcp
 ```
 
 ## Tools
