@@ -5,6 +5,8 @@ import asyncio
 from dotenv import load_dotenv
 from fastmcp import FastMCP
 from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
+from openai import AsyncOpenAI
+
 from ..enrichment.embeddings import OpenAIEmbeddingsConnector
 from .embeddings import create_openai_embedder
 from .models import ListSchemaRecord, ListTablesBySchemaRecord, TableContext
@@ -305,8 +307,6 @@ ORDER BY table.name
 
 async def main() -> None:
     """Initialize drivers, create the MCP server, and run it over stdio."""
-    from openai import AsyncOpenAI
-
     neo4j_driver = AsyncGraphDatabase.driver(
         uri=mcp_server_settings.neo4j_uri,
         auth=(mcp_server_settings.neo4j_username, mcp_server_settings.neo4j_password),

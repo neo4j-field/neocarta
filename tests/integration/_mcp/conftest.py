@@ -17,7 +17,7 @@ DATABASE_NAME = "neo4j"
 
 # Fixed-seed random vector reused for every input so that cosine similarity
 # between stored node embeddings and query embeddings is always 1.0.
-_rng = random.Random(42)
+_rng = random.Random(42)  # noqa: S311
 _MOCK_EMBEDDING: list[float] = [_rng.random() for _ in range(768)]
 
 
@@ -36,10 +36,10 @@ class MockEmbeddingsConnector(OpenAIEmbeddingsConnector):
             database_name=database_name,
         )
 
-    def _create_embedding_sync(self, description: str) -> list[float]:
+    def _create_embedding_sync(self, _description: str) -> list[float]:
         return list(_MOCK_EMBEDDING)
 
-    async def _create_embedding_async(self, description: str) -> list[float]:
+    async def _create_embedding_async(self, _description: str) -> list[float]:
         return list(_MOCK_EMBEDDING)
 
 
@@ -49,8 +49,7 @@ def sample_csv_dir(setup):
     temp_dir = Path(tempfile.mkdtemp())
 
     (temp_dir / "database_info.csv").write_text(
-        "database_name,platform,service,description\n"
-        "my-project,GCP,BIGQUERY,Test database\n"
+        "database_name,platform,service,description\nmy-project,GCP,BIGQUERY,Test database\n"
     )
     (temp_dir / "schema_info.csv").write_text(
         "database_name,schema_name,description\n"
@@ -121,8 +120,6 @@ def loaded_graph(setup, sample_csv_dir):
         neo4j_driver=sync_driver,
         database_name=DATABASE_NAME,
     ).run(node_labels=[NodeLabel.SCHEMA, NodeLabel.TABLE, NodeLabel.COLUMN])
-
-    yield
 
 
 @pytest.fixture(scope="module")

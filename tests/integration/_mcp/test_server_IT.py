@@ -3,7 +3,6 @@
 import asyncio
 import json
 
-import pytest
 from fastmcp import Client
 from neo4j import AsyncGraphDatabase
 
