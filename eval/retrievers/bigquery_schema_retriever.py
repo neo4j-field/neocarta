@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from mcp_server.models import TableContext
+from neocarta._mcp.models import TableContext
 
 
 class BigQuerySchemaRetriever:

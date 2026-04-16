@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from mcp_server.models import TableContext
+from neocarta._mcp.models import TableContext
 
 
 def extract_objects_from_table_contexts(table_contexts: list[TableContext]) -> dict[str, set[str]]:

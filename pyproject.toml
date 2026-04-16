@@ -33,11 +33,21 @@ dependencies = [
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "neo4j>=6.1.0",
-    "pandas>=3.0.0",
+    "pandas>=2.0.0,<3",
     "google-cloud-dataplex>=2.16.0",
     "sqlglot>=28.10.1",
     "google-cloud-bigquery-storage>=2.36.2",
 ]
+
+[project.optional-dependencies]
+mcp = [
+    "fastmcp>=2.14.4",
+    "mcp>=1.26.0",
+    "pydantic-settings>=2.12.0",
+]
+
+[project.scripts]
+neocarta-mcp = "neocarta._mcp.server:run"
 
 [dependency-groups]
 # Development tools
@@ -48,14 +58,8 @@ dev = [
     "ruff>=0.15.10",
 ]
 
-# Local MCP server for SQL metadata retrieval
-mcp-server = [
-    "mcp-server",
-]
-
-# Text2SQL agent with LangChain (includes mcp-server dependencies)
+# Text2SQL agent with LangChain
 agent = [
-    "mcp-server",
     "google-cloud-bigquery>=3.40.0",
     "langchain>=1.2.7",
     "langchain-mcp-adapters>=0.2.1",
@@ -78,11 +82,6 @@ packages = ["neocarta"]
 [tool.hatch.build.targets.sdist]
 include = ["neocarta/**", "pyproject.toml", "README.md", "LICENSE"]
 
-[tool.uv.workspace]
-members = ["mcp_server"]
-
-[tool.uv.sources]
-mcp-server = { workspace = true }
 
 [tool.pytest.ini_options]
 pythonpath = "."

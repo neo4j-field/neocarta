@@ -7,7 +7,7 @@ from typing import Any
 from google.cloud import bigquery
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from mcp_server.models import TableContext
+from neocarta._mcp.models import TableContext
 from openai import AsyncOpenAI
 
 from eval.datasets.models import EvalSample

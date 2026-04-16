@@ -5,7 +5,7 @@ An MCP server for semantic layer context retrieval, built to be compatible with 
 ## Installation
 
 ```bash
-uv sync --group mcp-server
+pip install "neocarta[mcp]"
 ```
 
 ## Configuration
@@ -25,7 +25,13 @@ The server is configured via environment variables (or a `.env` file):
 ## Running the server
 
 ```bash
-uv run mcp-server
+uvx "neocarta[mcp]" neocarta-mcp mcp serve
+```
+
+Or add it to Claude:
+
+```bash
+claude mcp add neocarta -- uvx "neocarta[mcp]" neocarta-mcp mcp serve --password <neo4j-password>
 ```
 
 ## Tools
