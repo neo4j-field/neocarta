@@ -7,7 +7,6 @@ from typing import Any
 from google.cloud import bigquery
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from neocarta._mcp.models import TableContext
 from openai import AsyncOpenAI
 
 from eval.datasets.models import EvalSample
@@ -22,6 +21,7 @@ from eval.sql_parser import (
     score_structural_equivalence,
 )
 from eval.token_metrics import ContextTokenMeasurement
+from neocarta._mcp.models import TableContext
 
 system_prompt = """
 You are a SQL expert. Given a natural language question and database schema context, generate a BigQuery SQL query.

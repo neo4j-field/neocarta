@@ -66,11 +66,28 @@ def test_rdbms_data_model_imports():
         Value,
     )
 
-    assert all([
-        BusinessTerm, Category, Column, Database, Glossary,
-        HasBusinessTerm, HasCategory, HasColumn, HasSchema, HasTable,
-        HasValue, Query, References, Schema, Table, UsesColumn, UsesTable, Value,
-    ])
+    assert all(
+        [
+            BusinessTerm,
+            Category,
+            Column,
+            Database,
+            Glossary,
+            HasBusinessTerm,
+            HasCategory,
+            HasColumn,
+            HasSchema,
+            HasTable,
+            HasValue,
+            Query,
+            References,
+            Schema,
+            Table,
+            UsesColumn,
+            UsesTable,
+            Value,
+        ]
+    )
 
 
 def test_enrichment_imports():
