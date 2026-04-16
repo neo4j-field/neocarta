@@ -1,6 +1,15 @@
 # Neocarta
 
-End to end library for generating metadata knowledge graphs in Neo4j for query generation and routing workflows.
+An end-to-end library for generating metadata knowledge graphs in Neo4j for query generation and routing workflows.
+
+*Note: This library is not a Neo4j product. It is a Neo4j Labs project supported by the Neo4j field team.*
+
+[![Neo4j Labs](https://img.shields.io/badge/Neo4j-Labs-6366F1?logo=neo4j)](https://neo4j.com/labs/)
+[![Status: Experimental](https://img.shields.io/badge/Status-Experimental-F59E0B)](https://neo4j.com/labs/)
+[![CI](https://github.com/neo4j-field/neocarta/actions/workflows/pr-main-tests.yml/badge.svg)](https://github.com/neo4j-field/neocarta/actions/workflows/pr-main-tests.yml)
+[![PyPI version](https://badge.fury.io/py/neocarta.svg)](https://badge.fury.io/py/neocarta)
+[![Python versions](https://img.shields.io/pypi/pyversions/neocarta.svg)](https://pypi.org/project/neocarta/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Installation
 
