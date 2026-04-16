@@ -11,6 +11,7 @@
 * Deduplicate embedding code in MCP server. MCP server now uses `neocarta` embeddings class.
 
 ### Added
+* Add integration tests for MCP server compatibility with neocarta graph
 
 ## v0.1.0
 
