@@ -1,56 +1,10 @@
 """Pytest fixtures for CSV connector integration tests."""
 
-import os
 import shutil
 import tempfile
 from pathlib import Path
 
 import pytest
-from neo4j import GraphDatabase
-from testcontainers.neo4j import Neo4jContainer
-
-# Use community edition (more stable, faster startup)
-neo4j_container = Neo4jContainer("neo4j:5.26.23")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def setup():
-    """Start Neo4j container once per test module."""
-    print("\nStarting Neo4j container...")
-    neo4j_container.start()
-    print(f"Neo4j container started at {neo4j_container.get_connection_url()}")
-
-    # Set environment variables
-    os.environ["NEO4J_URI"] = neo4j_container.get_connection_url()
-    os.environ["NEO4J_HOST"] = neo4j_container.get_container_host_ip()
-    os.environ["NEO4J_PORT"] = str(neo4j_container.get_exposed_port(7687))
-
-    yield neo4j_container
-
-    print("\nStopping Neo4j container...")
-    try:
-        if hasattr(neo4j_container, "_container") and neo4j_container._container:
-            neo4j_container.stop()
-    except Exception as e:
-        print(f"Error stopping container: {e}")
-
-
-@pytest.fixture
-def neo4j_driver(setup: Neo4jContainer):
-    """Provide a Neo4j driver for each test, with database cleanup."""
-    driver = GraphDatabase.driver(setup.get_connection_url(), auth=(setup.username, setup.password))
-
-    # Clean up database before test
-    with driver.session(database="neo4j") as session:
-        session.run("MATCH (n) DETACH DELETE n")
-
-    try:
-        yield driver
-    finally:
-        # Clean up database after test
-        with driver.session(database="neo4j") as session:
-            session.run("MATCH (n) DETACH DELETE n")
-        driver.close()
 
 
 @pytest.fixture
