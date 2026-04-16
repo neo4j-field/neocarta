@@ -8,6 +8,25 @@ authors = [
     { name = "Alex Gilmore" }
 ]
 requires-python = ">=3.10"
+
+keywords = [
+    "neo4j",
+    "ai",
+    "llm",
+    "semantic-layer",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
 dependencies = [
     "google-cloud-bigquery[pandas]>=3.40.0",
     "openai>=2.15.0",
