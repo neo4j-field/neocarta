@@ -38,6 +38,16 @@ class TableContext(BaseModel):
     joins: list[JoinContext] = Field(
         default=[], description="The relevant join tables of the table"
     )
+    num_columns: int | None = Field(default=None, description="The number of columns in the table")
+    table_score: float | None = Field(
+        default=None, description="The table embedding similarity score"
+    )
+    schema_score: float | None = Field(
+        default=None, description="The schema embedding similarity score"
+    )
+    column_avg_score: float | None = Field(
+        default=None, description="The average column embedding similarity score"
+    )
 
 
 class ListSchemaRecord(BaseModel):

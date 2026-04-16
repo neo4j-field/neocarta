@@ -68,6 +68,9 @@ refresh-mermaid-architecture-images:
 test-unit:
 	uv run pytest tests/unit
 
+test-mcp:
+	uv run pytest tests/integration/_mcp -v
+
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
