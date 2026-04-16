@@ -16,7 +16,7 @@ def create_mcp_server(
     neo4j_driver: AsyncDriver, neo4j_database: str, embedding_client: AsyncOpenAI
 ) -> FastMCP:
     """Create and configure the FastMCP server with all semantic layer tools."""
-    server = FastMCP("Semantic Layer MCP Server")
+    server = FastMCP("Neocarta MCP Server")
 
     @server.tool()
     async def list_schemas() -> list[ListSchemaRecord]:
