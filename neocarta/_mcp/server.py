@@ -8,17 +8,17 @@ from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
 from openai import AsyncOpenAI
 
 from ..enrichment.embeddings import OpenAIEmbeddingsConnector
+from .cypher import (
+    get_full_metadata_schema_cypher,
+    get_metadata_schema_by_column_semantic_similarity_cypher,
+    get_metadata_schema_by_schema_and_table_semantic_similarity_cypher,
+    get_metadata_schema_by_table_semantic_similarity_cypher,
+    list_schemas_cypher,
+    list_tables_by_schema_cypher,
+)
 from .embeddings import create_openai_embedder
 from .models import ListSchemaRecord, ListTablesBySchemaRecord, TableContext
 from .settings import mcp_server_settings
-from .cypher import (
-    list_schemas_cypher,
-    list_tables_by_schema_cypher,
-    get_metadata_schema_by_column_semantic_similarity_cypher,
-    get_metadata_schema_by_schema_and_table_semantic_similarity_cypher,
-    get_full_metadata_schema_cypher,
-    get_metadata_schema_by_table_semantic_similarity_cypher,
-)
 
 
 def create_mcp_server(
@@ -52,19 +52,27 @@ def create_mcp_server(
 
     @server.tool()
     async def get_metadata_schema_by_column_semantic_similarity(
-        query: str,
+        text_content: str,
+        max_tables: int = 5,
     ) -> list[TableContext]:
         """
-        Get the metadata schema by column semantic similarity to the query.
-        Uses embedding based column semantic similarity and graph traversal to find the most similar metadata schema.
+        Get the metadata schema by column semantic similarity to the text content.
+        Uses column based semantic similarity and graph traversal to find the most similar metadata schema.
+
+        Parameters
+        ----------
+        text_content: str
+            The text content to search for.
+        max_tables: int
+            The maximum number of tables to return.
         """
-        embedding = await embedder._create_embedding_async(query)
+        embedding = await embedder._create_embedding_async(text_content)
 
         cypher = get_metadata_schema_by_column_semantic_similarity_cypher()
 
         results = await neo4j_driver.execute_query(
             query_=cypher,
-            parameters_={"queryEmbedding": embedding},
+            parameters_={"queryEmbedding": embedding, "maxTables": max_tables},
             database_=neo4j_database,
             routing_=RoutingControl.READ,
             result_transformer_=lambda x: x.data(),
@@ -73,15 +81,21 @@ def create_mcp_server(
 
     @server.tool()
     async def get_metadata_schema_by_table_semantic_similarity(
-        query: str,
+        text_content: str,
         max_tables: int = 10,
     ) -> list[TableContext]:
         """
-        Get the metadata schema by table semantic similarity to the query.
-        Uses embedding based table semantic similarity and graph traversal to find the most similar metadata schema.
-        """
+        Get the metadata schema by table semantic similarity to the text content.
+        Uses table based semantic similarity and graph traversal to find the most similar metadata schema.
 
-        embedding = await embedder._create_embedding_async(query)
+        Parameters
+        ----------
+        text_content: str
+            The text content to search for.
+        max_tables: int
+            The maximum number of tables to return.
+        """
+        embedding = await embedder._create_embedding_async(text_content)
 
         cypher = get_metadata_schema_by_table_semantic_similarity_cypher()
 
@@ -96,26 +110,21 @@ def create_mcp_server(
 
     @server.tool()
     async def get_metadata_schema_by_schema_and_table_semantic_similarity(
-        query: str,
+        text_content: str,
         max_tables: int = 5,
     ) -> list[TableContext]:
         """
-        Get the metadata schema by schema and table semantic similarity to the query.
-        Uses embedding based semantic similarity and graph traversal to find the most similar metadata schema.
+        Get the metadata schema by schema and table semantic similarity to the text content.
+        Uses schema and table based semantic similarity and graph traversal to find the most similar metadata schema.
 
         Parameters
         ----------
-        query: str
-            The query to search for.
+        text_content: str
+            The text content to search for.
         max_tables: int
             The maximum number of tables to return.
-
-        Returns:
-        -------
-        list[TableContext]
-            The metadata schema by schema and table semantic similarity to the query.
         """
-        embedding = await embedder._create_embedding_async(query)
+        embedding = await embedder._create_embedding_async(text_content)
 
         cypher = get_metadata_schema_by_schema_and_table_semantic_similarity_cypher()
 

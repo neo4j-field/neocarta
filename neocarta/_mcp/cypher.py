@@ -9,12 +9,11 @@ def list_schemas_cypher() -> str:
     ----------
     None
 
-    Returns
+    Returns:
     -------
     str
         The cypher query to list all schemas and their databases.
     """
-
     return """
     MATCH (d:Database)-[:HAS_SCHEMA]->(schema:Schema)
     RETURN d.name as database_name, schema.name as schema_name
@@ -30,12 +29,11 @@ def list_tables_by_schema_cypher() -> str:
     schema_name: str
         The name of the schema to list tables for.
 
-    Returns
+    Returns:
     -------
     str
         The cypher query to list all tables for a given schema.
     """
-
     return """
     MATCH (s:Schema {name: $schemaName})-[:HAS_TABLE]->(t:Table)
     RETURN s.name as schema_name, collect(t.name) as table_names
@@ -50,8 +48,10 @@ def get_metadata_schema_by_column_semantic_similarity_cypher() -> str:
     ----------
     queryEmbedding: str
         The embedding to use for the semantic similarity search.
+    maxTables: int
+        The maximum number of tables to return.
 
-    Returns
+    Returns:
     -------
     str
         The cypher query to get the metadata schema by column semantic similarity to the query.
@@ -72,49 +72,46 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
 WITH
-  table,
-  col,
-  collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
-  collect(DISTINCT v.value)[0..5] AS exampleValues
+    table,
+    col,
+    score,
+    collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
+    collect(DISTINCT v.value)[0..5] AS exampleValues
 
 // Group columns by table and build column objects
 WITH
-  table,
-  collect({
-    column_name: col.name,
-    column_description: col.description,
-    data_type: col.type,
-    examples: exampleValues,
-    nullable: col.nullable,
-    references: refs
-  }) AS columns
-
+    table,
+    collect({
+        column_name: col.name,
+        column_description: col.description,
+        data_type: col.type,
+        examples: exampleValues,
+        key_type: CASE
+            WHEN col.is_primary_key THEN "primary"
+            WHEN col.is_foreign_key THEN "foreign"
+        ELSE null
+        END,
+        nullable: col.nullable,
+        references: refs
+  }) AS columns,
+  AVG(score) AS columnAvgScore
 
 // Get Schema and Database names for Tables
 MATCH (table)<-[:HAS_TABLE]-(schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
 
-// Group the join columns by target table
-WITH
-  table,
-  columns,
-  db.name AS database_name,
-  schema.name AS schema_name
-
-WITH
-  table,
-  columns,
-  database_name,
-  schema_name
-
 RETURN {
-  table_name: table.name,
-  table_description: table.description,
-  database_name: database_name,
-  schema_name: schema_name,
-  columns: columns
+    table_name: table.name,
+    table_description: table.description,
+    database_name: db.name,
+    schema_name: schema.name,
+    columns: columns,
+    num_columns: size(columns),
+    column_avg_score: columnAvgScore
 } AS result
-ORDER BY table.name
+ORDER BY columnAvgScore DESC
+LIMIT $maxTables
 """
+
 
 def get_metadata_schema_by_table_semantic_similarity_cypher() -> str:
     """
@@ -126,10 +123,7 @@ def get_metadata_schema_by_table_semantic_similarity_cypher() -> str:
         The embedding to use for the semantic similarity search.
     maxTables: int
         The maximum number of tables to return.
-
-    Returns
     """
-
     return """
 // Find similar tables by embedding
 CALL db.index.vector.queryNodes('table_vector_index', 10, $queryEmbedding)
@@ -137,13 +131,9 @@ YIELD node as table, score as tableScore
 WHERE tableScore > 0.5
 
 // Get the schema for each table
-MATCH (schema)-[:HAS_TABLE]->(table:Table)
+MATCH (schema:Schema)-[:HAS_TABLE]->(table:Table)
 
-WITH    schema,
-        table,
-        tableScore
-
-// Find all references for this column (both directions)
+// Find all columns for this table and their references
 MATCH (table)-[:HAS_COLUMN]->(col:Column)
 OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Table)
 
@@ -151,56 +141,48 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
 WITH
-  schema,
-  table,
-  col,
-  collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
-  collect(DISTINCT v.value)[0..3] AS exampleValues,
-  tableScore
+    schema,
+    table,
+    col,
+    collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
+    collect(DISTINCT v.value)[0..5] AS exampleValues,
+    tableScore
 
 // Group columns by table and build column objects
 WITH
-  schema,
-  table,
-  collect({
-    column_name: col.name,
-    column_description: col.description,
-    data_type: col.type,
-    examples: exampleValues,
-    references: refs
+    schema,
+    table,
+    collect({
+        column_name: col.name,
+        column_description: col.description,
+        data_type: col.type,
+        examples: exampleValues,
+        key_type: CASE
+            WHEN col.is_primary_key THEN "primary"
+            WHEN col.is_foreign_key THEN "foreign"
+            ELSE null
+        END,
+        nullable: col.nullable,
+        references: refs
   }) AS columns,
   tableScore
 
-// Get Schema and Database names for Tables
+// Get Database name for Schema
 MATCH (schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
 
-// Group the join columns by target table
-WITH
-  table,
-  columns,
-  db.name AS database_name,
-  schema.name AS schema_name,
-  tableScore
-
-WITH
-  table,
-  columns,
-  database_name,
-  schema_name,
-  tableScore
-
 RETURN {
-  table_name: table.name,
-  table_description: table.description,
-  database_name: database_name,
-  schema_name: schema_name,
-  columns: columns,
-  numColumns: size(columns),
-  tableScore: tableScore
+    table_name: table.name,
+    table_description: table.description,
+    database_name: db.name,
+    schema_name: schema.name,
+    columns: columns,
+    num_columns: size(columns),
+    table_score: tableScore
 } AS result
 ORDER BY tableScore DESC
 LIMIT $maxTables
 """
+
 
 def get_metadata_schema_by_schema_and_table_semantic_similarity_cypher() -> str:
     """
@@ -212,10 +194,7 @@ def get_metadata_schema_by_schema_and_table_semantic_similarity_cypher() -> str:
         The embedding to use for the semantic similarity search.
     maxTables: int
         The maximum number of tables to return.
-
-    Returns
     """
-
     return """
 // Find similar schemas by embedding
 CALL db.index.vector.queryNodes('schema_vector_index', 5, $queryEmbedding)
@@ -224,15 +203,16 @@ WHERE schemaScore > 0.5
 
 // Get the tables for each schema
 // Only get tables that are nearly as similar as the schema
-MATCH (schema)-[:HAS_TABLE]->(table:Table)
+MATCH (schema:Schema)-[:HAS_TABLE]->(table:Table)
 
-WITH    schema,
-        schemaScore,
-        table,
-        vector.similarity.cosine(table.embedding, $queryEmbedding) as tableScore
+WITH
+    schema,
+    schemaScore,
+    table,
+    vector.similarity.cosine(table.embedding, $queryEmbedding) as tableScore
 WHERE tableScore > schemaScore - 0.2
 
-// Find all references for this column (both directions)
+// Find all columns for this table and their references
 MATCH (table)-[:HAS_COLUMN]->(col:Column)
 OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Table)
 
@@ -240,57 +220,46 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
 WITH
-  schema,
-  table,
-  col,
-  collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
-  collect(DISTINCT v.value)[0..3] AS exampleValues,
-  schemaScore,
-  tableScore
+    schema,
+    table,
+    col,
+    collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
+    collect(DISTINCT v.value)[0..5] AS exampleValues,
+    schemaScore,
+    tableScore
 
 // Group columns by table and build column objects
 WITH
-  schema,
-  table,
-  collect({
-    column_name: col.name,
-    column_description: col.description,
-    data_type: col.type,
-    examples: exampleValues,
-    references: refs
+    schema,
+    table,
+    collect({
+        column_name: col.name,
+        column_description: col.description,
+        data_type: col.type,
+        examples: exampleValues,
+        key_type: CASE
+            WHEN col.is_primary_key THEN "primary"
+            WHEN col.is_foreign_key THEN "foreign"
+            ELSE null
+        END,
+        nullable: col.nullable,
+        references: refs
   }) AS columns,
   schemaScore,
   tableScore
 
-// Get Schema and Database names for Tables
+// Get Database name for Schema
 MATCH (schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
 
-// Group the join columns by target table
-WITH
-  table,
-  columns,
-  db.name AS database_name,
-  schema.name AS schema_name,
-  schemaScore,
-  tableScore
-
-WITH
-  table,
-  columns,
-  database_name,
-  schema_name,
-  schemaScore,
-  tableScore
-
 RETURN {
-  table_name: table.name,
-  table_description: table.description,
-  database_name: database_name,
-  schema_name: schema_name,
-  columns: columns,
-  numColumns: size(columns),
-  schemaScore: schemaScore,
-  tableScore: tableScore
+    table_name: table.name,
+    table_description: table.description,
+    database_name: db.name,
+    schema_name: schema.name,
+    columns: columns,
+    num_columns: size(columns),
+    table_score: tableScore,
+    schema_score: schemaScore
 } AS result
 ORDER BY schemaScore DESC, tableScore DESC
 LIMIT $maxTables
@@ -305,12 +274,11 @@ def get_full_metadata_schema_cypher() -> str:
     ----------
     None
 
-    Returns
+    Returns:
     -------
     str
         The cypher query to get the full metadata schema for the database.
     """
-
     return """
 // Get the columns for each table
 MATCH (col:Column)<-[:HAS_COLUMN]-(table:Table)
@@ -322,43 +290,43 @@ OPTIONAL MATCH (col)-[:REFERENCES]-(refCol:Column)<-[:HAS_COLUMN]-(refTable:Tabl
 OPTIONAL MATCH (col)-[:HAS_VALUE]->(v:Value)
 
 WITH
-  table,
-  col,
-  collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
-  collect(DISTINCT v.value)[0..5] AS exampleValues
+    table,
+    col,
+    collect(DISTINCT refTable.name + "." + refCol.name) AS refs,
+    collect(DISTINCT v.value)[0..5] AS exampleValues
 
 // Group columns by table and build column objects
 WITH
-  table,
-  collect({
-    column_name: col.name,
-    column_description: col.description,
-    data_type: col.type,
-    examples: exampleValues,
-    key_type: CASE
-      WHEN col.is_primary_key THEN "primary"
-      WHEN col.is_foreign_key THEN "foreign"
-      ELSE null
-    END,
-    nullable: col.nullable,
-    references: refs
-  }) AS columns
+    table,
+    collect({
+        column_name: col.name,
+        column_description: col.description,
+        data_type: col.type,
+        examples: exampleValues,
+        key_type: CASE
+            WHEN col.is_primary_key THEN "primary"
+            WHEN col.is_foreign_key THEN "foreign"
+            ELSE null
+        END,
+        nullable: col.nullable,
+        references: refs
+    }) AS columns
 
 // Get Schema and Database names for Tables
 MATCH (table)<-[:HAS_TABLE]-(schema:Schema)<-[:HAS_SCHEMA]-(db:Database)
 
 WITH
-  table,
-  columns,
-  schema.name as schema_name,
-  db.name as database_name
+    table,
+    columns,
+    schema.name as schema_name,
+    db.name as database_name
 
 RETURN {
-  table_name: table.name,
-  table_description: table.description,
-  database_name: database_name,
-  schema_name: schema_name,
-  columns: columns
+    table_name: table.name,
+    table_description: table.description,
+    database_name: database_name,
+    schema_name: schema_name,
+    columns: columns
 } AS result
 ORDER BY table.name
 """

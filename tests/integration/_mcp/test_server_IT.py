@@ -74,7 +74,7 @@ def test_get_metadata_schema_by_column_semantic_similarity(neo4j_connection, loa
         _call_tool(
             neo4j_connection,
             "get_metadata_schema_by_column_semantic_similarity",
-            {"query": "customer name"},
+            {"text_content": "customer name"},
         )
     )
 
@@ -82,6 +82,28 @@ def test_get_metadata_schema_by_column_semantic_similarity(neo4j_connection, loa
     for record in data:
         assert record["database_name"] == "my-project"
         assert len(record["columns"]) > 0
+        assert record["num_columns"] == len(record["columns"])
+        assert record["column_avg_score"] is not None
+        assert record["column_avg_score"] > 0.5
+
+
+def test_get_metadata_schema_by_table_semantic_similarity(neo4j_connection, loaded_graph):
+    """Table similarity search returns tables with columns, scores, and column count."""
+    data = asyncio.run(
+        _call_tool(
+            neo4j_connection,
+            "get_metadata_schema_by_table_semantic_similarity",
+            {"text_content": "sales orders customers", "max_tables": 5},
+        )
+    )
+
+    assert len(data) > 0
+    for record in data:
+        assert record["database_name"] == "my-project"
+        assert len(record["columns"]) > 0
+        assert record["num_columns"] == len(record["columns"])
+        assert record["table_score"] is not None
+        assert record["table_score"] > 0.5
 
 
 def test_get_metadata_schema_by_schema_and_table_semantic_similarity(
@@ -92,16 +114,19 @@ def test_get_metadata_schema_by_schema_and_table_semantic_similarity(
         _call_tool(
             neo4j_connection,
             "get_metadata_schema_by_schema_and_table_semantic_similarity",
-            {"query": "sales orders customers", "max_tables": 5},
+            {"text_content": "sales orders customers", "max_tables": 5},
         )
     )
 
     assert len(data) > 0
     for record in data:
-        assert "table_name" in record
-        assert "database_name" in record
-        assert "schema_name" in record
+        assert record["database_name"] == "my-project"
         assert len(record["columns"]) > 0
+        assert record["num_columns"] == len(record["columns"])
+        assert record["table_score"] is not None
+        assert record["table_score"] > 0.5
+        assert record["schema_score"] is not None
+        assert record["schema_score"] > 0.5
 
 
 def test_get_full_metadata_schema_returns_all_tables(neo4j_connection, loaded_graph):
