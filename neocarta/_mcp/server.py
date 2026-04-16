@@ -5,15 +5,14 @@ import asyncio
 from dotenv import load_dotenv
 from fastmcp import FastMCP
 from neo4j import AsyncDriver, AsyncGraphDatabase, RoutingControl
-from openai import AsyncOpenAI
-
-from .embeddings import create_embedding
+from ..enrichment.embeddings import OpenAIEmbeddingsConnector
+from .embeddings import create_openai_embedder
 from .models import ListSchemaRecord, ListTablesBySchemaRecord, TableContext
 from .settings import mcp_server_settings
 
 
 def create_mcp_server(
-    neo4j_driver: AsyncDriver, neo4j_database: str, embedding_client: AsyncOpenAI
+    neo4j_driver: AsyncDriver, neo4j_database: str, embedder: OpenAIEmbeddingsConnector
 ) -> FastMCP:
     """Create and configure the FastMCP server with all semantic layer tools."""
     server = FastMCP("Neocarta MCP Server")
@@ -55,7 +54,7 @@ def create_mcp_server(
         Get the metadata schema by column semantic similarity to the query.
         Uses embedding based column semantic similarity and graph traversal to find the most similar metadata schema.
         """
-        embedding = await create_embedding(embedding_client, query)
+        embedding = await embedder._create_embedding_async(query)
 
         cypher = """
 // Find similar columns by embedding
@@ -146,7 +145,7 @@ ORDER BY table.name
         list[TableContext]
             The metadata schema by schema and table semantic similarity to the query.
         """
-        embedding = await create_embedding(embedding_client, query)
+        embedding = await embedder._create_embedding_async(query)
 
         cypher = """
 // Find similar schemas by embedding
@@ -306,13 +305,19 @@ ORDER BY table.name
 
 async def main() -> None:
     """Initialize drivers, create the MCP server, and run it over stdio."""
+    from openai import AsyncOpenAI
+
     neo4j_driver = AsyncGraphDatabase.driver(
         uri=mcp_server_settings.neo4j_uri,
         auth=(mcp_server_settings.neo4j_username, mcp_server_settings.neo4j_password),
     )
     neo4j_database = mcp_server_settings.neo4j_database
-    embedding_client = AsyncOpenAI(api_key=mcp_server_settings.openai_api_key)
-    server = create_mcp_server(neo4j_driver, neo4j_database, embedding_client)
+    embedder = create_openai_embedder(
+        async_client=AsyncOpenAI(api_key=mcp_server_settings.openai_api_key),
+        neo4j_driver=neo4j_driver,
+        database_name=neo4j_database,
+    )
+    server = create_mcp_server(neo4j_driver, neo4j_database, embedder)
 
     await server.run_stdio_async()
 
