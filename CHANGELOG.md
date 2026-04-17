@@ -3,10 +3,12 @@
 ## Upcoming
 
 ### Fixed
+* Remove duplicated docstrings in MCP server
 
 ### Changed
 
 ### Added
+* Update MCP documentation
 
 ## Upcoming
 

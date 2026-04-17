@@ -642,6 +642,52 @@ make create-graph
 
 ---
 
+## Neocarta MCP
+
+The Neocarta MCP server is available via the optional `[mcp]` add-on.
+
+### Overview
+
+This is a metadata retrieval MCP server that provides tools to query the Neo4j semantic layer for relevant schema information using semantic similarity search and graph traversal. It is built for compatibility with the standard data model provided by the `neocarta` library.
+
+**Tools**
+* `list_schemas` - List all schemas and their associated databases.
+* `list_tables_by_schema` - List all tables for a given schema name.
+* `get_metadata_schema_by_column_semantic_similarity` - Find tables by semantic similarity on column embeddings.
+* `get_metadata_schema_by_table_semantic_similarity` - Find tables by semantic similarity on table embeddings.
+* `get_metadata_schema_by_schema_and_table_semantic_similarity` - Find tables by semantic similarity across both schema and table embeddings.
+* `get_full_metadata_schema` - Return complete metadata for all tables. **Warning:** expensive — use only for debugging.
+
+See the [MCP server README](neocarta/_mcp/README.md) for full server documentation.
+
+### Claude Desktop
+
+To connect the `neocarta-mcp` server to Claude Desktop, add the following entry to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "neocarta": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "neocarta[mcp]@0.2.0",
+        "neocarta-mcp"
+      ],
+      "env": {
+        "NEO4J_URI": "bolt://localhost:7687",
+        "NEO4J_USERNAME": "neo4j",
+        "NEO4J_PASSWORD": "your-password",
+        "NEO4J_DATABASE": "neo4j",
+        "OPENAI_API_KEY": "sk-...",
+        "EMBEDDING_MODEL": "text-embedding-3-small",
+        "EMBEDDING_DIMENSIONS": "768"
+      }
+    }
+  }
+}
+```
+
 ## Contributing
 
 ### Dev Setup
@@ -679,7 +725,7 @@ If you only need specific components, you can install individual dependency grou
 make install-metadata-graph
 ```
 
-**MCP Server Only** (SQL metadata retrieval server)
+**MCP Server Only** (neocarta MCP server)
 ```bash
 make install-mcp-server
 ```
@@ -695,7 +741,7 @@ make install-agent
 The project is organized into the following dependency groups:
 
 - **metadata-graph**: BigQuery metadata extraction, Neo4j loading, and embedding generation
-- **mcp-server**: Local MCP server for SQL metadata retrieval from Neo4j
+- **mcp**: neocarta MCP server for metadata retrieval from Neo4j semantic layer
 - **agent**: Text2SQL agent with LangChain (includes mcp-server dependencies)
 - **dev**: Development tools (Jupyter notebooks)
 
@@ -715,49 +761,64 @@ To create the dataset in your BigQuery instance, you may run the following Make 
 make load-ecommerce-dataset
 ```
 
-## MCP
+## Agent
 
-This project uses two MCP servers for the Text2SQL agent.
+This is the Text2SQL agent that converts natural language questions into SQL queries for BigQuery. The agent uses two MCP servers to:
+1. Retrieve relevant database metadata from Neo4j using semantic similarity
+2. Execute generated SQL queries against BigQuery
 
-### **Local SQL Metadata MCP Server**
+The agent architecture can be seen below.
 
-This is a custom SQL metadata retrieval MCP server that provides tools to query the Neo4j database for relevant RDBMS schema information using semantic similarity search.
+```mermaid
+---
+config:
+    layout: dagre
+---
 
-**Tools**
-* `list_schemas` - Lists all schemas and their associated databases.
-* `list_tables_by_schema` - Lists all tables for a given schema name.
-* `get_metadata_schema_by_column_semantic_similarity` - Retrieves table metadata using vector similarity search on column embeddings and graph traversal. Returns the most relevant tables and column subset with their references and example values.
-* `get_metadata_schema_by_schema_and_table_semantic_similarity` - Retrieves table metadata using embedding similarity at the schema and table level. Filters tables whose similarity score is close to their parent schema score and returns results ordered by relevance. Accepts an optional `max_tables` parameter (default: 5).
-* `get_full_metadata_schema` - Retrieves complete metadata schema for all tables in the database. Returns tables and columns with their references and example values. **Warning:** expensive query — use only for debugging.
+graph LR
+    
+    subgraph GCP["GCP Environment"]
+        BQMCP(BigQuery<br>MCP)
 
+        subgraph DataWarehouse["Data Warehouse"]
+            BQData[(BigQuery)]
+        end
+        
+        BQMCP <--> BQData
+    end
 
-**Environment Variables**
-* `NEO4J_URI` - Neo4j database connection URI (e.g., `bolt://localhost:7687`)
-* `NEO4J_USERNAME` - Neo4j username (default: `neo4j`)
-* `NEO4J_PASSWORD` - Neo4j password
-* `NEO4J_DATABASE` - Neo4j database name (default: `neo4j`)
-* `OPENAI_API_KEY` - OpenAI API key for generating query embeddings
-* `EMBEDDING_MODEL` - OpenAI embedding model to use (default: `text-embedding-3-small`)
-* `EMBEDDING_DIMENSIONS` - Embedding vector dimensions (default: `768`)
+    subgraph Local["Local Environment"]
+        Agent("Text2SQL Agent")
+        MetadataMCP("neocarta<br/>MCP")
+        
+        subgraph Graph["Database"]
+            NEO[(Neo4j Graph)]
+        end
+        
+        Agent <--> MetadataMCP
+        MetadataMCP <--> NEO
+    end
+    
+    User("User")
+    
+    subgraph LLM["LLM Service"]
+        Model("LLM")
+    end
+    
+    User <--> Agent
+    Agent <--> Model
+    Agent <--> BQMCP
 
+```
 
+**How it works**
+1. User asks a natural language question about the data
+2. Agent calls the SQL Metadata MCP server to retrieve relevant table schemas
+3. Agent generates a SQL query via an LLM call based on the retrieved metadata context
+4. Agent calls `execute_sql` from the BigQuery MCP server to run the query against BigQuery
+5. Agent returns formatted results to the user
 
-### **Remote BigQuery MCP Server**
-
-This is the official BigQuery remote MCP server and will be used to execute SQL queries against our database.
-
-Since this is a remote server, we don't need to worry about hosting it locally. We can just connect to the MCP endpoint in our GCP environment.
-
-**Tools** (Filtered subset of total tools the server provides)
-* `execute_sql` - Execute a SQL query against BigQuery. Returns the raw results.
-
-*Unused BigQuery MCP Tools*
-* `list_dataset_ids`
-* `get_dataset_info`
-* `list_table_ids`
-* `get_table_info`
-
-#### Set Up
+**BigQuery MCP Server Set Up**
 
 Enable use of the [Bigquery MCP server](https://docs.cloud.google.com/bigquery/docs/reference/mcp) in your project.
 
@@ -793,63 +854,6 @@ curl -k \
 }' \
   https://bigquery.googleapis.com/mcp
 ```
-
-## Agent
-
-This is the Text2SQL agent that converts natural language questions into SQL queries for BigQuery. The agent uses two MCP servers to:
-1. Retrieve relevant database metadata from Neo4j using semantic similarity
-2. Execute generated SQL queries against BigQuery
-
-The agent architecture can be seen below.
-
-```mermaid
----
-config:
-    layout: dagre
----
-
-graph LR
-    
-    subgraph GCP["GCP Environment"]
-        BQMCP(BigQuery<br>MCP)
-
-        subgraph DataWarehouse["Data Warehouse"]
-            BQData[(BigQuery)]
-        end
-        
-        BQMCP <--> BQData
-    end
-
-    subgraph Local["Local Environment"]
-        Agent("Text2SQL Agent")
-        MetadataMCP("SQL Metadata<br/>MCP")
-        
-        subgraph Graph["Database"]
-            NEO[(Neo4j Graph)]
-        end
-        
-        Agent <--> MetadataMCP
-        MetadataMCP <--> NEO
-    end
-    
-    User("User")
-    
-    subgraph LLM["LLM Service"]
-        Model("LLM")
-    end
-    
-    User <--> Agent
-    Agent <--> Model
-    Agent <--> BQMCP
-
-```
-
-**How it works**
-1. User asks a natural language question about the data
-2. Agent calls the SQL Metadata MCP server to retrieve relevant table schemas
-3. Agent generates a SQL query via an LLM call based on the retrieved metadata context
-4. Agent calls `execute_sql` from the BigQuery MCP server to run the query against BigQuery
-5. Agent returns formatted results to the user
 
 **Running the Agent**
 
@@ -899,7 +903,7 @@ Required environment variables (add to `.env` file):
 ```
 > What are the total sales by product category?
 
-Agent: [Calls get_metadata_schema_by_semantic_similarity with query about sales and categories]
+Agent: [Calls get_metadata_schema_by_column_semantic_similarity with query about sales and categories]
 Agent: [Generates SQL query using retrieved schema]
 Agent: [Calls execute_sql with generated query]
 Agent: Here are the total sales by product category:
