@@ -149,7 +149,7 @@ The retrieved context may be used for query generation, query routing or data di
         Find tables by matching both schema and table embeddings to the provided text.
 
         Prefer this tool when the query is broad and may span multiple schemas and tables
-        (e.g. "everything related to billing"). 
+        (e.g. "everything related to billing").
         First finds similar schemas, then filters to tables within those schemas whose embeddings are near or better than the schema score.
         Note: requires that `Schema` and `Table` nodes have the `embedding` property set.
 
