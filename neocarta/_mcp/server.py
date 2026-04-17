@@ -58,6 +58,7 @@ def create_mcp_server(
         """
         Get the metadata schema by column semantic similarity to the text content.
         Uses column based semantic similarity and graph traversal to find the most similar metadata schema.
+        Note: This tool requires that `Column` nodes have the `embedding` property set.
 
         Parameters
         ----------
@@ -87,6 +88,7 @@ def create_mcp_server(
         """
         Get the metadata schema by table semantic similarity to the text content.
         Uses table based semantic similarity and graph traversal to find the most similar metadata schema.
+        Note: This tool requires that `Table` nodes have the `embedding` property set.
 
         Parameters
         ----------
@@ -116,7 +118,8 @@ def create_mcp_server(
         """
         Get the metadata schema by schema and table semantic similarity to the text content.
         Uses schema and table based semantic similarity and graph traversal to find the most similar metadata schema.
-
+        Note: This tool requires that `Schema` and `Table` nodes have the `embedding` property set.
+        
         Parameters
         ----------
         text_content: str
