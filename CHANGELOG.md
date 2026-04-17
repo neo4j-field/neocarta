@@ -3,14 +3,18 @@
 ## Upcoming
 
 ### Fixed
-* Remove duplicated docstrings in MCP server
 
 ### Changed
 
 ### Added
-* Update MCP documentation
 
-## Upcoming
+## v0.2.1
+
+### Fixed
+* Remove duplicated docstrings in MCP server
+
+### Added
+* Update MCP documentation
 
 ## v0.2.0
 
