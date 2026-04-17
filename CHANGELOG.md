@@ -11,10 +11,12 @@
 * Deduplicate embedding code in MCP server. MCP server now uses `neocarta` embeddings class.
 * Update Cypher queries in MCP server to follow same traversal patterns and return similar objects
 * Update MCP tool documentation
+* Lock `fastmcp` version <3.x
 
 ### Added
 * Add integration tests for MCP server compatibility with neocarta graph
 * Add `get_metadata_schema_by_table_semantic_similarity` tool to MCP server
+* Add instructions to MCP server so agents are better able to utilize the tooling
 
 ## v0.1.0
 
