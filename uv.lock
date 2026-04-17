@@ -1650,7 +1650,7 @@ eval = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=2.14.4" },
+    { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=2.14.4,<3" },
     { name = "google-cloud-bigquery", extras = ["pandas"], specifier = ">=3.40.0" },
     { name = "google-cloud-bigquery-storage", specifier = ">=2.36.2" },
     { name = "google-cloud-dataplex", specifier = ">=2.16.0" },

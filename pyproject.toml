@@ -41,7 +41,7 @@ dependencies = [
 
 [project.optional-dependencies]
 mcp = [
-    "fastmcp>=2.14.4",
+    "fastmcp>=2.14.4,<3",
     "mcp>=1.26.0",
     "pydantic-settings>=2.12.0",
 ]
