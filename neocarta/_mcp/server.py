@@ -31,9 +31,22 @@ This is an MCP server that facilitates context retrieval from a Neo4j semantic l
 The retrieved context may be used for query generation, query routing or data discovery.
 """
     server = FastMCP(name=name, instructions=instructions)
+    name = "Neocarta MCP Server"
+    instructions = """
+This is an MCP server that facilitates context retrieval from a Neo4j semantic layer.
+The retrieved context may be used for query generation, query routing or data discovery.
+"""
+    server = FastMCP(name=name, instructions=instructions)
 
     @server.tool()
     async def list_schemas() -> list[ListSchemaRecord]:
+        """
+        List all schemas and their databases.
+
+        Use this as the first step when exploring an unfamiliar database or when
+        you need a valid schema name to pass to other tools. Returns every schema
+        alongside the database it belongs to.
+        """
         """
         List all schemas and their databases.
 
@@ -51,6 +64,18 @@ The retrieved context may be used for query generation, query routing or data di
 
     @server.tool()
     async def list_tables_by_schema(schema_name: str) -> list[ListTablesBySchemaRecord]:
+        """
+        List all tables for a given schema.
+
+        Use this when you already know the schema name and want to enumerate its
+        tables. Call list_schemas first to obtain valid schema names.
+
+        Parameters
+        ----------
+        schema_name: str
+            The name of the schema to list tables for. Use list_schemas to get
+            valid schema names.
+        """
         """
         List all tables for a given schema.
 
@@ -84,13 +109,22 @@ The retrieved context may be used for query generation, query routing or data di
         (e.g. "customer email", "order total"). Matches are ranked by average
         column embedding similarity and traversed up to the parent table.
         Note: requires that Column nodes have the embedding property set.
+        Find tables whose columns are semantically similar to the provided text.
+
+        Prefer this tool when the query references specific field or column names
+        (e.g. "customer email", "order total"). Matches are ranked by average
+        column embedding similarity and traversed up to the parent table.
+        Note: requires that Column nodes have the embedding property set.
 
         Parameters
         ----------
         text_content: str
             Natural-language description or query to search for semantically
             similar columns.
+            Natural-language description or query to search for semantically
+            similar columns.
         max_tables: int
+            Maximum number of tables to return
             Maximum number of tables to return
         """
         embedding = await embedder._create_embedding_async(text_content)
@@ -118,13 +152,22 @@ The retrieved context may be used for query generation, query routing or data di
         (e.g. "customers", "sales transactions"). Matches are ranked by table
         embedding similarity.
         Note: requires that Table nodes have the embedding property set.
+        Find tables that are semantically similar to the provided text.
+
+        Prefer this tool when the query describes a general concept or entity
+        (e.g. "customers", "sales transactions"). Matches are ranked by table
+        embedding similarity.
+        Note: requires that Table nodes have the embedding property set.
 
         Parameters
         ----------
         text_content: str
             Natural-language description or query to search for semantically
             similar tables.
+            Natural-language description or query to search for semantically
+            similar tables.
         max_tables: int
+            Maximum number of tables to return
             Maximum number of tables to return
         """
         embedding = await embedder._create_embedding_async(text_content)
@@ -158,7 +201,11 @@ The retrieved context may be used for query generation, query routing or data di
         text_content: str
             Natural-language description or query to search for semantically
             similar schemas and tables.
+            Natural-language description or query to search for semantically
+            similar schemas and tables.
         max_tables: int
+            Maximum number of tables to return, ordered by descending schema
+            then table similarity score.
             Maximum number of tables to return, ordered by descending schema
             then table similarity score.
         """
@@ -178,6 +225,12 @@ The retrieved context may be used for query generation, query routing or data di
     @server.tool()
     async def get_full_metadata_schema() -> list[TableContext]:
         """
+        Return the complete metadata schema for every table in the database.
+
+        WARNING: This fetches all tables and all columns without any filtering.
+        On databases with many tables this will return a very large payload and
+        should only be used for debugging or on small databases. Prefer the
+        semantic similarity tools for targeted lookups.
         Return the complete metadata schema for every table in the database.
 
         WARNING: This fetches all tables and all columns without any filtering.
