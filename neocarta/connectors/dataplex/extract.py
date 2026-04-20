@@ -488,10 +488,7 @@ class DataplexExtractor:
 
         records: list[EntryLinkInfoResponse] = []
 
-        terms = glossary_info.drop_duplicates(subset=["term_id"])
-        print(f"  [entry_links] Looking up links for {len(terms)} terms...")
-
-        for _, row in terms.iterrows():
+        for _, row in glossary_info.drop_duplicates(subset=["term_id"]).iterrows():
             term_name = row["term_id"]
             term_slug = term_name.split("/terms/")[-1]
             glossary_id = term_name.split("/glossaries/")[1].split("/")[0]
@@ -506,10 +503,9 @@ class DataplexExtractor:
             try:
                 links = self._lookup_entry_links_page(session, term_entry, entry_link_type)
             except Exception as e:
-                print(f"  [entry_links] Error looking up term '{term_slug}': {e}")
+                print(f"Error looking up entry links for term '{term_slug}': {e}")
                 continue
 
-            print(f"  [entry_links] term '{term_slug}': {len(links)} link(s)")
             for link in links:
                 parsed = self._parse_source_entry(link)
                 if parsed:
@@ -521,12 +517,6 @@ class DataplexExtractor:
                             term_id=term_name,
                         )
                     )
-                else:
-                    print(f"  [entry_links] Failed to parse SOURCE entry: {link}")
-
-        print(f"  [entry_links] Total records extracted: {len(records)}")
-        if records:
-            print(f"  [entry_links] Sample: {records[0]}")
 
         _entry_link_cols = ["entity_id", "entity_type", "term_id"]
         df = pd.DataFrame(records) if records else pd.DataFrame(columns=_entry_link_cols)

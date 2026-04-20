@@ -137,11 +137,16 @@ class DataplexConnector:
             )
 
         if self.include_entry_links:
-            col_rels = self.transformer.column_tagged_with_relationships
-            tbl_rels = self.transformer.table_tagged_with_relationships
-            print(f"  [tagged_with] Loading {len(col_rels)} column and {len(tbl_rels)} table relationships...")
-            print(self.loader.load_column_tagged_with_relationships(col_rels))
-            print(self.loader.load_table_tagged_with_relationships(tbl_rels))
+            print(
+                self.loader.load_column_tagged_with_relationships(
+                    self.transformer.column_tagged_with_relationships
+                )
+            )
+            print(
+                self.loader.load_table_tagged_with_relationships(
+                    self.transformer.table_tagged_with_relationships
+                )
+            )
 
     def run(self, dataset_id: str | None = None) -> None:
         """
