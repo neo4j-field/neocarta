@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from ..utils.generate_id import generate_column_id, generate_database_id, generate_schema_id, generate_table_id
 from ...data_model.rdbms import (
     BusinessTerm,
     Category,
@@ -15,6 +16,7 @@ from ...data_model.rdbms import (
     HasTable,
     Schema,
     Table,
+    TaggedWith,
 )
 from ..models import NodesCache, RelationshipsCache
 
@@ -119,6 +121,22 @@ class DataplexTransformer:
         return self._relationships_cache.get("has_category_relationships", [])
 
     @property
+    def column_tagged_with_relationships(self) -> list[TaggedWith]:
+        """
+        Get tagged with relationships for columns.
+        (:Column)-[:TAGGED_WITH]->(:BusinessTerm)
+        """
+        return self._relationships_cache.get("column_tagged_with_relationships", [])
+
+    @property
+    def table_tagged_with_relationships(self) -> list[TaggedWith]:
+        """
+        Get tagged with relationships for tables.
+        (:Table)-[:TAGGED_WITH]->(:BusinessTerm)
+        """
+        return self._relationships_cache.get("table_tagged_with_relationships", [])
+
+    @property
     def has_business_term_relationships(self) -> list[HasBusinessTerm]:
         """
         Get the has business term relationships.
@@ -147,7 +165,7 @@ class DataplexTransformer:
         """
         nodes = [
             Database(
-                id=row.project_id,
+                id=generate_database_id(row.project_id),
                 name=row.project_id,
                 description=None,
                 service=row.service,
@@ -182,7 +200,7 @@ class DataplexTransformer:
         """
         nodes = [
             Schema(
-                id=row.project_id + "." + row.dataset_id,
+                id=generate_schema_id(row.project_id, row.dataset_id),
                 name=row.dataset_id,
                 description=None,  # no description in extraction step
             )
@@ -216,7 +234,7 @@ class DataplexTransformer:
         """
         nodes = [
             Table(
-                id=row.project_id + "." + row.dataset_id + "." + row.table_id,
+                id=generate_table_id(row.project_id, row.dataset_id, row.table_id),
                 name=row.table_display_name,
                 description=row.table_description or None,
             )
@@ -250,13 +268,7 @@ class DataplexTransformer:
         """
         nodes = [
             Column(
-                id=row.project_id
-                + "."
-                + row.dataset_id
-                + "."
-                + row.table_id
-                + "."
-                + row.column_name,
+                id=generate_column_id(row.project_id, row.dataset_id, row.table_id, row.column_name),
                 name=row.column_name,
                 description=row.column_description,
                 type=row.column_data_type,
@@ -392,8 +404,8 @@ class DataplexTransformer:
         """
         relationships = [
             HasSchema(
-                database_id=row.project_id,
-                schema_id=row.project_id + "." + row.dataset_id,
+                database_id=generate_database_id(row.project_id),
+                schema_id=generate_schema_id(row.project_id, row.dataset_id),
             )
             for _, row in schema_metadata_info.iterrows()
         ]
@@ -424,8 +436,8 @@ class DataplexTransformer:
         """
         relationships = [
             HasTable(
-                schema_id=row.project_id + "." + row.dataset_id,
-                table_id=row.project_id + "." + row.dataset_id + "." + row.table_id,
+                schema_id=generate_schema_id(row.project_id, row.dataset_id),
+                table_id=generate_table_id(row.project_id, row.dataset_id, row.table_id),
             )
             for _, row in table_metadata_info.iterrows()
         ]
@@ -456,14 +468,8 @@ class DataplexTransformer:
         """
         relationships = [
             HasColumn(
-                table_id=row.project_id + "." + row.dataset_id + "." + row.table_id,
-                column_id=row.project_id
-                + "."
-                + row.dataset_id
-                + "."
-                + row.table_id
-                + "."
-                + row.column_name,
+                table_id=generate_table_id(row.project_id, row.dataset_id, row.table_id),
+                column_id=generate_column_id(row.project_id, row.dataset_id, row.table_id, row.column_name),
             )
             for _, row in column_metadata_info.iterrows()
         ]
@@ -536,5 +542,61 @@ class DataplexTransformer:
 
         if cache:
             self._relationships_cache["has_business_term_relationships"] = relationships
+
+        return relationships
+
+    def transform_to_column_tagged_with_relationships(
+        self, column_term_info: pd.DataFrame, cache: bool = True
+    ) -> list[TaggedWith]:
+        """
+        Transform column entry links into TAGGED_WITH relationships.
+        (:Column)-[:TAGGED_WITH]->(:BusinessTerm).
+
+        Parameters
+        ----------
+        column_term_info: pd.DataFrame
+            A Pandas DataFrame with columns `entity_id` (Column node id) and `term_id` (BusinessTerm node id).
+        cache: bool = True
+            Whether to cache the transform.
+
+        Returns:
+        -------
+        list[TaggedWith]
+        """
+        relationships = [
+            TaggedWith(entity_id=row.entity_id, business_term_id=row.term_id)
+            for _, row in column_term_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["column_tagged_with_relationships"] = relationships
+
+        return relationships
+
+    def transform_to_table_tagged_with_relationships(
+        self, table_term_info: pd.DataFrame, cache: bool = True
+    ) -> list[TaggedWith]:
+        """
+        Transform table entry links into TAGGED_WITH relationships.
+        (:Table)-[:TAGGED_WITH]->(:BusinessTerm).
+
+        Parameters
+        ----------
+        table_term_info: pd.DataFrame
+            A Pandas DataFrame with columns `entity_id` (Table node id) and `term_id` (BusinessTerm node id).
+        cache: bool = True
+            Whether to cache the transform.
+
+        Returns:
+        -------
+        list[TaggedWith]
+        """
+        relationships = [
+            TaggedWith(entity_id=row.entity_id, business_term_id=row.term_id)
+            for _, row in table_term_info.iterrows()
+        ]
+
+        if cache:
+            self._relationships_cache["table_tagged_with_relationships"] = relationships
 
         return relationships

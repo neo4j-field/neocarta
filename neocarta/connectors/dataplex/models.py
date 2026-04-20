@@ -41,8 +41,17 @@ class GlossaryInfoResponse(TypedDict):
     category_id: str = Field(..., description="The category ID")
 
 
+class EntryLinkInfoResponse(TypedDict):
+    """Row returned by the Dataplex entry link extraction."""
+
+    entity_id: str = Field(..., description="Neo4j node id: project_id.dataset_id.table_id[.column_name]")
+    entity_type: str = Field(..., description="'COLUMN' or 'TABLE'")
+    term_id: str = Field(..., description="Neo4j BusinessTerm node id: full term resource name from the SDK")
+
+
 class DataplexExtractorCache(TypedDict):
     """Cache dictionary used to store extracted Dataplex information."""
 
     table_info: pd.DataFrame | None
     glossary_info: pd.DataFrame | None
+    entry_link_info: pd.DataFrame | None

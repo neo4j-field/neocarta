@@ -36,6 +36,7 @@ class DataplexConnector:
 
         self.include_schema = include_schema
         self.include_glossary = include_glossary
+        self.include_entry_links = include_schema and include_glossary
 
         self.extractor = DataplexExtractor(
             catalog_client,
@@ -64,6 +65,8 @@ class DataplexConnector:
         """
         self.extractor.extract_bigquery_info_for_all_tables(dataset_id=dataset_id)
         self.extractor.extract_glossary_info(cache=True)
+        if self.include_entry_links:
+            self.extractor.extract_entry_links(cache=True)
 
     def transform_metadata(self) -> None:
         """Transform and cache metadata from Dataplex. `extract_metadata` must be called before this method."""
@@ -85,6 +88,14 @@ class DataplexConnector:
             self.transformer.transform_to_has_category_relationships(self.extractor.category_info)
             self.transformer.transform_to_has_business_term_relationships(
                 self.extractor.business_term_info
+            )
+
+        if self.include_entry_links:
+            self.transformer.transform_to_column_tagged_with_relationships(
+                self.extractor.column_term_info
+            )
+            self.transformer.transform_to_table_tagged_with_relationships(
+                self.extractor.table_term_info
             )
 
     def load_metadata(self) -> None:
@@ -124,6 +135,13 @@ class DataplexConnector:
                     self.transformer.has_business_term_relationships
                 )
             )
+
+        if self.include_entry_links:
+            col_rels = self.transformer.column_tagged_with_relationships
+            tbl_rels = self.transformer.table_tagged_with_relationships
+            print(f"  [tagged_with] Loading {len(col_rels)} column and {len(tbl_rels)} table relationships...")
+            print(self.loader.load_column_tagged_with_relationships(col_rels))
+            print(self.loader.load_table_tagged_with_relationships(tbl_rels))
 
     def run(self, dataset_id: str | None = None) -> None:
         """

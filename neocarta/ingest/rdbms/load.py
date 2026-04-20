@@ -20,6 +20,7 @@ from ...data_model.rdbms import (
     References,
     Schema,
     Table,
+    TaggedWith,
     UsesColumn,
     UsesTable,
     Value,
@@ -385,6 +386,62 @@ class Neo4jRDBMSLoader:
         _, summary, _ = self.neo4j_driver.execute_query(
             query_=query,
             parameters_={"rows": [n.model_dump() for n in has_business_term_relationships]},
+            routing_=RoutingControl.WRITE,
+            database_=self.database_name,
+        )
+        return summary.counters.__dict__
+
+    def load_column_tagged_with_relationships(
+        self,
+        tagged_with_relationships: list[TaggedWith],
+        overwrite_existing: bool = False,
+        properties_list: list[str] = [],
+    ) -> dict:
+        """Load TAGGED_WITH relationships from Column nodes into Neo4j."""
+        if properties_list:
+            _validate_properties_list(TaggedWith, properties_list)
+
+        query = _build_relationship_ingest_query(
+            RelationshipType.TAGGED_WITH,
+            NodeLabel.COLUMN,
+            NodeLabel.BUSINESS_TERM,
+            "entity_id",
+            "business_term_id",
+            overwrite_existing,
+            properties_list,
+        )
+
+        _, summary, _ = self.neo4j_driver.execute_query(
+            query_=query,
+            parameters_={"rows": [n.model_dump() for n in tagged_with_relationships]},
+            routing_=RoutingControl.WRITE,
+            database_=self.database_name,
+        )
+        return summary.counters.__dict__
+
+    def load_table_tagged_with_relationships(
+        self,
+        tagged_with_relationships: list[TaggedWith],
+        overwrite_existing: bool = False,
+        properties_list: list[str] = [],
+    ) -> dict:
+        """Load TAGGED_WITH relationships from Table nodes into Neo4j."""
+        if properties_list:
+            _validate_properties_list(TaggedWith, properties_list)
+
+        query = _build_relationship_ingest_query(
+            RelationshipType.TAGGED_WITH,
+            NodeLabel.TABLE,
+            NodeLabel.BUSINESS_TERM,
+            "entity_id",
+            "business_term_id",
+            overwrite_existing,
+            properties_list,
+        )
+
+        _, summary, _ = self.neo4j_driver.execute_query(
+            query_=query,
+            parameters_={"rows": [n.model_dump() for n in tagged_with_relationships]},
             routing_=RoutingControl.WRITE,
             database_=self.database_name,
         )
