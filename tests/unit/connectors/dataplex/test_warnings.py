@@ -1,13 +1,13 @@
 """Unit tests for Dataplex connector import warnings."""
 
 import importlib
-
-import pytest
+import warnings
 
 import neocarta.connectors.dataplex as dataplex_module
 
 
-def test_dataplex_import_triggers_warning():
-    """Importing the Dataplex connector should emit an in-progress warning."""
-    with pytest.warns(UserWarning, match="Dataplex connector"):
+def test_dataplex_import_triggers_no_warning():
+    """Importing the Dataplex connector should not emit any warnings."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
         importlib.reload(dataplex_module)

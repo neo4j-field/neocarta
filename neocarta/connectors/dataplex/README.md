@@ -1,7 +1,5 @@
 # GCP Dataplex Universal Catalog Connector
 
-> **Warning:** Importing this module raises a `UserWarning`: *"The Dataplex connector is an incomplete feature."*
-
 ## Overview
 
 This connector reads information from the GCP Dataplex Universal Catalog via the Python client and maps it to the graph data model schema defined in this library. 
