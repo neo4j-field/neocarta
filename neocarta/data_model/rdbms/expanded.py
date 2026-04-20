@@ -65,7 +65,7 @@ class TaggedWith(BaseModel):
     A relationship between a Column or Table and a Business Term.
     (:Column)-[:TAGGED_WITH]->(:BusinessTerm)
     (:Table)-[:TAGGED_WITH]->(:BusinessTerm)
-    """
+    """  # noqa: D415
 
     entity_id: str = Field(..., description="The unique identifier for the column or table")
     business_term_id: str = Field(..., description="The unique identifier for the business term")

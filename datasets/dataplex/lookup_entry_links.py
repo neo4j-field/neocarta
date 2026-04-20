@@ -34,9 +34,9 @@ BASE_URL = "https://dataplex.googleapis.com/v1"
 
 
 def get_auth_session() -> requests.Session:
+    """Return an authorized session using application default credentials."""
     creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-    session = google.auth.transport.requests.AuthorizedSession(creds)
-    return session
+    return google.auth.transport.requests.AuthorizedSession(creds)
 
 
 def lookup_entry_links(
@@ -61,7 +61,7 @@ def lookup_entry_links(
     page_size : int
         Results per page (max 10 per API limits).
 
-    Returns
+    Returns:
     -------
     List of EntryLink dicts from the API response.
     """
@@ -90,6 +90,7 @@ def lookup_entry_links(
 
 
 def glossary_term_entry_name(term_id: str) -> str:
+    """Return the Dataplex entry resource name for a glossary term."""
     return (
         f"projects/{PROJECT_NUMBER}/locations/{DATAPLEX_LOCATION}"
         f"/entryGroups/@dataplex/entries/"
@@ -99,6 +100,7 @@ def glossary_term_entry_name(term_id: str) -> str:
 
 
 def bq_table_entry_name(table_id: str) -> str:
+    """Return the Dataplex entry resource name for a BigQuery table."""
     return (
         f"projects/{PROJECT_NUMBER}/locations/{BQ_LOCATION}"
         f"/entryGroups/@bigquery/entries/"

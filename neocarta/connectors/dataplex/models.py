@@ -44,9 +44,13 @@ class GlossaryInfoResponse(TypedDict):
 class EntryLinkInfoResponse(TypedDict):
     """Row returned by the Dataplex entry link extraction."""
 
-    entity_id: str = Field(..., description="Neo4j node id: project_id.dataset_id.table_id[.column_name]")
+    entity_id: str = Field(
+        ..., description="Neo4j node id: project_id.dataset_id.table_id[.column_name]"
+    )
     entity_type: str = Field(..., description="'COLUMN' or 'TABLE'")
-    term_id: str = Field(..., description="Neo4j BusinessTerm node id: full term resource name from the SDK")
+    term_id: str = Field(
+        ..., description="Neo4j BusinessTerm node id: full term resource name from the SDK"
+    )
 
 
 class DataplexExtractorCache(TypedDict):

@@ -2,7 +2,6 @@
 
 import pandas as pd
 
-from ..utils.generate_id import generate_column_id, generate_database_id, generate_schema_id, generate_table_id
 from ...data_model.rdbms import (
     BusinessTerm,
     Category,
@@ -19,6 +18,12 @@ from ...data_model.rdbms import (
     TaggedWith,
 )
 from ..models import NodesCache, RelationshipsCache
+from ..utils.generate_id import (
+    generate_column_id,
+    generate_database_id,
+    generate_schema_id,
+    generate_table_id,
+)
 
 
 class DataplexTransformer:
@@ -125,7 +130,7 @@ class DataplexTransformer:
         """
         Get tagged with relationships for columns.
         (:Column)-[:TAGGED_WITH]->(:BusinessTerm)
-        """
+        """  # noqa: D415
         return self._relationships_cache.get("column_tagged_with_relationships", [])
 
     @property
@@ -133,7 +138,7 @@ class DataplexTransformer:
         """
         Get tagged with relationships for tables.
         (:Table)-[:TAGGED_WITH]->(:BusinessTerm)
-        """
+        """  # noqa: D415
         return self._relationships_cache.get("table_tagged_with_relationships", [])
 
     @property
@@ -268,7 +273,9 @@ class DataplexTransformer:
         """
         nodes = [
             Column(
-                id=generate_column_id(row.project_id, row.dataset_id, row.table_id, row.column_name),
+                id=generate_column_id(
+                    row.project_id, row.dataset_id, row.table_id, row.column_name
+                ),
                 name=row.column_name,
                 description=row.column_description,
                 type=row.column_data_type,
@@ -469,7 +476,9 @@ class DataplexTransformer:
         relationships = [
             HasColumn(
                 table_id=generate_table_id(row.project_id, row.dataset_id, row.table_id),
-                column_id=generate_column_id(row.project_id, row.dataset_id, row.table_id, row.column_name),
+                column_id=generate_column_id(
+                    row.project_id, row.dataset_id, row.table_id, row.column_name
+                ),
             )
             for _, row in column_metadata_info.iterrows()
         ]

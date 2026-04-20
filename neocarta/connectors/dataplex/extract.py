@@ -7,7 +7,6 @@ import requests
 from google.cloud import dataplex_v1
 
 from ..utils.generate_id import generate_column_id, generate_table_id
-
 from .models import (
     BigQueryMetadataInfoResponse,
     DataplexExtractorCache,
@@ -123,15 +122,23 @@ class DataplexExtractor:
     def column_term_info(self) -> pd.DataFrame:
         """Get entry links where a Column is tagged with a BusinessTerm."""
         cols = ["entity_id", "term_id"]
-        df = self._cache.get("entry_link_info", pd.DataFrame(columns=["entity_id", "entity_type", "term_id"]))
-        return df[df["entity_type"] == "COLUMN"].drop_duplicates(subset=["entity_id", "term_id"])[cols]
+        df = self._cache.get(
+            "entry_link_info", pd.DataFrame(columns=["entity_id", "entity_type", "term_id"])
+        )
+        return df[df["entity_type"] == "COLUMN"].drop_duplicates(subset=["entity_id", "term_id"])[
+            cols
+        ]
 
     @property
     def table_term_info(self) -> pd.DataFrame:
         """Get entry links where a Table is tagged with a BusinessTerm."""
         cols = ["entity_id", "term_id"]
-        df = self._cache.get("entry_link_info", pd.DataFrame(columns=["entity_id", "entity_type", "term_id"]))
-        return df[df["entity_type"] == "TABLE"].drop_duplicates(subset=["entity_id", "term_id"])[cols]
+        df = self._cache.get(
+            "entry_link_info", pd.DataFrame(columns=["entity_id", "entity_type", "term_id"])
+        )
+        return df[df["entity_type"] == "TABLE"].drop_duplicates(subset=["entity_id", "term_id"])[
+            cols
+        ]
 
     def _get_dataset_id(self, dataset_id: str | None = None) -> str:
         """
@@ -437,7 +444,6 @@ class DataplexExtractor:
         try:
             bq_resource = source["name"].split("/entries/")[-1]
             parts = bq_resource.split("/")
-            # parts: ["bigquery.googleapis.com", "projects", proj_id, "datasets", dataset, "tables", table]
             bq_project_id = parts[2]
             dataset_id = parts[4]
             table_id = parts[6]
@@ -473,7 +479,7 @@ class DataplexExtractor:
         cache : bool
             Whether to cache the result on the instance.
 
-        Returns
+        Returns:
         -------
         pd.DataFrame
             One row per (entity, term) pair.
@@ -481,7 +487,9 @@ class DataplexExtractor:
         """
         glossary_info = self._cache.get("glossary_info", pd.DataFrame())
         if glossary_info.empty:
-            raise RuntimeError("extract_glossary_info() must be called before extract_entry_links().")
+            raise RuntimeError(
+                "extract_glossary_info() must be called before extract_entry_links()."
+            )
 
         creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
         session = google.auth.transport.requests.AuthorizedSession(creds)
@@ -523,9 +531,7 @@ class DataplexExtractor:
         if cache:
             self._cache["entry_link_info"] = pd.concat(
                 [
-                    self._cache.get(
-                        "entry_link_info", pd.DataFrame(columns=_entry_link_cols)
-                    ),
+                    self._cache.get("entry_link_info", pd.DataFrame(columns=_entry_link_cols)),
                     df,
                 ],
                 ignore_index=True,
