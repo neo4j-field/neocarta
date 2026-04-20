@@ -57,11 +57,11 @@ Relationships
 * `(:Query)-[:USES_TABLE]->(:Table)`
 * `(:Query)-[:USES_COLUMN]->(:Table)`
 
-## Glossary Data Model **(Partially Implemented)**
+## Glossary Data Model
 
-Data catalogs allow business terms to be defined and linked to columns. 
-This allows table relationships to be inferred by shared business terms between their columns.
-For example `TableA.customer_id` and `TableB.cstmr_id` both are tagged with the business term "Customer ID", implying that we can join these tables on `customer_id` and `cstmr_id`.
+Data catalogs allow business terms to be defined and linked to tables and columns.
+This allows relationships to be inferred by shared business terms across assets.
+For example `TableA.customer_id` and `TableB.cstmr_id` both tagged with the business term "Customer ID" implies those columns can be used to join their respective tables.
 
 Nodes
 * [`Glossary`](./expanded.py#L21)
@@ -70,16 +70,18 @@ Nodes
     * Contains information about a category in the glossary
 * [`BusinessTerm`](./expanded.py#L33)
     * A leaf level term in the glossary
-    * Defines globally recognized term across databases in the system
+    * Defines a globally recognized term across databases in the system
 
 Relationships
 * [`(:Glossary)-[:HAS_CATEGORY]->(:Category)`](./expanded.py#L42)
     * Defines glossary to category hierarchy
 * [`(:Category)-[:HAS_BUSINESS_TERM]->(:BusinessTerm)`](./expanded.py#L50)
     * Defines category to business term hierarchy
-* `(:Column)-[:RESOLVES_TO]->(:BusinessTerm)`
-    * Defines how a column resolves to a business term
-    * Columns that resolve to the same business term may likely may be used to join their respective tables
+* `(:Column)-[:TAGGED_WITH]->(:BusinessTerm)`
+    * Defines that a column is tagged with a business term
+    * Columns tagged with the same business term may be used to join their respective tables
+* `(:Table)-[:TAGGED_WITH]->(:BusinessTerm)`
+    * Defines that a table is tagged with a business term
 
 ## Data Stewards **(Not Implemented)**
 
