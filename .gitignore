@@ -213,3 +213,4 @@ test_query_logs.ipynb
 library_test.ipynb
 eval/results/
 eval/datasets/schemas/
+datasets/dataplex/lookup_entry_links.py
