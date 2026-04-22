@@ -348,10 +348,13 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
                     (column_info["table_name"] == table_name) & (column_info["column_name"] == col)
                 ]["data_type"]
 
-                # Skip array and struct columns as ARRAY_AGG(DISTINCT) cannot be applied to these types
+                # Skip non-groupable types — ARRAY_AGG(DISTINCT) requires a groupable
+                # argument, which excludes ARRAY, STRUCT, GEOGRAPHY, JSON, and BIGNUMERIC.
                 if not col_data_type.empty:
                     data_type = col_data_type.iloc[0]
-                    if data_type.startswith(("ARRAY", "STRUCT")):
+                    if data_type.startswith(
+                        ("ARRAY", "STRUCT", "GEOGRAPHY", "JSON", "BIGNUMERIC")
+                    ):
                         continue
 
             select_clauses.append(
