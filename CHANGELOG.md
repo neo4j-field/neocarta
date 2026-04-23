@@ -5,8 +5,15 @@
 ### Fixed
 
 ### Changed
+* Replace `RESOLVES_TO` relationship with `TAGGED_WITH` across RDBMS and LPG data models
 
 ### Added
+* Add `TAGGED_WITH` relationship type to `RelationshipType` enum
+* Add `TaggedWith` model to RDBMS expanded data model
+* Add `extract_entry_links()` to `DataplexExtractor` — retrieves `TAGGED_WITH` links between BigQuery columns/tables and Dataplex glossary terms via the `lookupEntryLinks` REST API
+* Add `transform_to_column_tagged_with_relationships()` and `transform_to_table_tagged_with_relationships()` to `DataplexTransformer`
+* Add `load_column_tagged_with_relationships()` and `load_table_tagged_with_relationships()` to Neo4j loader
+* `DataplexConnector` now creates `(:Column)-[:TAGGED_WITH]->(:BusinessTerm)` and `(:Table)-[:TAGGED_WITH]->(:BusinessTerm)` relationships when both `include_schema` and `include_glossary` are enabled
 
 ## v0.2.1
 
