@@ -15,6 +15,12 @@ from ....data_model.rdbms import (
     Value,
 )
 from ...models import NodesCache, RelationshipsCache
+from ...utils.generate_id import (
+    generate_column_id,
+    generate_database_id,
+    generate_schema_id,
+    generate_table_id,
+)
 
 
 class BigQuerySchemaTransformer:
@@ -129,7 +135,7 @@ class BigQuerySchemaTransformer:
         """
         database_nodes = [
             Database(
-                id=row.project_id,
+                id=generate_database_id(row.project_id),
                 name=row.project_id,
                 description=None,
             )
@@ -160,7 +166,7 @@ class BigQuerySchemaTransformer:
         """
         schema_nodes = [
             Schema(
-                id=row.project_id + "." + row.dataset_id,
+                id=generate_schema_id(row.project_id, row.dataset_id),
                 name=row.dataset_id,
                 description=row.description,
             )
@@ -191,7 +197,7 @@ class BigQuerySchemaTransformer:
         """
         table_nodes = [
             Table(
-                id=row.table_catalog + "." + row.table_schema + "." + row.table_name,
+                id=generate_table_id(row.table_catalog, row.table_schema, row.table_name),
                 name=row.table_name,
                 description=row.description,
             )
@@ -224,13 +230,12 @@ class BigQuerySchemaTransformer:
         """
         column_nodes = [
             Column(
-                id=row.table_catalog
-                + "."
-                + row.table_schema
-                + "."
-                + row.table_name
-                + "."
-                + row.column_name,
+                id=generate_column_id(
+                    row.table_catalog,
+                    row.table_schema,
+                    row.table_name,
+                    row.column_name,
+                ),
                 name=row.column_name,
                 description=row.description,
                 type=row.data_type,
@@ -294,8 +299,8 @@ class BigQuerySchemaTransformer:
         """
         has_schema_relationships = [
             HasSchema(
-                database_id=row.project_id,
-                schema_id=row.project_id + "." + row.dataset_id,
+                database_id=generate_database_id(row.project_id),
+                schema_id=generate_schema_id(row.project_id, row.dataset_id),
             )
             for _, row in schema_info.iterrows()
         ]
@@ -326,8 +331,8 @@ class BigQuerySchemaTransformer:
         """
         has_table_relationships = [
             HasTable(
-                schema_id=row.table_catalog + "." + row.table_schema,
-                table_id=row.table_catalog + "." + row.table_schema + "." + row.table_name,
+                schema_id=generate_schema_id(row.table_catalog, row.table_schema),
+                table_id=generate_table_id(row.table_catalog, row.table_schema, row.table_name),
             )
             for _, row in table_info.iterrows()
         ]
@@ -358,14 +363,13 @@ class BigQuerySchemaTransformer:
         """
         has_column_relationships = [
             HasColumn(
-                table_id=row.table_catalog + "." + row.table_schema + "." + row.table_name,
-                column_id=row.table_catalog
-                + "."
-                + row.table_schema
-                + "."
-                + row.table_name
-                + "."
-                + row.column_name,
+                table_id=generate_table_id(row.table_catalog, row.table_schema, row.table_name),
+                column_id=generate_column_id(
+                    row.table_catalog,
+                    row.table_schema,
+                    row.table_name,
+                    row.column_name,
+                ),
             )
             for _, row in column_info.iterrows()
         ]
@@ -396,20 +400,18 @@ class BigQuerySchemaTransformer:
         """
         references_relationships = [
             References(
-                source_column_id=row.constraint_catalog
-                + "."
-                + row.constraint_schema
-                + "."
-                + row.table_name
-                + "."
-                + row.column_name,
-                target_column_id=row.constraint_catalog
-                + "."
-                + row.constraint_schema
-                + "."
-                + row.referenced_table
-                + "."
-                + row.referenced_column,
+                source_column_id=generate_column_id(
+                    row.constraint_catalog,
+                    row.constraint_schema,
+                    row.table_name,
+                    row.column_name,
+                ),
+                target_column_id=generate_column_id(
+                    row.constraint_catalog,
+                    row.constraint_schema,
+                    row.referenced_table,
+                    row.referenced_column,
+                ),
             )
             for _, row in column_references_info[
                 column_references_info["constraint_type"] == "FOREIGN KEY"

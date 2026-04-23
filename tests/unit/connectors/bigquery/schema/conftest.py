@@ -89,7 +89,7 @@ def bigquery_extractor_with_cache(mock_bigquery_client):
                 "is_nullable": "NO",
                 "data_type": "INT64",
                 "description": "Customer ID",
-                "constraint_name": "test-project-id.test_dataset.customers.pk$",
+                "constraint_name": "test_project_id.test_dataset.customers.pk$",
                 "is_primary_key": True,
                 "is_foreign_key": False,
             },
@@ -113,7 +113,7 @@ def bigquery_extractor_with_cache(mock_bigquery_client):
                 "is_nullable": "NO",
                 "data_type": "INT64",
                 "description": "Order ID",
-                "constraint_name": "test-project-id.test_dataset.orders.pk$",
+                "constraint_name": "test_project_id.test_dataset.orders.pk$",
                 "is_primary_key": True,
                 "is_foreign_key": False,
             },
@@ -125,7 +125,7 @@ def bigquery_extractor_with_cache(mock_bigquery_client):
                 "is_nullable": "NO",
                 "data_type": "INT64",
                 "description": "Customer ID reference",
-                "constraint_name": "test-project-id.test_dataset.orders.fk_customer",
+                "constraint_name": "test_project_id.test_dataset.orders.fk_customer",
                 "is_primary_key": False,
                 "is_foreign_key": True,
             },
@@ -155,14 +155,14 @@ def bigquery_extractor_with_cache(mock_bigquery_client):
             {
                 "column_name": "customer_id",
                 "unique_value": "1",
-                "column_id": "test-project-id.test_dataset.customers.customer_id",
-                "value_id": "test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
+                "column_id": "test_project_id.test_dataset.customers.customer_id",
+                "value_id": "test_project_id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
             },
             {
                 "column_name": "customer_id",
                 "unique_value": "2",
-                "column_id": "test-project-id.test_dataset.customers.customer_id",
-                "value_id": "test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
+                "column_id": "test_project_id.test_dataset.customers.customer_id",
+                "value_id": "test_project_id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
             },
         ]
     )
@@ -189,12 +189,12 @@ def bigquery_transformer_with_cache():
     transformer = BigQuerySchemaTransformer()
 
     # Database nodes
-    database_nodes = [Database(id="test-project-id", name="test-project-id", description=None)]
+    database_nodes = [Database(id="test_project_id", name="test-project-id", description=None)]
 
     # Schema nodes
     schema_nodes = [
         Schema(
-            id="test-project-id.test_dataset",
+            id="test_project_id.test_dataset",
             name="test_dataset",
             description="Test dataset description",
         )
@@ -203,17 +203,17 @@ def bigquery_transformer_with_cache():
     # Table nodes
     table_nodes = [
         Table(
-            id="test-project-id.test_dataset.customers",
+            id="test_project_id.test_dataset.customers",
             name="customers",
             description="Customer table",
         ),
-        Table(id="test-project-id.test_dataset.orders", name="orders", description="Order table"),
+        Table(id="test_project_id.test_dataset.orders", name="orders", description="Order table"),
     ]
 
     # Column nodes
     column_nodes = [
         Column(
-            id="test-project-id.test_dataset.customers.customer_id",
+            id="test_project_id.test_dataset.customers.customer_id",
             name="customer_id",
             description="Customer ID",
             type="INT64",
@@ -222,7 +222,7 @@ def bigquery_transformer_with_cache():
             is_foreign_key=False,
         ),
         Column(
-            id="test-project-id.test_dataset.customers.customer_name",
+            id="test_project_id.test_dataset.customers.customer_name",
             name="customer_name",
             description="Customer name",
             type="STRING",
@@ -231,7 +231,7 @@ def bigquery_transformer_with_cache():
             is_foreign_key=False,
         ),
         Column(
-            id="test-project-id.test_dataset.orders.order_id",
+            id="test_project_id.test_dataset.orders.order_id",
             name="order_id",
             description="Order ID",
             type="INT64",
@@ -240,7 +240,7 @@ def bigquery_transformer_with_cache():
             is_foreign_key=False,
         ),
         Column(
-            id="test-project-id.test_dataset.orders.customer_id",
+            id="test_project_id.test_dataset.orders.customer_id",
             name="customer_id",
             description="Customer ID reference",
             type="INT64",
@@ -253,68 +253,68 @@ def bigquery_transformer_with_cache():
     # Value nodes
     value_nodes = [
         Value(
-            id="test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
+            id="test_project_id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
             value="1",
         ),
         Value(
-            id="test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
+            id="test_project_id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
             value="2",
         ),
     ]
 
     # Has schema relationships
     has_schema_relationships = [
-        HasSchema(database_id="test-project-id", schema_id="test-project-id.test_dataset")
+        HasSchema(database_id="test_project_id", schema_id="test_project_id.test_dataset")
     ]
 
     # Has table relationships
     has_table_relationships = [
         HasTable(
-            schema_id="test-project-id.test_dataset",
-            table_id="test-project-id.test_dataset.customers",
+            schema_id="test_project_id.test_dataset",
+            table_id="test_project_id.test_dataset.customers",
         ),
         HasTable(
-            schema_id="test-project-id.test_dataset", table_id="test-project-id.test_dataset.orders"
+            schema_id="test_project_id.test_dataset", table_id="test_project_id.test_dataset.orders"
         ),
     ]
 
     # Has column relationships
     has_column_relationships = [
         HasColumn(
-            table_id="test-project-id.test_dataset.customers",
-            column_id="test-project-id.test_dataset.customers.customer_id",
+            table_id="test_project_id.test_dataset.customers",
+            column_id="test_project_id.test_dataset.customers.customer_id",
         ),
         HasColumn(
-            table_id="test-project-id.test_dataset.customers",
-            column_id="test-project-id.test_dataset.customers.customer_name",
+            table_id="test_project_id.test_dataset.customers",
+            column_id="test_project_id.test_dataset.customers.customer_name",
         ),
         HasColumn(
-            table_id="test-project-id.test_dataset.orders",
-            column_id="test-project-id.test_dataset.orders.order_id",
+            table_id="test_project_id.test_dataset.orders",
+            column_id="test_project_id.test_dataset.orders.order_id",
         ),
         HasColumn(
-            table_id="test-project-id.test_dataset.orders",
-            column_id="test-project-id.test_dataset.orders.customer_id",
+            table_id="test_project_id.test_dataset.orders",
+            column_id="test_project_id.test_dataset.orders.customer_id",
         ),
     ]
 
     # References relationships
     references_relationships = [
         References(
-            source_column_id="test-project-id.test_dataset.orders.customer_id",
-            target_column_id="test-project-id.test_dataset.customers.customer_id",
+            source_column_id="test_project_id.test_dataset.orders.customer_id",
+            target_column_id="test_project_id.test_dataset.customers.customer_id",
         )
     ]
 
     # Has value relationships
     has_value_relationships = [
         HasValue(
-            column_id="test-project-id.test_dataset.customers.customer_id",
-            value_id="test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
+            column_id="test_project_id.test_dataset.customers.customer_id",
+            value_id="test_project_id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b",
         ),
         HasValue(
-            column_id="test-project-id.test_dataset.customers.customer_id",
-            value_id="test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
+            column_id="test_project_id.test_dataset.customers.customer_id",
+            value_id="test_project_id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c",
         ),
     ]
 

@@ -5,6 +5,7 @@ import hashlib
 import pandas as pd
 from google.cloud import bigquery
 
+from ...utils.generate_id import generate_column_id
 from .models import SchemaExtractorCache
 
 
@@ -187,6 +188,7 @@ FROM `{self.project_id}`.`{dataset_id}`.INFORMATION_SCHEMA.TABLES as tables
         ON tables.table_catalog = table_options.table_catalog
         AND tables.table_schema = table_options.table_schema
         AND tables.table_name = table_options.table_name
+        AND table_options.option_name = 'description'
 WHERE table_type = 'BASE TABLE'
 ORDER BY table_name
 """).to_dataframe()
@@ -378,20 +380,23 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
 
         result["unique_value"] = result["unique_value"].astype(str)
 
-        # Add column_id in the format: project_id.dataset_id.table_name.column_name
-        result["column_id"] = (
-            self.project_id + "." + dataset_id + "." + table_name + "." + result["column_name"]
+        # Add column_id using normalized ID generation
+        result["column_id"] = result["column_name"].apply(
+            lambda col: generate_column_id(self.project_id, dataset_id, table_name, col)
         )
 
         # Hash the unique value and append to column_id for value_id
-        result["value_id"] = result.apply(
-            lambda row: (
-                row["column_id"]
-                + "."
-                + hashlib.md5(row["unique_value"].encode(), usedforsecurity=False).hexdigest()
-            ),
-            axis=1,
-        )
+        if result.empty:
+            result["value_id"] = pd.Series(dtype=str)
+        else:
+            result["value_id"] = result.apply(
+                lambda row: (
+                    row["column_id"]
+                    + "."
+                    + hashlib.md5(row["unique_value"].encode(), usedforsecurity=False).hexdigest()
+                ),
+                axis=1,
+            )
 
         # TODO: Handle caching duplicate column information if method run multiple times for same table and columns.
         if cache:
