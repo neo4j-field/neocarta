@@ -1,7 +1,5 @@
 # GCP Dataplex Universal Catalog Connector
 
-> **Warning:** Importing this module raises a `UserWarning`: *"The Dataplex connector is an incomplete feature. Current limitations of the Dataplex API prevent relationships between business terms and their tagged entities."*
-
 ## Overview
 
 This connector reads information from the GCP Dataplex Universal Catalog via the Python client and maps it to the graph data model schema defined in this library. 
@@ -35,7 +33,7 @@ Column -->|REFERENCES| Column
 
 ### Glossary Information
 
-Dataplex has a Glossary that allows us to store business terms. Ideally terms may then be connected to columns, which allows us to infer table relationships via columns that resolve to a shared business term. Below is the data model for Dataplex glossary information.
+Dataplex has a Glossary that allows us to store business terms. Terms may then be connected to columns and tables via the `projects.locations:lookupEntryLinks` REST API, which allows us to infer relationships via entities that share a common business term. Below is the supported data model.
 
 ```mermaid
 ---
@@ -47,19 +45,23 @@ graph LR
 Glossary("Glossary<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING")
 Category("Category<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING")
 BusinessTerm("BusinessTerm<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
 
 %% Relationships
 Glossary -->|HAS_CATEGORY| Category
 Category -->|HAS_BUSINESS_TERM| BusinessTerm
+Column -->|TAGGED_WITH| BusinessTerm
+Table -->|TAGGED_WITH| BusinessTerm
 ```
 
 ## Known Issues
 
-### Unable to connect business terms to columns
+### Aspect handling
 
-The Dataplex API has no method of retrieving entityLink IDs. This means that we can not automatically retrieve the connections between columns and business terms. This is a feature that is in [the preview version](https://docs.cloud.google.com/dataplex/docs/manage-glossaries#rest_23) of the Dataplex API and should be released in the future. Once publically available, it will be implemented in this library. 
+Information such as primary / foreign keys and data stewardship may be defined as Dataplex Aspects. Aspects are custom definitions and so automating the identification and mapping of Aspects to Steward nodes, for example, is difficult.
 
-The goal data model is shown below. Note that `Value` nodes are still absent in the Dataplex output.
+The full data model is shown below. Note that `Value` nodes are still absent in the Dataplex output.
 
 ```mermaid
 ---
@@ -88,13 +90,10 @@ Column -->|REFERENCES| Column
 Glossary -->|HAS_CATEGORY| Category
 Category -->|HAS_BUSINESS_TERM| BusinessTerm
 
-%% Cross-domain Relationship
-Column -->|RESOLVES_TO| BusinessTerm
+%% Cross-domain Relationships
+Column -->|TAGGED_WITH| BusinessTerm
+Table -->|TAGGED_WITH| BusinessTerm
 ```
-
-### Aspect handling
-
-Information such as primary / foreign keys and data stewardship may be defined as Dataplex Aspects. Aspects are custom definitions and so automating the indetification and mapping of Aspects to Steward nodes, for example, is difficult. Additionally, the inaccessible entityLink IDs mean that even if we properly map these Aspects to nodes in our data model, we can't identify relationships via the Dataplex API.
 
 ## Usage
 

@@ -1,9 +1,18 @@
 """Extract metadata from GCP Dataplex."""
 
+import google.auth
+import google.auth.transport.requests
 import pandas as pd
+import requests
 from google.cloud import dataplex_v1
 
-from .models import BigQueryMetadataInfoResponse, DataplexExtractorCache, GlossaryInfoResponse
+from ..utils.generate_id import generate_column_id, generate_table_id
+from .models import (
+    BigQueryMetadataInfoResponse,
+    DataplexExtractorCache,
+    EntryLinkInfoResponse,
+    GlossaryInfoResponse,
+)
 
 
 class DataplexExtractor:
@@ -108,6 +117,28 @@ class DataplexExtractor:
         return self._cache.get("glossary_info", pd.DataFrame(columns=cols)).drop_duplicates(
             subset=["glossary_id", "category_id", "term_id"]
         )[cols]
+
+    @property
+    def column_term_info(self) -> pd.DataFrame:
+        """Get entry links where a Column is tagged with a BusinessTerm."""
+        cols = ["entity_id", "term_id"]
+        df = self._cache.get(
+            "entry_link_info", pd.DataFrame(columns=["entity_id", "entity_type", "term_id"])
+        )
+        return df[df["entity_type"] == "COLUMN"].drop_duplicates(subset=["entity_id", "term_id"])[
+            cols
+        ]
+
+    @property
+    def table_term_info(self) -> pd.DataFrame:
+        """Get entry links where a Table is tagged with a BusinessTerm."""
+        cols = ["entity_id", "term_id"]
+        df = self._cache.get(
+            "entry_link_info", pd.DataFrame(columns=["entity_id", "entity_type", "term_id"])
+        )
+        return df[df["entity_type"] == "TABLE"].drop_duplicates(subset=["entity_id", "term_id"])[
+            cols
+        ]
 
     def _get_dataset_id(self, dataset_id: str | None = None) -> str:
         """
@@ -358,6 +389,152 @@ class DataplexExtractor:
         if cache:
             self._cache["glossary_info"] = pd.concat(
                 [self._cache.get("glossary_info", pd.DataFrame()), df], ignore_index=True
+            )
+
+        return df
+
+    def _lookup_entry_links_page(
+        self,
+        session: requests.Session,
+        entry: str,
+        entry_link_type: str,
+        page_size: int = 10,
+    ) -> list[dict]:
+        """Page through all lookupEntryLinks results for a single entry."""
+        url = (
+            f"https://dataplex.googleapis.com/v1"
+            f"/projects/{self.project_id}/locations/{self.dataplex_location}:lookupEntryLinks"
+        )
+        params: dict = {
+            "entry": entry,
+            "entryLinkTypes": entry_link_type,
+            "pageSize": page_size,
+        }
+        links: list[dict] = []
+        while True:
+            response = session.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            links.extend(data.get("entryLinks", []))
+            next_token = data.get("nextPageToken")
+            if not next_token:
+                break
+            params["pageToken"] = next_token
+        return links
+
+    @staticmethod
+    def _parse_source_entry(link: dict) -> tuple[str, str] | None:
+        """
+        Parse the SOURCE entry reference from an EntryLink dict.
+
+        Returns (entity_id, entity_type) where entity_id is the Neo4j node id
+        (project_id.dataset_id.table_id[.column_name]) and entity_type is
+        "COLUMN" or "TABLE". Returns None if the link cannot be parsed.
+
+        The term_id is NOT parsed here — callers should use the known term.name
+        from the SDK directly to avoid project_id vs project_number ambiguity.
+        """
+        refs = {r["type"]: r for r in link.get("entryReferences", [])}
+        source = refs.get("SOURCE")
+        if not source:
+            return None
+
+        # SOURCE entry name format:
+        # projects/{num}/locations/{loc}/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/{project_id}/datasets/{dataset}/tables/{table}
+        try:
+            bq_resource = source["name"].split("/entries/")[-1]
+            parts = bq_resource.split("/")
+            bq_project_id = parts[2]
+            dataset_id = parts[4]
+            table_id = parts[6]
+        except (IndexError, KeyError):
+            return None
+
+        path = source.get("path", "")
+        if path:
+            column_name = path.split(".")[-1]
+            entity_id = generate_column_id(bq_project_id, dataset_id, table_id, column_name)
+            entity_type = "COLUMN"
+        else:
+            entity_id = generate_table_id(bq_project_id, dataset_id, table_id)
+            entity_type = "TABLE"
+
+        return entity_id, entity_type
+
+    def extract_entry_links(
+        self,
+        entry_link_type: str = "projects/dataplex-types/locations/global/entryLinkTypes/definition",
+        cache: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Retrieve all entry links between glossary terms and BigQuery assets.
+
+        Uses the projects.locations:lookupEntryLinks REST endpoint (not yet in the
+        Python SDK) to discover which tables and columns are tagged with each term.
+
+        Parameters
+        ----------
+        entry_link_type : str
+            The entry link type resource name to filter by.
+        cache : bool
+            Whether to cache the result on the instance.
+
+        Returns:
+        -------
+        pd.DataFrame
+            One row per (entity, term) pair.
+            Columns: entity_id, entity_type, term_id.
+        """
+        glossary_info = self._cache.get("glossary_info", pd.DataFrame())
+        if glossary_info.empty:
+            raise RuntimeError(
+                "extract_glossary_info() must be called before extract_entry_links()."
+            )
+
+        creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        session = google.auth.transport.requests.AuthorizedSession(creds)
+
+        records: list[EntryLinkInfoResponse] = []
+
+        for _, row in glossary_info.drop_duplicates(subset=["term_id"]).iterrows():
+            term_name = row["term_id"]
+            term_slug = term_name.split("/terms/")[-1]
+            glossary_id = term_name.split("/glossaries/")[1].split("/")[0]
+
+            term_entry = (
+                f"projects/{self.project_number}/locations/{self.dataplex_location}"
+                f"/entryGroups/@dataplex/entries/"
+                f"projects/{self.project_number}/locations/{self.dataplex_location}"
+                f"/glossaries/{glossary_id}/terms/{term_slug}"
+            )
+
+            try:
+                links = self._lookup_entry_links_page(session, term_entry, entry_link_type)
+            except Exception as e:
+                print(f"Error looking up entry links for term '{term_slug}': {e}")
+                continue
+
+            for link in links:
+                parsed = self._parse_source_entry(link)
+                if parsed:
+                    entity_id, entity_type = parsed
+                    records.append(
+                        EntryLinkInfoResponse(
+                            entity_id=entity_id,
+                            entity_type=entity_type,
+                            term_id=term_name,
+                        )
+                    )
+
+        _entry_link_cols = ["entity_id", "entity_type", "term_id"]
+        df = pd.DataFrame(records) if records else pd.DataFrame(columns=_entry_link_cols)
+        if cache:
+            self._cache["entry_link_info"] = pd.concat(
+                [
+                    self._cache.get("entry_link_info", pd.DataFrame(columns=_entry_link_cols)),
+                    df,
+                ],
+                ignore_index=True,
             )
 
         return df

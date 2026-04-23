@@ -284,8 +284,6 @@ This allows you to compare declared schema vs. actual usage patterns.
 
 Connector for reading BigQuery metadata and Glossary information from Dataplex and ingesting into Neo4j. Please see the [Dataplex README](./neocarta/connectors/dataplex/README.md) for more information and caveats of using this connector.
 
-> **Warning:** Importing this module raises a `UserWarning`: *"The Dataplex connector is an incomplete feature. Current limitations of the Dataplex API prevent relationships between business terms and their tagged entities."*
-
 ##### Connector Architecture 
 
 ```mermaid
@@ -325,6 +323,40 @@ graph LR
     MT -->|BigQuery Metadata| QE
     GS -->|Schema Definition| PM
     PM -->|Ingest Data| NEO
+```
+
+##### Data Model
+
+```mermaid
+---
+config:
+    layout: elk
+---
+graph LR
+%% Database Nodes
+Database("Database<br/>id: STRING | KEY<br/>name: STRING<br/>platform: STRING<br/>service: STRING")
+Schema("Schema<br/>id: STRING | KEY<br/>name: STRING")
+Table("Table<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+Column("Column<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR<br/>type: STRING<br/>nullable: BOOLEAN")
+
+%% Glossary Nodes
+Glossary("Glossary<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING")
+Category("Category<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING")
+BusinessTerm("BusinessTerm<br/>id: STRING | KEY<br/>name: STRING<br/>description: STRING<br/>embedding: VECTOR")
+
+%% Database Relationships
+Database -->|HAS_SCHEMA| Schema
+Schema -->|HAS_TABLE| Table
+Table -->|HAS_COLUMN| Column
+Column -->|REFERENCES| Column
+
+%% Glossary Relationships
+Glossary -->|HAS_CATEGORY| Category
+Category -->|HAS_BUSINESS_TERM| BusinessTerm
+
+%% Cross-domain Relationships
+Column -->|TAGGED_WITH| BusinessTerm
+Table -->|TAGGED_WITH| BusinessTerm
 ```
 
 #### **Query Logs**

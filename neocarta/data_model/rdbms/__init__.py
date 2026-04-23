@@ -18,6 +18,7 @@ from .expanded import (
     HasCategory,
     HasValue,
     Query,
+    TaggedWith,
     UsesColumn,
     UsesTable,
     Value,
@@ -27,27 +28,20 @@ __all__ = [
     "BusinessTerm",
     "Category",
     "Column",
-    # RDBMS Core nodes
     "Database",
-    # RDBMS Glossary nodes
     "Glossary",
     "HasBusinessTerm",
-    # RDBMS Glossary relationships
     "HasCategory",
     "HasColumn",
-    # RDBMS Core relationships
     "HasSchema",
     "HasTable",
-    # RDBMS Value relationships
     "HasValue",
-    # RDBMS Query nodes
     "Query",
     "References",
     "Schema",
     "Table",
+    "TaggedWith",
     "UsesColumn",
-    # RDBMS Query relationships
     "UsesTable",
-    # RDBMS Value nodes
     "Value",
 ]

@@ -138,12 +138,12 @@ Relationships
     * Defines glossary to category hierarchy
 * `(:Category)-[:HAS_BUSINESS_TERM]->(:BusinessTerm)`
     * Defines category to business term hierarchy
-* `(:Node)-[:RESOLVES_TO]->(:BusinessTerm)`
-    * Defines how a node label resolves to a business term
-* `(:Relationship)-[:RESOLVES_TO]->(:BusinessTerm)`
-    * Defines how a relationship type resolves to a business term
-* `(:Property)-[:RESOLVES_TO]->(:BusinessTerm)`
-    * Defines how a property resolves to a business term
+* `(:Node)-[:TAGGED_WITH]->(:BusinessTerm)`
+    * Defines that a node label is tagged with a business term
+* `(:Relationship)-[:TAGGED_WITH]->(:BusinessTerm)`
+    * Defines that a relationship type is tagged with a business term
+* `(:Property)-[:TAGGED_WITH]->(:BusinessTerm)`
+    * Defines that a property is tagged with a business term
 
 ## Data Stewards **(Not Implemented)**
 
