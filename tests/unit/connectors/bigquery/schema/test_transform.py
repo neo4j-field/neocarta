@@ -11,7 +11,7 @@ def test_transform_to_database_nodes(
     )
 
     assert len(bigquery_transformer.database_nodes) == 1
-    assert bigquery_transformer.database_nodes[0].id == "test-project-id"
+    assert bigquery_transformer.database_nodes[0].id == "test_project_id"
     assert bigquery_transformer.database_nodes[0].name == "test-project-id"
     assert bigquery_transformer.database_nodes[0].description is None
 
@@ -26,7 +26,7 @@ def test_transform_to_schema_nodes(
     )
 
     assert len(bigquery_transformer.schema_nodes) == 1
-    assert bigquery_transformer.schema_nodes[0].id == "test-project-id.test_dataset"
+    assert bigquery_transformer.schema_nodes[0].id == "test_project_id.test_dataset"
     assert bigquery_transformer.schema_nodes[0].name == "test_dataset"
     assert bigquery_transformer.schema_nodes[0].description == "Test dataset description"
 
@@ -41,10 +41,10 @@ def test_transform_to_table_nodes(
     )
 
     assert len(bigquery_transformer.table_nodes) == 2
-    assert bigquery_transformer.table_nodes[0].id == "test-project-id.test_dataset.customers"
+    assert bigquery_transformer.table_nodes[0].id == "test_project_id.test_dataset.customers"
     assert bigquery_transformer.table_nodes[0].name == "customers"
     assert bigquery_transformer.table_nodes[0].description == "Customer table"
-    assert bigquery_transformer.table_nodes[1].id == "test-project-id.test_dataset.orders"
+    assert bigquery_transformer.table_nodes[1].id == "test_project_id.test_dataset.orders"
     assert bigquery_transformer.table_nodes[1].name == "orders"
     assert bigquery_transformer.table_nodes[1].description == "Order table"
 
@@ -61,7 +61,7 @@ def test_transform_to_column_nodes(
     assert len(bigquery_transformer.column_nodes) == 4
     assert (
         bigquery_transformer.column_nodes[0].id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert bigquery_transformer.column_nodes[0].name == "customer_id"
     assert bigquery_transformer.column_nodes[0].type == "INT64"
@@ -69,14 +69,14 @@ def test_transform_to_column_nodes(
     assert not bigquery_transformer.column_nodes[0].is_foreign_key
     assert (
         bigquery_transformer.column_nodes[1].id
-        == "test-project-id.test_dataset.customers.customer_name"
+        == "test_project_id.test_dataset.customers.customer_name"
     )
     assert bigquery_transformer.column_nodes[1].name == "customer_name"
     assert bigquery_transformer.column_nodes[1].type == "STRING"
-    assert bigquery_transformer.column_nodes[2].id == "test-project-id.test_dataset.orders.order_id"
+    assert bigquery_transformer.column_nodes[2].id == "test_project_id.test_dataset.orders.order_id"
     assert bigquery_transformer.column_nodes[2].name == "order_id"
     assert (
-        bigquery_transformer.column_nodes[3].id == "test-project-id.test_dataset.orders.customer_id"
+        bigquery_transformer.column_nodes[3].id == "test_project_id.test_dataset.orders.customer_id"
     )
     assert bigquery_transformer.column_nodes[3].name == "customer_id"
     assert bigquery_transformer.column_nodes[3].is_foreign_key
@@ -94,12 +94,12 @@ def test_transform_to_value_nodes(
     assert len(bigquery_transformer.value_nodes) == 2
     assert (
         bigquery_transformer.value_nodes[0].id
-        == "test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
+        == "test_project_id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
     )
     assert bigquery_transformer.value_nodes[0].value == "1"
     assert (
         bigquery_transformer.value_nodes[1].id
-        == "test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
+        == "test_project_id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
     )
     assert bigquery_transformer.value_nodes[1].value == "2"
 
@@ -114,9 +114,9 @@ def test_transform_to_has_schema_relationships(
     )
 
     assert len(bigquery_transformer.has_schema_relationships) == 1
-    assert bigquery_transformer.has_schema_relationships[0].database_id == "test-project-id"
+    assert bigquery_transformer.has_schema_relationships[0].database_id == "test_project_id"
     assert (
-        bigquery_transformer.has_schema_relationships[0].schema_id == "test-project-id.test_dataset"
+        bigquery_transformer.has_schema_relationships[0].schema_id == "test_project_id.test_dataset"
     )
 
 
@@ -131,18 +131,18 @@ def test_transform_to_has_table_relationships(
 
     assert len(bigquery_transformer.has_table_relationships) == 2
     assert (
-        bigquery_transformer.has_table_relationships[0].schema_id == "test-project-id.test_dataset"
+        bigquery_transformer.has_table_relationships[0].schema_id == "test_project_id.test_dataset"
     )
     assert (
         bigquery_transformer.has_table_relationships[0].table_id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert (
-        bigquery_transformer.has_table_relationships[1].schema_id == "test-project-id.test_dataset"
+        bigquery_transformer.has_table_relationships[1].schema_id == "test_project_id.test_dataset"
     )
     assert (
         bigquery_transformer.has_table_relationships[1].table_id
-        == "test-project-id.test_dataset.orders"
+        == "test_project_id.test_dataset.orders"
     )
 
 
@@ -158,35 +158,35 @@ def test_transform_to_has_column_relationships(
     assert len(bigquery_transformer.has_column_relationships) == 4
     assert (
         bigquery_transformer.has_column_relationships[0].table_id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert (
         bigquery_transformer.has_column_relationships[0].column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert (
         bigquery_transformer.has_column_relationships[1].table_id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert (
         bigquery_transformer.has_column_relationships[1].column_id
-        == "test-project-id.test_dataset.customers.customer_name"
+        == "test_project_id.test_dataset.customers.customer_name"
     )
     assert (
         bigquery_transformer.has_column_relationships[2].table_id
-        == "test-project-id.test_dataset.orders"
+        == "test_project_id.test_dataset.orders"
     )
     assert (
         bigquery_transformer.has_column_relationships[2].column_id
-        == "test-project-id.test_dataset.orders.order_id"
+        == "test_project_id.test_dataset.orders.order_id"
     )
     assert (
         bigquery_transformer.has_column_relationships[3].table_id
-        == "test-project-id.test_dataset.orders"
+        == "test_project_id.test_dataset.orders"
     )
     assert (
         bigquery_transformer.has_column_relationships[3].column_id
-        == "test-project-id.test_dataset.orders.customer_id"
+        == "test_project_id.test_dataset.orders.customer_id"
     )
 
 
@@ -202,11 +202,11 @@ def test_transform_to_references_relationships(
     assert len(bigquery_transformer.references_relationships) == 1
     assert (
         bigquery_transformer.references_relationships[0].source_column_id
-        == "test-project-id.test_dataset.orders.customer_id"
+        == "test_project_id.test_dataset.orders.customer_id"
     )
     assert (
         bigquery_transformer.references_relationships[0].target_column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
 
 
@@ -222,33 +222,33 @@ def test_transform_to_has_value_relationships(
     assert len(bigquery_transformer.has_value_relationships) == 2
     assert (
         bigquery_transformer.has_value_relationships[0].column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert (
         bigquery_transformer.has_value_relationships[0].value_id
-        == "test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
+        == "test_project_id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
     )
     assert (
         bigquery_transformer.has_value_relationships[1].column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert (
         bigquery_transformer.has_value_relationships[1].value_id
-        == "test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
+        == "test_project_id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
     )
 
 
 def test_get_database_nodes(bigquery_transformer_with_cache: BigQuerySchemaTransformer):
     """Test database_nodes property returns cached data."""
     assert len(bigquery_transformer_with_cache.database_nodes) == 1
-    assert bigquery_transformer_with_cache.database_nodes[0].id == "test-project-id"
+    assert bigquery_transformer_with_cache.database_nodes[0].id == "test_project_id"
     assert bigquery_transformer_with_cache.database_nodes[0].name == "test-project-id"
 
 
 def test_get_schema_nodes(bigquery_transformer_with_cache: BigQuerySchemaTransformer):
     """Test schema_nodes property returns cached data."""
     assert len(bigquery_transformer_with_cache.schema_nodes) == 1
-    assert bigquery_transformer_with_cache.schema_nodes[0].id == "test-project-id.test_dataset"
+    assert bigquery_transformer_with_cache.schema_nodes[0].id == "test_project_id.test_dataset"
     assert bigquery_transformer_with_cache.schema_nodes[0].name == "test_dataset"
 
 
@@ -257,11 +257,11 @@ def test_get_table_nodes(bigquery_transformer_with_cache: BigQuerySchemaTransfor
     assert len(bigquery_transformer_with_cache.table_nodes) == 2
     assert (
         bigquery_transformer_with_cache.table_nodes[0].id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert bigquery_transformer_with_cache.table_nodes[0].name == "customers"
     assert (
-        bigquery_transformer_with_cache.table_nodes[1].id == "test-project-id.test_dataset.orders"
+        bigquery_transformer_with_cache.table_nodes[1].id == "test_project_id.test_dataset.orders"
     )
     assert bigquery_transformer_with_cache.table_nodes[1].name == "orders"
 
@@ -271,12 +271,12 @@ def test_get_column_nodes(bigquery_transformer_with_cache: BigQuerySchemaTransfo
     assert len(bigquery_transformer_with_cache.column_nodes) == 4
     assert (
         bigquery_transformer_with_cache.column_nodes[0].id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert bigquery_transformer_with_cache.column_nodes[0].name == "customer_id"
     assert (
         bigquery_transformer_with_cache.column_nodes[1].id
-        == "test-project-id.test_dataset.customers.customer_name"
+        == "test_project_id.test_dataset.customers.customer_name"
     )
     assert bigquery_transformer_with_cache.column_nodes[1].name == "customer_name"
 
@@ -292,11 +292,11 @@ def test_get_has_schema_relationships(bigquery_transformer_with_cache: BigQueryS
     """Test has_schema_relationships property returns cached data."""
     assert len(bigquery_transformer_with_cache.has_schema_relationships) == 1
     assert (
-        bigquery_transformer_with_cache.has_schema_relationships[0].database_id == "test-project-id"
+        bigquery_transformer_with_cache.has_schema_relationships[0].database_id == "test_project_id"
     )
     assert (
         bigquery_transformer_with_cache.has_schema_relationships[0].schema_id
-        == "test-project-id.test_dataset"
+        == "test_project_id.test_dataset"
     )
 
 
@@ -305,19 +305,19 @@ def test_get_has_table_relationships(bigquery_transformer_with_cache: BigQuerySc
     assert len(bigquery_transformer_with_cache.has_table_relationships) == 2
     assert (
         bigquery_transformer_with_cache.has_table_relationships[0].schema_id
-        == "test-project-id.test_dataset"
+        == "test_project_id.test_dataset"
     )
     assert (
         bigquery_transformer_with_cache.has_table_relationships[0].table_id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert (
         bigquery_transformer_with_cache.has_table_relationships[1].schema_id
-        == "test-project-id.test_dataset"
+        == "test_project_id.test_dataset"
     )
     assert (
         bigquery_transformer_with_cache.has_table_relationships[1].table_id
-        == "test-project-id.test_dataset.orders"
+        == "test_project_id.test_dataset.orders"
     )
 
 
@@ -326,19 +326,19 @@ def test_get_has_column_relationships(bigquery_transformer_with_cache: BigQueryS
     assert len(bigquery_transformer_with_cache.has_column_relationships) == 4
     assert (
         bigquery_transformer_with_cache.has_column_relationships[0].table_id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert (
         bigquery_transformer_with_cache.has_column_relationships[0].column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert (
         bigquery_transformer_with_cache.has_column_relationships[1].table_id
-        == "test-project-id.test_dataset.customers"
+        == "test_project_id.test_dataset.customers"
     )
     assert (
         bigquery_transformer_with_cache.has_column_relationships[1].column_id
-        == "test-project-id.test_dataset.customers.customer_name"
+        == "test_project_id.test_dataset.customers.customer_name"
     )
 
 
@@ -347,11 +347,11 @@ def test_get_references_relationships(bigquery_transformer_with_cache: BigQueryS
     assert len(bigquery_transformer_with_cache.references_relationships) == 1
     assert (
         bigquery_transformer_with_cache.references_relationships[0].source_column_id
-        == "test-project-id.test_dataset.orders.customer_id"
+        == "test_project_id.test_dataset.orders.customer_id"
     )
     assert (
         bigquery_transformer_with_cache.references_relationships[0].target_column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
 
 
@@ -360,17 +360,17 @@ def test_get_has_value_relationships(bigquery_transformer_with_cache: BigQuerySc
     assert len(bigquery_transformer_with_cache.has_value_relationships) == 2
     assert (
         bigquery_transformer_with_cache.has_value_relationships[0].column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert (
         bigquery_transformer_with_cache.has_value_relationships[0].value_id
-        == "test-project-id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
+        == "test_project_id.test_dataset.customers.customer_id.c4ca4238a0b923820dcc509a6f75849b"
     )
     assert (
         bigquery_transformer_with_cache.has_value_relationships[1].column_id
-        == "test-project-id.test_dataset.customers.customer_id"
+        == "test_project_id.test_dataset.customers.customer_id"
     )
     assert (
         bigquery_transformer_with_cache.has_value_relationships[1].value_id
-        == "test-project-id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
+        == "test_project_id.test_dataset.customers.customer_id.c81e728d9d4c2f636f067f89cc14862c"
     )

@@ -4,6 +4,9 @@
 
 ### Fixed
 * Add column data types `["GEOGRAPHY", "JSON", "BIGNUMERIC"]` to skipped list for `Value` node creation. These types will throw an error otherwise.
+* Implement `generate_*_id` functions for all ID generation tasks
+* Fixed bug where value retrieval would yield empty arrays when all values in column are `NULL`
+* Fixed bug where `description='false'` when querying table info due to inaccurate `INFORMATION_SCHEMA.TABLE_OPTIONS` filtering
 
 ### Changed
 * Replace `RESOLVES_TO` relationship with `TAGGED_WITH` across RDBMS and LPG data models

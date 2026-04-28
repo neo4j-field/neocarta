@@ -16,6 +16,7 @@ from ...data_model.rdbms import (
     UsesTable,
 )
 from ..models import NodesCache, RelationshipsCache
+from ..utils.generate_id import generate_database_id
 
 
 class QueryLogTransformer:
@@ -120,7 +121,10 @@ class QueryLogTransformer:
         """Transform query log database information into database nodes."""
         database_nodes = [
             Database(
-                id=row.project_id, name=row.project_name, platform=row.platform, service=row.service
+                id=generate_database_id(row.project_id),
+                name=row.project_name,
+                platform=row.platform,
+                service=row.service,
             )
             for _, row in database_info.iterrows()
         ]
@@ -183,7 +187,7 @@ class QueryLogTransformer:
     ) -> list[HasSchema]:
         """Transform query log schema information into has schema relationships."""
         has_schema_relationships = [
-            HasSchema(database_id=row.project_id, schema_id=row.dataset_id)
+            HasSchema(database_id=generate_database_id(row.project_id), schema_id=row.dataset_id)
             for _, row in schema_info.iterrows()
         ]
 
