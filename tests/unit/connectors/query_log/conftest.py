@@ -38,9 +38,9 @@ def query_log_extractor_with_cache() -> QueryLogExtractor:
         {
             "platform": "GCP",
             "service": "BIGQUERY",
-            "table_id": "example-project-id.demo_ecommerce.orders",
+            "table_id": "example_project_id.demo_ecommerce.orders",
             "table_name": "orders",
-            "dataset_id": "example-project-id.demo_ecommerce",
+            "dataset_id": "example_project_id.demo_ecommerce",
             "dataset_name": "demo_ecommerce",
             "project_name": "example-project-id",
             "project_id": "example-project-id",
@@ -50,9 +50,9 @@ def query_log_extractor_with_cache() -> QueryLogExtractor:
         {
             "platform": "GCP",
             "service": "BIGQUERY",
-            "table_id": "example-project-id.demo_ecommerce.order_items",
+            "table_id": "example_project_id.demo_ecommerce.order_items",
             "table_name": "order_items",
-            "dataset_id": "example-project-id.demo_ecommerce",
+            "dataset_id": "example_project_id.demo_ecommerce",
             "dataset_name": "demo_ecommerce",
             "project_name": "example-project-id",
             "project_id": "example-project-id",
@@ -62,9 +62,9 @@ def query_log_extractor_with_cache() -> QueryLogExtractor:
         {
             "platform": "GCP",
             "service": "BIGQUERY",
-            "table_id": "example-project-id.demo_ecommerce.products",
+            "table_id": "example_project_id.demo_ecommerce.products",
             "table_name": "products",
-            "dataset_id": "example-project-id.demo_ecommerce",
+            "dataset_id": "example_project_id.demo_ecommerce",
             "dataset_name": "demo_ecommerce",
             "project_name": "example-project-id",
             "project_id": "example-project-id",
@@ -76,66 +76,66 @@ def query_log_extractor_with_cache() -> QueryLogExtractor:
     column_info_records = [
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.orders",
+            "table_id": "example_project_id.demo_ecommerce.orders",
             "table_name": "orders",
             "table_alias": "o",
-            "column_id": "example-project-id.demo_ecommerce.orders.order_id",
+            "column_id": "example_project_id.demo_ecommerce.orders.order_id",
             "column_name": "order_id",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.orders",
+            "table_id": "example_project_id.demo_ecommerce.orders",
             "table_name": "orders",
             "table_alias": "o",
-            "column_id": "example-project-id.demo_ecommerce.orders.order_date",
+            "column_id": "example_project_id.demo_ecommerce.orders.order_date",
             "column_name": "order_date",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.orders",
+            "table_id": "example_project_id.demo_ecommerce.orders",
             "table_name": "orders",
             "table_alias": "o",
-            "column_id": "example-project-id.demo_ecommerce.orders.customer_id",
+            "column_id": "example_project_id.demo_ecommerce.orders.customer_id",
             "column_name": "customer_id",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.orders",
+            "table_id": "example_project_id.demo_ecommerce.orders",
             "table_name": "orders",
             "table_alias": "o",
-            "column_id": "example-project-id.demo_ecommerce.orders.total_amount",
+            "column_id": "example_project_id.demo_ecommerce.orders.total_amount",
             "column_name": "total_amount",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.order_items",
+            "table_id": "example_project_id.demo_ecommerce.order_items",
             "table_name": "order_items",
             "table_alias": "oi",
-            "column_id": "example-project-id.demo_ecommerce.order_items.order_item_id",
+            "column_id": "example_project_id.demo_ecommerce.order_items.order_item_id",
             "column_name": "order_item_id",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.order_items",
+            "table_id": "example_project_id.demo_ecommerce.order_items",
             "table_name": "order_items",
             "table_alias": "oi",
-            "column_id": "example-project-id.demo_ecommerce.order_items.order_id",
+            "column_id": "example_project_id.demo_ecommerce.order_items.order_id",
             "column_name": "order_id",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.order_items",
+            "table_id": "example_project_id.demo_ecommerce.order_items",
             "table_name": "order_items",
             "table_alias": "oi",
-            "column_id": "example-project-id.demo_ecommerce.order_items.product_id",
+            "column_id": "example_project_id.demo_ecommerce.order_items.product_id",
             "column_name": "product_id",
         },
         {
             "query_id": "e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            "table_id": "example-project-id.demo_ecommerce.order_items",
+            "table_id": "example_project_id.demo_ecommerce.order_items",
             "table_name": "order_items",
             "table_alias": "oi",
-            "column_id": "example-project-id.demo_ecommerce.order_items.quantity",
+            "column_id": "example_project_id.demo_ecommerce.order_items.quantity",
             "column_name": "quantity",
         },
     ]
@@ -143,28 +143,28 @@ def query_log_extractor_with_cache() -> QueryLogExtractor:
     column_references_info_records = [
         {
             "left_table_name": "orders",
-            "left_table_id": "example-project-id.demo_ecommerce.orders",
+            "left_table_id": "example_project_id.demo_ecommerce.orders",
             "left_table_alias": "o",
             "left_column_name": "order_id",
-            "left_column_id": "example-project-id.demo_ecommerce.orders.order_id",
+            "left_column_id": "example_project_id.demo_ecommerce.orders.order_id",
             "right_table_name": "order_items",
-            "right_table_id": "example-project-id.demo_ecommerce.order_items",
+            "right_table_id": "example_project_id.demo_ecommerce.order_items",
             "right_table_alias": "oi",
             "right_column_name": "order_id",
-            "right_column_id": "example-project-id.demo_ecommerce.order_items.order_id",
+            "right_column_id": "example_project_id.demo_ecommerce.order_items.order_id",
             "criteria": "o.order_id = oi.order_id",
         },
         {
             "left_table_name": "order_items",
-            "left_table_id": "example-project-id.demo_ecommerce.order_items",
+            "left_table_id": "example_project_id.demo_ecommerce.order_items",
             "left_table_alias": "oi",
             "left_column_name": "product_id",
-            "left_column_id": "example-project-id.demo_ecommerce.order_items.product_id",
+            "left_column_id": "example_project_id.demo_ecommerce.order_items.product_id",
             "right_table_name": "products",
-            "right_table_id": "example-project-id.demo_ecommerce.products",
+            "right_table_id": "example_project_id.demo_ecommerce.products",
             "right_table_alias": "p",
             "right_column_name": "product_id",
-            "right_column_id": "example-project-id.demo_ecommerce.products.product_id",
+            "right_column_id": "example_project_id.demo_ecommerce.products.product_id",
             "criteria": "oi.product_id = p.product_id",
         },
     ]
@@ -188,87 +188,87 @@ def query_log_transformer_with_cache() -> QueryLogTransformer:
 
     database_nodes = [
         Database(
-            id="example-project-id", name="example-project-id", platform="GCP", service="BIGQUERY"
+            id="example_project_id", name="example-project-id", platform="GCP", service="BIGQUERY"
         )
     ]
-    schema_nodes = [Schema(id="example-project-id.demo_ecommerce", name="demo_ecommerce")]
+    schema_nodes = [Schema(id="example_project_id.demo_ecommerce", name="demo_ecommerce")]
     table_nodes = [
-        Table(id="example-project-id.demo_ecommerce.orders", name="orders"),
-        Table(id="example-project-id.demo_ecommerce.order_items", name="order_items"),
-        Table(id="example-project-id.demo_ecommerce.products", name="products"),
+        Table(id="example_project_id.demo_ecommerce.orders", name="orders"),
+        Table(id="example_project_id.demo_ecommerce.order_items", name="order_items"),
+        Table(id="example_project_id.demo_ecommerce.products", name="products"),
     ]
     column_nodes = [
-        Column(id="example-project-id.demo_ecommerce.orders.order_id", name="order_id"),
-        Column(id="example-project-id.demo_ecommerce.orders.order_date", name="order_date"),
-        Column(id="example-project-id.demo_ecommerce.orders.customer_id", name="customer_id"),
-        Column(id="example-project-id.demo_ecommerce.orders.total_amount", name="total_amount"),
+        Column(id="example_project_id.demo_ecommerce.orders.order_id", name="order_id"),
+        Column(id="example_project_id.demo_ecommerce.orders.order_date", name="order_date"),
+        Column(id="example_project_id.demo_ecommerce.orders.customer_id", name="customer_id"),
+        Column(id="example_project_id.demo_ecommerce.orders.total_amount", name="total_amount"),
         Column(
-            id="example-project-id.demo_ecommerce.order_items.order_item_id", name="order_item_id"
+            id="example_project_id.demo_ecommerce.order_items.order_item_id", name="order_item_id"
         ),
-        Column(id="example-project-id.demo_ecommerce.order_items.order_id", name="order_id"),
-        Column(id="example-project-id.demo_ecommerce.order_items.product_id", name="product_id"),
-        Column(id="example-project-id.demo_ecommerce.order_items.quantity", name="quantity"),
+        Column(id="example_project_id.demo_ecommerce.order_items.order_id", name="order_id"),
+        Column(id="example_project_id.demo_ecommerce.order_items.product_id", name="product_id"),
+        Column(id="example_project_id.demo_ecommerce.order_items.quantity", name="quantity"),
     ]
     has_schema_relationships = [
-        HasSchema(database_id="example-project-id", schema_id="example-project-id.demo_ecommerce")
+        HasSchema(database_id="example_project_id", schema_id="example_project_id.demo_ecommerce")
     ]
     has_table_relationships = [
         HasTable(
-            schema_id="example-project-id.demo_ecommerce",
-            table_id="example-project-id.demo_ecommerce.orders",
+            schema_id="example_project_id.demo_ecommerce",
+            table_id="example_project_id.demo_ecommerce.orders",
         ),
         HasTable(
-            schema_id="example-project-id.demo_ecommerce",
-            table_id="example-project-id.demo_ecommerce.order_items",
+            schema_id="example_project_id.demo_ecommerce",
+            table_id="example_project_id.demo_ecommerce.order_items",
         ),
         HasTable(
-            schema_id="example-project-id.demo_ecommerce",
-            table_id="example-project-id.demo_ecommerce.products",
+            schema_id="example_project_id.demo_ecommerce",
+            table_id="example_project_id.demo_ecommerce.products",
         ),
     ]
     has_column_relationships = [
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.orders",
-            column_id="example-project-id.demo_ecommerce.orders.order_id",
+            table_id="example_project_id.demo_ecommerce.orders",
+            column_id="example_project_id.demo_ecommerce.orders.order_id",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.orders",
-            column_id="example-project-id.demo_ecommerce.orders.order_date",
+            table_id="example_project_id.demo_ecommerce.orders",
+            column_id="example_project_id.demo_ecommerce.orders.order_date",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.orders",
-            column_id="example-project-id.demo_ecommerce.orders.customer_id",
+            table_id="example_project_id.demo_ecommerce.orders",
+            column_id="example_project_id.demo_ecommerce.orders.customer_id",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.orders",
-            column_id="example-project-id.demo_ecommerce.orders.total_amount",
+            table_id="example_project_id.demo_ecommerce.orders",
+            column_id="example_project_id.demo_ecommerce.orders.total_amount",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.order_items",
-            column_id="example-project-id.demo_ecommerce.order_items.order_item_id",
+            table_id="example_project_id.demo_ecommerce.order_items",
+            column_id="example_project_id.demo_ecommerce.order_items.order_item_id",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.order_items",
-            column_id="example-project-id.demo_ecommerce.order_items.order_id",
+            table_id="example_project_id.demo_ecommerce.order_items",
+            column_id="example_project_id.demo_ecommerce.order_items.order_id",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.order_items",
-            column_id="example-project-id.demo_ecommerce.order_items.product_id",
+            table_id="example_project_id.demo_ecommerce.order_items",
+            column_id="example_project_id.demo_ecommerce.order_items.product_id",
         ),
         HasColumn(
-            table_id="example-project-id.demo_ecommerce.order_items",
-            column_id="example-project-id.demo_ecommerce.order_items.quantity",
+            table_id="example_project_id.demo_ecommerce.order_items",
+            column_id="example_project_id.demo_ecommerce.order_items.quantity",
         ),
     ]
     references_relationships = [
         References(
-            source_column_id="example-project-id.demo_ecommerce.orders.order_id",
-            target_column_id="example-project-id.demo_ecommerce.order_items.order_id",
+            source_column_id="example_project_id.demo_ecommerce.orders.order_id",
+            target_column_id="example_project_id.demo_ecommerce.order_items.order_id",
             criteria="o.order_id = oi.order_id",
         ),
         References(
-            source_column_id="example-project-id.demo_ecommerce.order_items.product_id",
-            target_column_id="example-project-id.demo_ecommerce.products.product_id",
+            source_column_id="example_project_id.demo_ecommerce.order_items.product_id",
+            target_column_id="example_project_id.demo_ecommerce.products.product_id",
             criteria="oi.product_id = p.product_id",
         ),
     ]
@@ -281,49 +281,49 @@ def query_log_transformer_with_cache() -> QueryLogTransformer:
     uses_table_relationships = [
         UsesTable(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            table_id="example-project-id.demo_ecommerce.orders",
+            table_id="example_project_id.demo_ecommerce.orders",
         ),
         UsesTable(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            table_id="example-project-id.demo_ecommerce.order_items",
+            table_id="example_project_id.demo_ecommerce.order_items",
         ),
         UsesTable(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            table_id="example-project-id.demo_ecommerce.products",
+            table_id="example_project_id.demo_ecommerce.products",
         ),
     ]
     uses_column_relationships = [
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.orders.order_id",
+            column_id="example_project_id.demo_ecommerce.orders.order_id",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.orders.order_date",
+            column_id="example_project_id.demo_ecommerce.orders.order_date",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.orders.customer_id",
+            column_id="example_project_id.demo_ecommerce.orders.customer_id",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.orders.total_amount",
+            column_id="example_project_id.demo_ecommerce.orders.total_amount",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.order_items.order_item_id",
+            column_id="example_project_id.demo_ecommerce.order_items.order_item_id",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.order_items.order_id",
+            column_id="example_project_id.demo_ecommerce.order_items.order_id",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.order_items.product_id",
+            column_id="example_project_id.demo_ecommerce.order_items.product_id",
         ),
         UsesColumn(
             query_id="e45079ee36de11097b070f3e0b6dbc5d365827af3c19a3737cf3331daca26e76",
-            column_id="example-project-id.demo_ecommerce.order_items.quantity",
+            column_id="example_project_id.demo_ecommerce.order_items.quantity",
         ),
     ]
     t._node_cache["database_nodes"] = database_nodes
