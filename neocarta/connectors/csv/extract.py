@@ -41,6 +41,23 @@ REQUIRED_COLUMNS: dict[str, list[str]] = {
     NodeLabel.GLOSSARY: ["glossary_name"],
     NodeLabel.CATEGORY: ["glossary_name", "category_name"],
     NodeLabel.BUSINESS_TERM: ["glossary_name", "category_name", "term_name"],
+    "column_tagged_with": [
+        "database_name",
+        "schema_name",
+        "table_name",
+        "column_name",
+        "glossary_name",
+        "category_name",
+        "term_name",
+    ],
+    "table_tagged_with": [
+        "database_name",
+        "schema_name",
+        "table_name",
+        "glossary_name",
+        "category_name",
+        "term_name",
+    ],
 }
 
 
@@ -70,6 +87,7 @@ REL_ENTITIES: dict[RelationshipType, str] = {
     RelationshipType.HAS_CATEGORY: "category",
     RelationshipType.HAS_BUSINESS_TERM: "business_term",
     RelationshipType.REFERENCES: "column_references",
+    RelationshipType.TAGGED_WITH: "tagged_with",
     RelationshipType.USES_TABLE: "query_table",
     RelationshipType.USES_COLUMN: "query_column",
 }
@@ -119,6 +137,8 @@ class CSVExtractor:
         NodeLabel.CATEGORY: "category_info.csv",
         NodeLabel.BUSINESS_TERM: "business_term_info.csv",
         RelationshipType.REFERENCES: "column_references_info.csv",
+        "column_tagged_with": "column_term_info.csv",
+        "table_tagged_with": "table_term_info.csv",
     }
 
     def __init__(
@@ -212,6 +232,16 @@ class CSVExtractor:
     def business_term_info(self) -> pd.DataFrame:
         """Return cached business term info DataFrame."""
         return self._cache.get("business_term_info", pd.DataFrame())
+
+    @property
+    def column_tagged_with_info(self) -> pd.DataFrame:
+        """Return cached (:Column)-[:TAGGED_WITH]->(:BusinessTerm) DataFrame."""
+        return self._cache.get("column_tagged_with_info", pd.DataFrame())
+
+    @property
+    def table_tagged_with_info(self) -> pd.DataFrame:
+        """Return cached (:Table)-[:TAGGED_WITH]->(:BusinessTerm) DataFrame."""
+        return self._cache.get("table_tagged_with_info", pd.DataFrame())
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -453,6 +483,62 @@ class CSVExtractor:
         self._cache["business_term_info"] = df
         return df
 
+    def extract_column_tagged_with_info(self) -> pd.DataFrame | None:
+        """Extract and cache (:Column)-[:TAGGED_WITH]->(:BusinessTerm) relationships from CSV."""
+        filename = self.csv_file_map.get("column_tagged_with", "column_term_info.csv")
+        df = self._read_csv(filename)
+        if df is None:
+            print(f"  Skipping {filename} (file not found)")
+            return None
+        if df.empty:
+            print(f"  Skipping {filename} (file is empty)")
+            return None
+        self._validate_columns(df, "column_tagged_with", filename)
+        if "column_id" not in df.columns:
+            df["column_id"] = df.apply(
+                lambda r: generate_column_id(
+                    r["database_name"], r["schema_name"], r["table_name"], r["column_name"]
+                ),
+                axis=1,
+            )
+        if "business_term_id" not in df.columns:
+            df["business_term_id"] = df.apply(
+                lambda r: generate_business_term_id(
+                    r["glossary_name"], r["category_name"], r["term_name"]
+                ),
+                axis=1,
+            )
+        self._cache["column_tagged_with_info"] = df
+        print(f"  Extracted {len(df)} rows from {filename}")
+        return df
+
+    def extract_table_tagged_with_info(self) -> pd.DataFrame | None:
+        """Extract and cache (:Table)-[:TAGGED_WITH]->(:BusinessTerm) relationships from CSV."""
+        filename = self.csv_file_map.get("table_tagged_with", "table_term_info.csv")
+        df = self._read_csv(filename)
+        if df is None:
+            print(f"  Skipping {filename} (file not found)")
+            return None
+        if df.empty:
+            print(f"  Skipping {filename} (file is empty)")
+            return None
+        self._validate_columns(df, "table_tagged_with", filename)
+        if "table_id" not in df.columns:
+            df["table_id"] = df.apply(
+                lambda r: generate_table_id(r["database_name"], r["schema_name"], r["table_name"]),
+                axis=1,
+            )
+        if "business_term_id" not in df.columns:
+            df["business_term_id"] = df.apply(
+                lambda r: generate_business_term_id(
+                    r["glossary_name"], r["category_name"], r["term_name"]
+                ),
+                axis=1,
+            )
+        self._cache["table_tagged_with_info"] = df
+        print(f"  Extracted {len(df)} rows from {filename}")
+        return df
+
     def extract_all(
         self,
         include_nodes: list[NodeLabel] | None = None,
@@ -523,3 +609,6 @@ class CSVExtractor:
             self.extract_category_info()
         if "business_term" in needed:
             self.extract_business_term_info()
+        if "tagged_with" in needed:
+            self.extract_column_tagged_with_info()
+            self.extract_table_tagged_with_info()

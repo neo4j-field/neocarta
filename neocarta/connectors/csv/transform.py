@@ -20,6 +20,7 @@ from ...data_model.rdbms.expanded import (
     HasCategory,
     HasValue,
     Query,
+    TaggedWith,
     UsesColumn,
     UsesTable,
     Value,
@@ -206,6 +207,16 @@ class CSVTransformer:
     def uses_column_relationships(self) -> list[UsesColumn]:
         """Return cached USES_COLUMN relationships."""
         return self._relationships_cache.get("uses_column_relationships", [])
+
+    @property
+    def column_tagged_with_relationships(self) -> list[TaggedWith]:
+        """Return cached (:Column)-[:TAGGED_WITH]->(:BusinessTerm) relationships."""
+        return self._relationships_cache.get("column_tagged_with_relationships", [])
+
+    @property
+    def table_tagged_with_relationships(self) -> list[TaggedWith]:
+        """Return cached (:Table)-[:TAGGED_WITH]->(:BusinessTerm) relationships."""
+        return self._relationships_cache.get("table_tagged_with_relationships", [])
 
     # ------------------------------------------------------------------
     # Transform methods — nodes
@@ -531,4 +542,34 @@ class CSVTransformer:
             for row in df.itertuples(index=False)
         ]
         self._relationships_cache["uses_column_relationships"] = relationships
+        return relationships
+
+    def transform_to_column_tagged_with_relationships(self, df: pd.DataFrame) -> list[TaggedWith]:
+        """Transform column-term mapping DataFrame to (:Column)-[:TAGGED_WITH]->(:BusinessTerm) relationships."""
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            TaggedWith(
+                entity_id=row.column_id,
+                business_term_id=row.business_term_id,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["column_tagged_with_relationships"] = relationships
+        return relationships
+
+    def transform_to_table_tagged_with_relationships(self, df: pd.DataFrame) -> list[TaggedWith]:
+        """Transform table-term mapping DataFrame to (:Table)-[:TAGGED_WITH]->(:BusinessTerm) relationships."""
+        if df is None or df.empty:
+            return []
+
+        relationships = [
+            TaggedWith(
+                entity_id=row.table_id,
+                business_term_id=row.business_term_id,
+            )
+            for row in df.itertuples(index=False)
+        ]
+        self._relationships_cache["table_tagged_with_relationships"] = relationships
         return relationships
