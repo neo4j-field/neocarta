@@ -143,66 +143,6 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
     return f"{_normalize(database)}.{_normalize(schema)}.{_normalize(table)}.{_normalize(column)}.{value_hash}"
 
 
-def generate_business_term_id(glossary: str, category: str, term: str) -> str:
-    """
-    Generate a business term ID from glossary, category, and term identifiers.
-
-    Parameters
-    ----------
-    glossary : str
-        The glossary identifier
-    category : str
-        The category identifier
-    term : str
-        The term identifier
-
-    Returns:
-    -------
-    str
-        The business term ID in format: {glossary}.{category}.{term}
-
-    Examples:
-    --------
-    >>> generate_business_term_id("ecommerce_glossary", "revenue_metrics", "gmv")
-    'ecommerce_glossary.revenue_metrics.gmv'
-    """
-    return f"{_normalize(glossary)}.{_normalize(category)}.{_normalize(term)}"
-
-
-def generate_business_term_id(glossary: str, category: str, term: str) -> str:
-    """
-    Generate a business term ID from glossary, category, and term identifiers.
-
-    This produces a dot-separated hierarchical ID (e.g.
-    ``ecommerce_glossary.revenue_metrics.gmv``) suitable for the CSV connector.
-    It is NOT the same format as the full GCP resource path IDs produced by the
-    Dataplex connector (e.g. ``projects/.../glossaries/.../terms/...``). If you
-    intend to load glossary data from both the CSV and Dataplex connectors into
-    the same graph, supply explicit ``business_term_id`` values in the CSV that
-    match the Dataplex resource paths rather than relying on auto-generation.
-
-    Parameters
-    ----------
-    glossary : str
-        The glossary identifier
-    category : str
-        The category identifier
-    term : str
-        The term identifier
-
-    Returns:
-    -------
-    str
-        The business term ID in format: {glossary}.{category}.{term}
-
-    Examples:
-    --------
-    >>> generate_business_term_id("ecommerce_glossary", "revenue_metrics", "gmv")
-    'ecommerce_glossary.revenue_metrics.gmv'
-    """
-    return f"{_normalize(glossary)}.{_normalize(category)}.{_normalize(term)}"
-
-
 def generate_glossary_id(glossary: str) -> str:
     """
     Generate a glossary ID.
