@@ -342,14 +342,14 @@ class CSVTransformer:
         nodes = [
             Glossary(
                 id=row.glossary_id,
-                name=getattr(row, "name", row.glossary_id) or row.glossary_id,
+                name=getattr(row, "name", row.glossary_name) or row.glossary_name,
                 description=getattr(row, "description", None),
             )
             for row in df.itertuples(index=False)
         ]
         self._node_cache["glossary_nodes"] = nodes
         self._properties["glossary_nodes"] = _available_properties(
-            df, exclude=["glossary_id"], always_include=["name"]
+            df, exclude=["glossary_name"], always_include=["name"]
         )
         return nodes
 
@@ -361,14 +361,14 @@ class CSVTransformer:
         nodes = [
             Category(
                 id=row.category_id,
-                name=getattr(row, "name", row.category_id) or row.category_id,
+                name=getattr(row, "name", row.category_name) or row.category_name,
                 description=getattr(row, "description", None),
             )
             for row in df.itertuples(index=False)
         ]
         self._node_cache["category_nodes"] = nodes
         self._properties["category_nodes"] = _available_properties(
-            df, exclude=[], always_include=["name"]
+            df, exclude=["glossary_name", "category_name"], always_include=["name"]
         )
         return nodes
 
@@ -379,15 +379,15 @@ class CSVTransformer:
 
         nodes = [
             BusinessTerm(
-                id=row.term_id,
-                name=getattr(row, "name", row.term_id) or row.term_id,
+                id=row.business_term_id,
+                name=getattr(row, "name", row.term_name) or row.term_name,
                 description=getattr(row, "description", None),
             )
             for row in df.itertuples(index=False)
         ]
         self._node_cache["business_term_nodes"] = nodes
         self._properties["business_term_nodes"] = _available_properties(
-            df, exclude=[], always_include=["name"]
+            df, exclude=["glossary_name", "category_name", "term_name"], always_include=["name"]
         )
         return nodes
 
@@ -480,7 +480,7 @@ class CSVTransformer:
         relationships = [
             HasBusinessTerm(
                 category_id=row.category_id,
-                business_term_id=row.term_id,
+                business_term_id=row.business_term_id,
             )
             for row in df.itertuples(index=False)
         ]

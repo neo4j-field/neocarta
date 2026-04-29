@@ -7,8 +7,11 @@ import pandas as pd
 
 from ...enums import NodeLabel, RelationshipType
 from ..utils.generate_id import (
+    generate_business_term_id,
+    generate_category_id,
     generate_column_id,
     generate_database_id,
+    generate_glossary_id,
     generate_schema_id,
     generate_table_id,
     generate_value_id,
@@ -35,9 +38,9 @@ REQUIRED_COLUMNS: dict[str, list[str]] = {
     NodeLabel.QUERY: ["query_id", "content"],
     RelationshipType.USES_TABLE: ["query_id", "table_id"],
     RelationshipType.USES_COLUMN: ["query_id", "column_id"],
-    NodeLabel.GLOSSARY: ["glossary_id"],
-    NodeLabel.CATEGORY: ["glossary_id", "category_id"],
-    NodeLabel.BUSINESS_TERM: ["category_id", "term_id"],
+    NodeLabel.GLOSSARY: ["glossary_name"],
+    NodeLabel.CATEGORY: ["glossary_name", "category_name"],
+    NodeLabel.BUSINESS_TERM: ["glossary_name", "category_name", "term_name"],
 }
 
 
@@ -409,15 +412,46 @@ class CSVExtractor:
 
     def extract_glossary_info(self) -> pd.DataFrame | None:
         """Extract and cache glossary info from CSV."""
-        return self._extract(NodeLabel.GLOSSARY, "glossary_info")
+        df = self._extract(NodeLabel.GLOSSARY, "glossary_info")
+        if df is None:
+            return None
+        if "glossary_id" not in df.columns:
+            df["glossary_id"] = df["glossary_name"].apply(generate_glossary_id)
+        self._cache["glossary_info"] = df
+        return df
 
     def extract_category_info(self) -> pd.DataFrame | None:
         """Extract and cache category info from CSV."""
-        return self._extract(NodeLabel.CATEGORY, "category_info")
+        df = self._extract(NodeLabel.CATEGORY, "category_info")
+        if df is None:
+            return None
+        if "glossary_id" not in df.columns:
+            df["glossary_id"] = df["glossary_name"].apply(generate_glossary_id)
+        if "category_id" not in df.columns:
+            df["category_id"] = df.apply(
+                lambda r: generate_category_id(r["glossary_name"], r["category_name"]), axis=1
+            )
+        self._cache["category_info"] = df
+        return df
 
     def extract_business_term_info(self) -> pd.DataFrame | None:
         """Extract and cache business term info from CSV."""
-        return self._extract(NodeLabel.BUSINESS_TERM, "business_term_info")
+        df = self._extract(NodeLabel.BUSINESS_TERM, "business_term_info")
+        if df is None:
+            return None
+        if "category_id" not in df.columns:
+            df["category_id"] = df.apply(
+                lambda r: generate_category_id(r["glossary_name"], r["category_name"]), axis=1
+            )
+        if "business_term_id" not in df.columns:
+            df["business_term_id"] = df.apply(
+                lambda r: generate_business_term_id(
+                    r["glossary_name"], r["category_name"], r["term_name"]
+                ),
+                axis=1,
+            )
+        self._cache["business_term_info"] = df
+        return df
 
     def extract_all(
         self,
