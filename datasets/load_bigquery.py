@@ -27,6 +27,11 @@ def load_ecommerce_dataset_to_bigquery(client: bigquery.Client) -> None:
 def load_acme_dataset_to_bigquery(client: bigquery.Client) -> None:
     """
     Load the acme dataset to BigQuery.
+
+    Parameters
+    ----------
+    client: bigquery.Client
+        The BigQuery client.
     """
     with Path("datasets/acme-dataset.sql").open() as f:
         sql = f.read()

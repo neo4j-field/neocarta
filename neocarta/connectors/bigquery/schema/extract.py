@@ -354,9 +354,7 @@ ORDER BY tc.table_name, tc.constraint_type, kcu.ordinal_position
                 # argument, which excludes ARRAY, STRUCT, GEOGRAPHY, JSON, and BIGNUMERIC.
                 if not col_data_type.empty:
                     data_type = col_data_type.iloc[0]
-                    if data_type.startswith(
-                        ("ARRAY", "STRUCT", "GEOGRAPHY", "JSON", "BIGNUMERIC")
-                    ):
+                    if data_type.startswith(("ARRAY", "STRUCT", "GEOGRAPHY", "JSON", "BIGNUMERIC")):
                         continue
 
             select_clauses.append(
