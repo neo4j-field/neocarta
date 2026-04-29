@@ -11,6 +11,7 @@
 
 ### Changed
 * Replace `RESOLVES_TO` relationship with `TAGGED_WITH` across RDBMS and LPG data models
+* **Breaking:** CSV connector glossary CSV files now use `*_name` columns as required inputs (matching the database hierarchy convention) — `glossary_id` → `glossary_name` in `glossary_info.csv`; `glossary_id`, `category_id` → `glossary_name`, `category_name` in `category_info.csv`; `category_id`, `term_id` → `glossary_name`, `category_name`, `term_name` in `business_term_info.csv`. IDs are now auto-generated as a dot-separated hierarchy from these name columns. Explicit `*_id` columns are still accepted as overrides.
 
 ### Added
 * Add `TAGGED_WITH` relationship type to `RelationshipType` enum
