@@ -777,9 +777,11 @@ The project is organized into the following dependency groups:
 - **agent**: Text2SQL agent with LangChain (includes mcp-server dependencies)
 - **dev**: Development tools (Jupyter notebooks)
 
-### Sample Dataset
+### Sample Datasets
 
-This repository contains a sample dataset of ecommerce data.
+This repository contains two sample datasets
+* ecommerce (4 tables)
+* acme dataset (33 tables)
 
 Ensure that the following environment variable is set before running and that you are credentialed via the gcloud cli.
 
@@ -787,10 +789,14 @@ Ensure that the following environment variable is set before running and that yo
 GCP_PROJECT_ID=project-id
 ```
 
-To create the dataset in your BigQuery instance, you may run the following Make command.
+To create the dataset in your BigQuery instance, you may run the following command.
 
 ```bash
-make load-ecommerce-dataset
+uv run examples/bigquery.py --dataset=acme
+
+# or
+
+uv run examples/bigquery.py --dataset=ecommerce
 ```
 
 ## Agent

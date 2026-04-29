@@ -7,6 +7,7 @@
 * Implement `generate_*_id` functions for all ID generation tasks
 * Fixed bug where value retrieval would yield empty arrays when all values in column are `NULL`
 * Fixed bug where `description='false'` when querying table info due to inaccurate `INFORMATION_SCHEMA.TABLE_OPTIONS` filtering
+* Update agent code to use new MCP configuration
 
 ### Changed
 * Replace `RESOLVES_TO` relationship with `TAGGED_WITH` across RDBMS and LPG data models
@@ -18,6 +19,7 @@
 * Add `transform_to_column_tagged_with_relationships()` and `transform_to_table_tagged_with_relationships()` to `DataplexTransformer`
 * Add `load_column_tagged_with_relationships()` and `load_table_tagged_with_relationships()` to Neo4j loader
 * `DataplexConnector` now creates `(:Column)-[:TAGGED_WITH]->(:BusinessTerm)` and `(:Table)-[:TAGGED_WITH]->(:BusinessTerm)` relationships when both `include_schema` and `include_glossary` are enabled
+* Add acme dataset and update example dataset loader function to accomodate ecommerce and acme datasets
 
 ## v0.2.1
 
