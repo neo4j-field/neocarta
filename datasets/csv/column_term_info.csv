@@ -1,0 +1,7 @@
+database_name,schema_name,table_name,column_name,glossary_name,category_name,term_name
+Demo E-commerce,demo_ecommerce,orders,total_amount,ecommerce_glossary,revenue_metrics,gmv
+Demo E-commerce,demo_ecommerce,orders,total_amount,ecommerce_glossary,revenue_metrics,aov
+Demo E-commerce,demo_ecommerce,customers,customer_id,ecommerce_glossary,customer_metrics,cac
+Demo E-commerce,demo_ecommerce,customers,customer_id,ecommerce_glossary,customer_metrics,ltv
+Demo E-commerce,demo_ecommerce,products,product_id,ecommerce_glossary,product_metrics,sell_through_rate
+Demo E-commerce,demo_ecommerce,order_items,quantity,ecommerce_glossary,product_metrics,sell_through_rate
