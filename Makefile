@@ -64,6 +64,7 @@ refresh-mermaid-architecture-images:
 	mmdc -i assets/mermaid/architecture/full-connector-architecture.mmd -o assets/images/architecture/full-connector-architecture.png
 	mmdc -i assets/mermaid/architecture/agent-architecture.mmd -o assets/images/architecture/agent-architecture.png
 	mmdc -i assets/mermaid/architecture/dataplex-connector-architecture.mmd -o assets/images/architecture/dataplex-connector-architecture.png
+	mmdc -i assets/mermaid/architecture/bigquery-full-architecture.mmd -o assets/images/architecture/bigquery-full-architecture.png
 	
 test-unit:
 	uv run pytest tests/unit
