@@ -31,9 +31,7 @@ def parse_glossary_resource_path(resource_path: str) -> str:
             f"Expected a Dataplex resource path containing 'glossaries', got: {resource_path!r}"
         ) from None
     if glossaries_idx + 1 >= len(parts):
-        raise ValueError(
-            f"Expected 'glossaries/<slug>' in path, got: {resource_path!r}"
-        )
+        raise ValueError(f"Expected 'glossaries/<slug>' in path, got: {resource_path!r}")
     return "/".join(parts[: glossaries_idx + 2])
 
 

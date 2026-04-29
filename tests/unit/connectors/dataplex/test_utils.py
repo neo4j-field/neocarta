@@ -63,18 +63,28 @@ class TestParseBusinessTermSlug:
 
 class TestParseGlossaryResourcePath:
     def test_from_category_path(self):
-        path = "projects/my-project/locations/us/glossaries/my-glossary/categories/entity-identifiers"
-        assert parse_glossary_resource_path(path) == "projects/my-project/locations/us/glossaries/my-glossary"
+        path = (
+            "projects/my-project/locations/us/glossaries/my-glossary/categories/entity-identifiers"
+        )
+        assert (
+            parse_glossary_resource_path(path)
+            == "projects/my-project/locations/us/glossaries/my-glossary"
+        )
 
     def test_from_term_path(self):
         path = "projects/my-project/locations/us/glossaries/my-glossary/terms/order-item-id"
-        assert parse_glossary_resource_path(path) == "projects/my-project/locations/us/glossaries/my-glossary"
+        assert (
+            parse_glossary_resource_path(path)
+            == "projects/my-project/locations/us/glossaries/my-glossary"
+        )
 
     def test_consistent_across_category_and_term(self):
         glossary_base = "projects/p/locations/us/glossaries/g"
         category_path = f"{glossary_base}/categories/metrics"
         term_path = f"{glossary_base}/terms/arr"
-        assert parse_glossary_resource_path(category_path) == parse_glossary_resource_path(term_path)
+        assert parse_glossary_resource_path(category_path) == parse_glossary_resource_path(
+            term_path
+        )
 
     def test_invalid_path_missing_glossaries_segment(self):
         path = "projects/my-project/locations/us"
