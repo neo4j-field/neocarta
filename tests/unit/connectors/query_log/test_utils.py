@@ -126,6 +126,37 @@ def test_parse_sql_query_skips_cte_aliases_as_tables():
     assert table_names == {"invoices", "opportunities"}
 
 
+def test_parse_sql_query_captures_ctes_with_definitions():
+    """CTEs are captured in cte_info with their inner SELECT as definition."""
+    query = """
+    WITH paid AS (
+        SELECT invoice_id FROM `proj.ds.invoices` WHERE status = 'PAID'
+    ),
+    won AS (
+        SELECT opp_id FROM `proj.ds.opportunities` WHERE stage = 'WON'
+    )
+    SELECT p.invoice_id FROM paid AS p JOIN won AS w ON p.invoice_id = w.opp_id
+    """
+    parsed = parse_sql_query(query, "qid-1", "bigquery")
+
+    cte_by_name = {c["cte_name"]: c for c in parsed["cte_info"]}
+    assert set(cte_by_name) == {"paid", "won"}
+
+    paid = cte_by_name["paid"]
+    assert paid["query_id"] == "qid-1"
+    assert paid["cte_id"] == "cte.qid-1.paid"
+    # Definition must contain the inner SELECT — not the outer query.
+    assert "invoices" in paid["definition"]
+    assert "PAID" in paid["definition"]
+    assert "opportunities" not in paid["definition"]
+
+
+def test_parse_sql_query_no_ctes_returns_empty_list():
+    query = "SELECT order_id FROM `proj.ds.orders`"
+    parsed = parse_sql_query(query, "qid", "bigquery")
+    assert parsed["cte_info"] == []
+
+
 def test_parse_sql_query_skips_bigquery_pseudo_tables():
     """BigQuery `__TABLES__` and similar metadata pseudo-tables must be filtered out."""
     query = "SELECT * FROM `proj.ds.__TABLES__`"

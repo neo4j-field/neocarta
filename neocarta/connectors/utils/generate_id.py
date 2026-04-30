@@ -146,3 +146,15 @@ def generate_value_id(database: str, schema: str, table: str, column: str, value
 def create_query_id(query: str) -> str:
     """Create a query ID from a query string."""
     return hashlib.sha256(query.encode()).hexdigest()
+
+
+def generate_cte_id(query_id: str, cte_name: str) -> str:
+    """
+    Generate a CTE ID. CTEs are query-scoped, so the id binds the alias to its parent query.
+
+    Examples:
+    --------
+    >>> generate_cte_id("abc123", "paid")
+    'cte.abc123.paid'
+    """
+    return f"cte.{query_id}.{_normalize(cte_name)}"

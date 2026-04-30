@@ -10,6 +10,7 @@ from sqlglot.expressions import CTE, Column, Join, Table
 from neocarta.connectors.utils.generate_id import (
     create_query_id,
     generate_column_id,
+    generate_cte_id,
     generate_schema_id,
     generate_table_id,
 )
@@ -121,7 +122,22 @@ def parse_sql_query(
 
         # CTE aliases must not be treated as real tables — sqlglot's `find_all(Table)`
         # returns both physical tables and CTE references with the same node type.
-        cte_aliases = {cte.alias for cte in parsed.find_all(CTE) if cte.alias}
+        cte_info = []
+        cte_aliases: set[str] = set()
+        for cte in parsed.find_all(CTE):
+            if not cte.alias:
+                continue
+            cte_aliases.add(cte.alias)
+            # `cte.this` is the inner SELECT; render it back to SQL for storage.
+            definition = cte.this.sql(dialect=read) if cte.this is not None else ""
+            cte_info.append(
+                {
+                    "cte_id": generate_cte_id(query_id, cte.alias),
+                    "cte_name": cte.alias,
+                    "definition": definition,
+                    "query_id": query_id,
+                }
+            )
 
         # Table information and defining aliases
         for t in parsed.find_all(Table):
@@ -289,6 +305,7 @@ def parse_sql_query(
             "table_info": table_info,
             "column_info": column_info,
             "references_info": references_info,
+            "cte_info": cte_info,
         }
     except Exception as e:
         print(f"Error parsing SQL query: {e}")
