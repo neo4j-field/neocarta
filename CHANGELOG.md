@@ -3,11 +3,22 @@
 ## Upcoming
 
 ### Fixed
+
+### Changed
+
+### Added
+
+## v0.3.0
+
+### Fixed
 * Add column data types `["GEOGRAPHY", "JSON", "BIGNUMERIC"]` to skipped list for `Value` node creation. These types will throw an error otherwise.
 * Implement `generate_*_id` functions for all ID generation tasks
 * Fixed bug where value retrieval would yield empty arrays when all values in column are `NULL`
 * Fixed bug where `description='false'` when querying table info due to inaccurate `INFORMATION_SCHEMA.TABLE_OPTIONS` filtering
 * Update agent code to use new MCP configuration
+* CSV connector `business_term_info.csv` now requires `glossary_name` and `category_name` in addition to `term_name`, ensuring business term IDs are globally unique within a CSV dataset (previously `term_id` alone was not uniquely scoped)
+* Dataplex connector `Category` nodes previously used the full GCP resource path as both `id` and `name`; `id` is now a normalised dot-separated slug and `name` is the category slug
+
 
 ### Changed
 * Replace `RESOLVES_TO` relationship with `TAGGED_WITH` across RDBMS and LPG data models
@@ -28,10 +39,6 @@
 * Add sample `column_term_info.csv` and `table_term_info.csv` to the ecommerce dataset
 * Dataplex connector now uses `generate_glossary_id()`, `generate_category_id()`, and `generate_business_term_id()` for consistent dot-separated node IDs — IDs produced by the Dataplex and CSV connectors are now interoperable when glossary/category/term slugs match
 * Dataplex connector sets `resource_path` on `Glossary`, `Category`, and `BusinessTerm` nodes with the original GCP resource path; glossary `resource_path` is inferred from the category resource path
-
-### Fixed
-* CSV connector `business_term_info.csv` now requires `glossary_name` and `category_name` in addition to `term_name`, ensuring business term IDs are globally unique within a CSV dataset (previously `term_id` alone was not uniquely scoped)
-* Dataplex connector `Category` nodes previously used the full GCP resource path as both `id` and `name`; `id` is now a normalised dot-separated slug and `name` is the category slug
 
 ## v0.2.1
 
